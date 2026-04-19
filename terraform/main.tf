@@ -57,9 +57,9 @@ module "backup" {
 locals {
   app_environment = [
     { name = "NEXT_PUBLIC_APP_VERSION", value = var.app_version },
-    { name = "NEXT_PUBLIC_API_BASE_PATH", value = var.api_base_path },
-    { name = "NEXT_PUBLIC_API_DOMAIN", value = var.api_domain },
-    { name = "NEXT_PUBLIC_API_KEY", value = var.next_public_api_key },
+    { name = "NEXT_PUBLIC_API_BASE_PATH", value = local.env == "prod" ? "/KBServiciosIIMPJavaEnvironment/rest" : "/KBServiciosPruebaIIMPJavaEnvironment/rest" },
+    { name = "NEXT_PUBLIC_API_DOMAIN", value = "https://secure2.iimp.org:8443" },
+    { name = "NEXT_PUBLIC_API_KEY", value = "NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" },
     { name = "SMTP_FROM", value = var.smtp_from },
     { name = "SMTP_HOST", value = var.smtp_host },
     { name = "SMTP_USER", value = var.smtp_user },
@@ -67,7 +67,7 @@ locals {
     { name = "SMTP_PORT", value = var.smtp_port },
     { name = "S3_BUCKET_NAME", value = module.storage.bucket_name },
     { name = "AWS_REGION", value = "sa-east-1" },
-    { name = "DATABASE_URL", value = local.env == "prod" ? "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017,${module.mongodb.secondary_private_ip}:27017,${module.mongodb.arbiter_private_ip}:27017/multiperfil?replicaSet=rs0&connectTimeoutMS=10000&socketTimeoutMS=10000" : "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017/multiperfil?replicaSet=rs0&connectTimeoutMS=10000&socketTimeoutMS=10000" }
+    { name = "DATABASE_URL", value = local.env == "prod" ? "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017,${module.mongodb.secondary_private_ip}:27017,${module.mongodb.arbiter_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" : "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" }
   ]
 }
 

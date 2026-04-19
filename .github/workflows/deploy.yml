@@ -30,13 +30,15 @@ jobs:
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.PROD_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.PROD_TF_VAR_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" >> $GITHUB_ENV
+            echo "API_BASE_PATH=/KBServiciosIIMPJavaEnvironment/rest" >> $GITHUB_ENV
           else
             echo "ENV=qa" >> $GITHUB_ENV
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.QA_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.QA_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.QA_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.QA_TF_VAR_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" >> $GITHUB_ENV
+            echo "API_BASE_PATH=/KBServiciosPruebaIIMPJavaEnvironment/rest" >> $GITHUB_ENV
           fi
           echo "AWS_REGION=sa-east-1" >> $GITHUB_ENV
           echo "APP_NAME=multiperfil" >> $GITHUB_ENV
@@ -58,6 +60,8 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_KEY=${{ env.NEXT_PUBLIC_API_KEY_VAL }} \
+            --build-arg NEXT_PUBLIC_API_BASE_PATH=${{ env.API_BASE_PATH }} \
+            --build-arg NEXT_PUBLIC_API_DOMAIN=https://secure2.iimp.org:8443 \
             -t ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG .
           docker push ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG
 
