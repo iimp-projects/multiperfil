@@ -31,7 +31,7 @@ jobs:
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.PROD_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.PROD_NEXT_PUBLIC_API_KEY || vars.PROD_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.PROD_NEXT_PUBLIC_API_KEY || secrets.PROD_TF_VAR_NEXT_PUBLIC_API_KEY || vars.PROD_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_BASE_PATH_VAL=${{ vars.PROD_NEXT_PUBLIC_API_BASE_PATH || secrets.PROD_NEXT_PUBLIC_API_BASE_PATH || '/KBServiciosIIMPJavaEnvironment/rest' }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_DOMAIN_VAL=${{ vars.PROD_NEXT_PUBLIC_API_DOMAIN || secrets.PROD_NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443' }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_APP_VERSION_VAL=${{ vars.PROD_NEXT_PUBLIC_APP_VERSION || secrets.PROD_NEXT_PUBLIC_APP_VERSION || 'V1' }}" >> $GITHUB_ENV
@@ -40,7 +40,7 @@ jobs:
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.QA_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.QA_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.QA_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.QA_NEXT_PUBLIC_API_KEY || vars.QA_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.QA_NEXT_PUBLIC_API_KEY || secrets.QA_TF_VAR_NEXT_PUBLIC_API_KEY || vars.QA_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_BASE_PATH_VAL=${{ vars.QA_NEXT_PUBLIC_API_BASE_PATH || secrets.QA_NEXT_PUBLIC_API_BASE_PATH || '/KBServiciosPruebaIIMPJavaEnvironment/rest' }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_API_DOMAIN_VAL=${{ vars.QA_NEXT_PUBLIC_API_DOMAIN || secrets.QA_NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443' }}" >> $GITHUB_ENV
             echo "NEXT_PUBLIC_APP_VERSION_VAL=${{ vars.QA_NEXT_PUBLIC_APP_VERSION || secrets.QA_NEXT_PUBLIC_APP_VERSION || 'V1' }}" >> $GITHUB_ENV
@@ -54,6 +54,26 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_VAL }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_VAL }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate Build Config
+        run: |
+          set -euo pipefail
+          required=(
+            AWS_ACCESS_KEY_ID_VAL
+            AWS_SECRET_ACCESS_KEY_VAL
+            ECR_REPOSITORY_VAL
+            NEXT_PUBLIC_API_KEY_VAL
+            NEXT_PUBLIC_API_BASE_PATH_VAL
+            NEXT_PUBLIC_API_DOMAIN_VAL
+            NEXT_PUBLIC_APP_VERSION_VAL
+          )
+
+          for v in "${required[@]}"; do
+            if [[ -z "${!v:-}" || "${!v}" == "null" ]]; then
+              echo "::error title=Missing workflow config::$v is empty. Configure it via GitHub Secrets/Variables."
+              exit 1
+            fi
+          done
 
       - name: Login to Amazon ECR
         id: login-ecr
