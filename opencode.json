@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "mongodb_local": {
+      "type": "local",
+      "command": ["npx", "-y", "mongodb-mcp-server@latest"],
+      "enabled": true,
+      "environment": {
+        "MDB_MCP_CONNECTION_STRING": "mongodb://localhost:27017/multiperfil",
+        "MDB_MCP_READ_ONLY": "true"
+      }
+    }
+  }
+}
