@@ -30,11 +30,13 @@ jobs:
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.PROD_ECR_REPOSITORY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.PROD_TF_VAR_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
           else
             echo "ENV=qa" >> $GITHUB_ENV
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.QA_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.QA_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.QA_ECR_REPOSITORY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.QA_TF_VAR_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
           fi
           echo "AWS_REGION=sa-east-1" >> $GITHUB_ENV
           echo "APP_NAME=multiperfil" >> $GITHUB_ENV
@@ -54,7 +56,9 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.ref_name }}
         run: |
-          docker build -t ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG .
+          docker build \
+            --build-arg NEXT_PUBLIC_API_KEY=${{ env.NEXT_PUBLIC_API_KEY_VAL }} \
+            -t ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG .
           docker push ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG
 
       - name: Update ECS service
