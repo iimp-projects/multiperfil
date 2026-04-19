@@ -1,0 +1,3234 @@
+===== ACCOUNT / IDENTITY =====
+{
+    "UserId": "AIDAXRENAIX5ZLJSWHH7S",
+    "Account": "517839275515",
+    "Arn": "arn:aws:iam::517839275515:user/multieventos-deployer"
+}
+
+===== IAM ACCOUNT ALIAS =====
+{
+    "AccountAliases": []
+}
+
+===== VPCS =====
+---------------------------------------------------------------------------------------------
+|                                       DescribeVpcs                                        |
++---------------+----------+-------------------------+------------+-------------------------+
+|     Cidr      | Default  |          Name           |   State    |          VpcId          |
++---------------+----------+-------------------------+------------+-------------------------+
+|  10.41.0.0/16 |  False   |  multieventos-qa-vpc    |  available |  vpc-00619f54000651f0e  |
+|  10.0.0.0/16  |  False   |  multieventos-prod-vpc  |  available |  vpc-03d7f92978ad30ebd  |
+|  10.1.0.0/16  |  False   |  multieventos-qa-vpc    |  available |  vpc-0e07e474f07d11ba9  |
+|  10.40.0.0/16 |  False   |  multieventos-prod-vpc  |  available |  vpc-01315428936e1c846  |
+|  172.31.0.0/16|  True    |  None                   |  available |  vpc-0addc3ec2144d006e  |
++---------------+----------+-------------------------+------------+-------------------------+
+
+===== SUBNETS =====
+---------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                 DescribeSubnets                                                                 |
++------------+-----------------+----------------------------------------+-------------------+---------------------------+-------------------------+
+|     AZ     |      Cidr       |                 Name                   | PublicIpOnLaunch  |         SubnetId          |          VpcId          |
++------------+-----------------+----------------------------------------+-------------------+---------------------------+-------------------------+
+|  us-east-1b|  10.1.1.0/24    |  multieventos-qa-public-us-east-1b     |  True             |  subnet-01b0fe3056831ee8b |  vpc-0e07e474f07d11ba9  |
+|  us-east-1a|  172.31.32.0/20 |  None                                  |  True             |  subnet-0513087e77ceb37dc |  vpc-0addc3ec2144d006e  |
+|  us-east-1b|  10.1.11.0/24   |  multieventos-qa-private-us-east-1b    |  False            |  subnet-00bb5943e07523bf7 |  vpc-0e07e474f07d11ba9  |
+|  us-east-1b|  10.41.11.0/24  |  multieventos-qa-private-us-east-1b    |  False            |  subnet-076599149feb7c26a |  vpc-00619f54000651f0e  |
+|  us-east-1b|  172.31.0.0/20  |  None                                  |  True             |  subnet-0101f0f6c70544d09 |  vpc-0addc3ec2144d006e  |
+|  us-east-1a|  10.1.10.0/24   |  multieventos-qa-private-us-east-1a    |  False            |  subnet-06432eec35cd54515 |  vpc-0e07e474f07d11ba9  |
+|  us-east-1b|  10.40.1.0/24   |  multieventos-prod-public-us-east-1b   |  True             |  subnet-0aa29f46adb290ce2 |  vpc-01315428936e1c846  |
+|  us-east-1c|  172.31.80.0/20 |  None                                  |  True             |  subnet-08d4684b8d32d849c |  vpc-0addc3ec2144d006e  |
+|  us-east-1a|  10.41.10.0/24  |  multieventos-qa-private-us-east-1a    |  False            |  subnet-0d56b1b947d89dd8d |  vpc-00619f54000651f0e  |
+|  us-east-1a|  10.40.0.0/24   |  multieventos-prod-public-us-east-1a   |  True             |  subnet-0b7df490c2420a62d |  vpc-01315428936e1c846  |
+|  us-east-1f|  172.31.64.0/20 |  None                                  |  True             |  subnet-053bd35a455921abe |  vpc-0addc3ec2144d006e  |
+|  us-east-1b|  10.0.11.0/24   |  multieventos-prod-private-us-east-1b  |  False            |  subnet-0e0156407ba2c72fc |  vpc-03d7f92978ad30ebd  |
+|  us-east-1e|  172.31.48.0/20 |  None                                  |  True             |  subnet-02e7ef07276eaf283 |  vpc-0addc3ec2144d006e  |
+|  us-east-1a|  10.1.0.0/24    |  multieventos-qa-public-us-east-1a     |  True             |  subnet-0c7ba01558241ac96 |  vpc-0e07e474f07d11ba9  |
+|  us-east-1a|  10.41.0.0/24   |  multieventos-qa-public-us-east-1a     |  True             |  subnet-0030617a556111156 |  vpc-00619f54000651f0e  |
+|  us-east-1a|  10.40.10.0/24  |  multieventos-prod-private-us-east-1a  |  False            |  subnet-0871b6bce322cd208 |  vpc-01315428936e1c846  |
+|  us-east-1b|  10.0.1.0/24    |  multieventos-prod-public-us-east-1b   |  True             |  subnet-04bcb07151f6d6692 |  vpc-03d7f92978ad30ebd  |
+|  us-east-1b|  10.40.11.0/24  |  multieventos-prod-private-us-east-1b  |  False            |  subnet-01e254a9daad1653f |  vpc-01315428936e1c846  |
+|  us-east-1a|  10.0.10.0/24   |  multieventos-prod-private-us-east-1a  |  False            |  subnet-09f59bb78e6df44b6 |  vpc-03d7f92978ad30ebd  |
+|  us-east-1b|  10.41.1.0/24   |  multieventos-qa-public-us-east-1b     |  True             |  subnet-0de5665abd455cf77 |  vpc-00619f54000651f0e  |
+|  us-east-1a|  10.0.0.0/24    |  multieventos-prod-public-us-east-1a   |  True             |  subnet-02579ef8da98ac6da |  vpc-03d7f92978ad30ebd  |
+|  us-east-1d|  172.31.16.0/20 |  None                                  |  True             |  subnet-00e82d9213e8bedc1 |  vpc-0addc3ec2144d006e  |
++------------+-----------------+----------------------------------------+-------------------+---------------------------+-------------------------+
+
+===== ROUTE TABLES =====
+--------------------------------------------------------------------------------------
+|                                 DescribeRouteTables                                |
++--------------------------------+-------------------------+-------------------------+
+|              Name              |      RouteTableId       |          VpcId          |
++--------------------------------+-------------------------+-------------------------+
+|  multieventos-prod-rt-private-0|  rtb-0f95f68e1ff3a8413  |  vpc-01315428936e1c846  |
+|  None                          |  rtb-0fc164d64f5386230  |  vpc-0e07e474f07d11ba9  |
+|  multieventos-prod-rt-private-1|  rtb-0ba7fa66dbf6b245a  |  vpc-01315428936e1c846  |
+|  None                          |  rtb-0d41f1934d665f66a  |  vpc-01315428936e1c846  |
+|  multieventos-qa-rt-private-1  |  rtb-0b1e6b1e5cc9935ef  |  vpc-00619f54000651f0e  |
+|  None                          |  rtb-0b5b2b735736d1a40  |  vpc-0addc3ec2144d006e  |
+|  multieventos-qa-rt-private-0  |  rtb-045bebae94fce96db  |  vpc-00619f54000651f0e  |
+|  multieventos-prod-rt-private-0|  rtb-09a31e2e7904e4e39  |  vpc-01315428936e1c846  |
+|  multieventos-qa-rt-private-0  |  rtb-07b4137976d1ef7a4  |  vpc-00619f54000651f0e  |
+|  multieventos-prod-rt-public   |  rtb-0be98f69cc78d6a95  |  vpc-01315428936e1c846  |
+|  multieventos-qa-rt-public     |  rtb-08f2eca51c6e6b806  |  vpc-00619f54000651f0e  |
+|  multieventos-prod-rt-public   |  rtb-0c34c1157e6835c22  |  vpc-01315428936e1c846  |
+|  multieventos-qa-rt-private-1  |  rtb-006dfcd275d1668fe  |  vpc-00619f54000651f0e  |
+|  multieventos-prod-rt-private-1|  rtb-0a89648c7f82147e0  |  vpc-01315428936e1c846  |
+|  None                          |  rtb-0fa90275fc4d20a82  |  vpc-03d7f92978ad30ebd  |
+|  None                          |  rtb-06839fec02e87d7f3  |  vpc-00619f54000651f0e  |
+|  multieventos-qa-rt-public     |  rtb-0ac489caefb009a18  |  vpc-00619f54000651f0e  |
++--------------------------------+-------------------------+-------------------------+
+
+===== INTERNET GATEWAYS =====
+----------------------------------------------------
+|             DescribeInternetGateways             |
++-------------------------+------------------------+
+|          IgwId          |         Name           |
++-------------------------+------------------------+
+|  igw-058b8e8bd30c91a0f  |  multieventos-qa-igw   |
++-------------------------+------------------------+
+||                   Attachments                  ||
+|+------------------------------------------------+|
+||  vpc-0e07e474f07d11ba9                         ||
+|+------------------------------------------------+|
+|             DescribeInternetGateways             |
++------------------------+-------------------------+
+|          IgwId         |          Name           |
++------------------------+-------------------------+
+|  igw-05c7535675698c7b7 |  multieventos-prod-igw  |
++------------------------+-------------------------+
+||                   Attachments                  ||
+|+------------------------------------------------+|
+||  vpc-03d7f92978ad30ebd                         ||
+|+------------------------------------------------+|
+|             DescribeInternetGateways             |
++-------------------------------------+------------+
+|                IgwId                |   Name     |
++-------------------------------------+------------+
+|  igw-0977a156c0a9a8090              |  None      |
++-------------------------------------+------------+
+||                   Attachments                  ||
+|+------------------------------------------------+|
+||  vpc-0addc3ec2144d006e                         ||
+|+------------------------------------------------+|
+|             DescribeInternetGateways             |
++-------------------------+------------------------+
+|          IgwId          |         Name           |
++-------------------------+------------------------+
+|  igw-0bc4ef157668a9ac9  |  multieventos-qa-igw   |
++-------------------------+------------------------+
+||                   Attachments                  ||
+|+------------------------------------------------+|
+||  vpc-00619f54000651f0e                         ||
+|+------------------------------------------------+|
+|             DescribeInternetGateways             |
++------------------------+-------------------------+
+|          IgwId         |          Name           |
++------------------------+-------------------------+
+|  igw-0c8c5bdda7fd77b26 |  multieventos-prod-igw  |
++------------------------+-------------------------+
+||                   Attachments                  ||
+|+------------------------------------------------+|
+||  vpc-01315428936e1c846                         ||
+|+------------------------------------------------+|
+
+===== NAT GATEWAYS =====
+------------------------------------------------------------------------------------------------------------------------------
+|                                                     DescribeNatGateways                                                    |
++-----------------------+--------------+-----------------+------------+----------------------------+-------------------------+
+|     NatGatewayId      |  PrivateIp   |    PublicIp     |   State    |         SubnetId           |          VpcId          |
++-----------------------+--------------+-----------------+------------+----------------------------+-------------------------+
+|  nat-0cdc9b08de87582bc|  10.40.1.70  |  54.152.25.158  |  available |  subnet-0aa29f46adb290ce2  |  vpc-01315428936e1c846  |
+|  nat-006a7b705c4636578|  10.40.0.180 |  44.199.39.26   |  available |  subnet-0b7df490c2420a62d  |  vpc-01315428936e1c846  |
+|  nat-07bc1b52ae8d9443d|  10.41.1.15  |  34.230.200.188 |  available |  subnet-0de5665abd455cf77  |  vpc-00619f54000651f0e  |
+|  nat-0bb1e1cfc37319695|  10.41.0.231 |  3.234.35.212   |  available |  subnet-0030617a556111156  |  vpc-00619f54000651f0e  |
+|  nat-0ab048a32f18c43e1|  10.41.0.94  |  52.54.144.75   |  available |  subnet-0030617a556111156  |  vpc-00619f54000651f0e  |
+|  nat-052b4882e277269f8|  10.41.1.171 |  35.175.12.200  |  available |  subnet-0de5665abd455cf77  |  vpc-00619f54000651f0e  |
++-----------------------+--------------+-----------------+------------+----------------------------+-------------------------+
+
+===== ELASTIC IPS =====
+--------------------------------------------------------------------------------------------------------------------------------------
+|                                                          DescribeAddresses                                                         |
++----------------------------+-----------------------------+-------------+------------------------+---------------+------------------+
+|        AllocationId        |        AssociationId        | InstanceId  |  NetworkInterfaceId    |   PrivateIp   |    PublicIp      |
++----------------------------+-----------------------------+-------------+------------------------+---------------+------------------+
+|  eipalloc-0015baa10ce180feb|  eipassoc-0d7052a242ac77960 |  None       |  eni-0aa16e71d12192b73 |  10.41.0.231  |  3.234.35.212    |
+|  eipalloc-008aa9bd35195c5a2|  eipassoc-0f10ad6b0bc3a28ab |  None       |  eni-0da4e2faba242722c |  10.41.1.15   |  34.230.200.188  |
+|  eipalloc-0e2e3c60b582291b5|  eipassoc-0c86905d55f2ffa4b |  None       |  eni-06c66e79e9c583a65 |  10.40.1.10   |  34.238.46.165   |
+|  eipalloc-058c4666bd46675c7|  eipassoc-0a03a84ad34712c41 |  None       |  eni-00cb15337a459d66d |  10.41.1.171  |  35.175.12.200   |
+|  eipalloc-00f66cd4fab424b37|  eipassoc-03b32c132618b9e56 |  None       |  eni-0b0207ae9d0b853e7 |  10.40.0.180  |  44.199.39.26    |
+|  eipalloc-0583ffe90ed0577fc|  eipassoc-087547b178d7f3b34 |  None       |  eni-0e345965a094530d8 |  10.40.0.81   |  52.202.251.157  |
+|  eipalloc-0c3b1193ba512288e|  eipassoc-07d53be2cce83cbc2 |  None       |  eni-0bded2812bae74afe |  10.41.0.242  |  52.5.69.70      |
+|  eipalloc-0f29c092cfd5c3de2|  eipassoc-04fefc057c774569c |  None       |  eni-09478683696fb7d4c |  10.41.0.94   |  52.54.144.75    |
+|  eipalloc-0ab40497a8aabef06|  eipassoc-0787f6ed396c39f10 |  None       |  eni-01e43b46bc54ee6f8 |  10.40.1.70   |  54.152.25.158   |
+|  eipalloc-04286ad7908e4d18c|  eipassoc-0e215e01ae56eebbb |  None       |  eni-047b8fa51abfb0fdc |  10.41.1.232  |  54.198.6.156    |
++----------------------------+-----------------------------+-------------+------------------------+---------------+------------------+
+
+===== EC2 INSTANCES =====
+[
+    {
+        "Name": "multieventos-qa-mongodb",
+        "InstanceId": "i-0a142d73fd029c23a",
+        "State": "running",
+        "Type": "t3.small",
+        "VpcId": "vpc-00619f54000651f0e",
+        "SubnetId": "subnet-0d56b1b947d89dd8d",
+        "AZ": "us-east-1a",
+        "PrivateIP": "10.41.10.163",
+        "PublicIP": null,
+        "KeyName": null,
+        "Role": "arn:aws:iam::517839275515:instance-profile/multieventos-qa-mongodb-profile",
+        "SGs": [
+            "multieventos-qa-mongodb-sg"
+        ],
+        "Tags": [
+            {
+                "Key": "BackupPlan",
+                "Value": "daily"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-qa-mongodb"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            }
+        ]
+    },
+    {
+        "Name": "multieventos-prod-mongodb",
+        "InstanceId": "i-02e5a6a650713e5e0",
+        "State": "running",
+        "Type": "t3.medium",
+        "VpcId": "vpc-01315428936e1c846",
+        "SubnetId": "subnet-0871b6bce322cd208",
+        "AZ": "us-east-1a",
+        "PrivateIP": "10.40.10.111",
+        "PublicIP": null,
+        "KeyName": null,
+        "Role": "arn:aws:iam::517839275515:instance-profile/multieventos-prod-mongodb-profile",
+        "SGs": [
+            "multieventos-prod-mongodb-sg"
+        ],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "multieventos-prod-mongodb"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "BackupPlan",
+                "Value": "daily"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            }
+        ]
+    }
+]
+
+===== EBS VOLUMES =====
+[
+    {
+        "VolumeId": "vol-03f69f84c3ce51adf",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "in-use",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [
+            {
+                "InstanceId": "i-02e5a6a650713e5e0",
+                "Device": "/dev/sda1",
+                "State": "attached"
+            }
+        ],
+        "Tags": [
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-0650f9f84e2b872ac",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-024cb430654c6d576",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-0c9e7662923ed02ce",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": null
+    },
+    {
+        "VolumeId": "vol-09e0dde5e8de40e7f",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": null
+    },
+    {
+        "VolumeId": "vol-0a37d13bfbc705869",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-09b6b40c64633af94",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-0cae4bdb8f46d7697",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-01530688e125db8e3",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            }
+        ]
+    },
+    {
+        "VolumeId": "vol-087c7e8507df6b077",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": null
+    },
+    {
+        "VolumeId": "vol-0b8a427eb40ef60d8",
+        "Size": 20,
+        "Type": "gp3",
+        "State": "in-use",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [
+            {
+                "InstanceId": "i-0a142d73fd029c23a",
+                "Device": "/dev/sda1",
+                "State": "attached"
+            }
+        ],
+        "Tags": null
+    },
+    {
+        "VolumeId": "vol-096cb1e60ce15b111",
+        "Size": 40,
+        "Type": "gp3",
+        "State": "available",
+        "AZ": "us-east-1a",
+        "Encrypted": true,
+        "Attachments": [],
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            }
+        ]
+    }
+]
+
+===== SECURITY GROUPS =====
+[
+    {
+        "GroupId": "sg-0de17c2c91f96f134",
+        "GroupName": "multieventos-qa-alb-sg",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Description": "ALB ingress",
+        "Tags": [
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-qa-alb-sg"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            }
+        ]
+    },
+    {
+        "GroupId": "sg-0e43b5da3fb4da035",
+        "GroupName": "multieventos-prod-ecs-sg",
+        "VpcId": "vpc-01315428936e1c846",
+        "Description": "ECS app ingress only from ALB",
+        "Tags": [
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-prod-ecs-sg"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            }
+        ]
+    },
+    {
+        "GroupId": "sg-0a6dcd1b82f30c3a3",
+        "GroupName": "default",
+        "VpcId": "vpc-03d7f92978ad30ebd",
+        "Description": "default VPC security group",
+        "Tags": null
+    },
+    {
+        "GroupId": "sg-05f344b3aea3c9e1f",
+        "GroupName": "multieventos-qa-mongodb-sg",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Description": "MongoDB access only from ECS",
+        "Tags": [
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-qa-mongodb-sg"
+            }
+        ]
+    },
+    {
+        "GroupId": "sg-03430222825f093ca",
+        "GroupName": "default",
+        "VpcId": "vpc-0e07e474f07d11ba9",
+        "Description": "default VPC security group",
+        "Tags": null
+    },
+    {
+        "GroupId": "sg-0ac4ffac2b8f8f742",
+        "GroupName": "multieventos-prod-alb-sg",
+        "VpcId": "vpc-01315428936e1c846",
+        "Description": "ALB ingress",
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-prod-alb-sg"
+            }
+        ]
+    },
+    {
+        "GroupId": "sg-07f2bae9d04bc6f17",
+        "GroupName": "default",
+        "VpcId": "vpc-0addc3ec2144d006e",
+        "Description": "default VPC security group",
+        "Tags": null
+    },
+    {
+        "GroupId": "sg-0757c3e2334595710",
+        "GroupName": "default",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Description": "default VPC security group",
+        "Tags": null
+    },
+    {
+        "GroupId": "sg-01d2bfe7a4bff4667",
+        "GroupName": "default",
+        "VpcId": "vpc-01315428936e1c846",
+        "Description": "default VPC security group",
+        "Tags": null
+    },
+    {
+        "GroupId": "sg-0c9fb0ae27f181375",
+        "GroupName": "multieventos-qa-ecs-sg",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Description": "ECS app ingress only from ALB",
+        "Tags": [
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "Environment",
+                "Value": "qa"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-qa-ecs-sg"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            }
+        ]
+    },
+    {
+        "GroupId": "sg-0c56bb3fd050acc06",
+        "GroupName": "multieventos-prod-mongodb-sg",
+        "VpcId": "vpc-01315428936e1c846",
+        "Description": "MongoDB access only from ECS",
+        "Tags": [
+            {
+                "Key": "Environment",
+                "Value": "prod"
+            },
+            {
+                "Key": "Name",
+                "Value": "multieventos-prod-mongodb-sg"
+            },
+            {
+                "Key": "Project",
+                "Value": "multieventos"
+            },
+            {
+                "Key": "ManagedBy",
+                "Value": "terraform"
+            }
+        ]
+    }
+]
+
+===== NETWORK INTERFACES =====
+[
+    {
+        "NetworkInterfaceId": "eni-01e43b46bc54ee6f8",
+        "Description": "Interface for NAT Gateway nat-0cdc9b08de87582bc",
+        "Status": "in-use",
+        "PrivateIp": "10.40.1.70",
+        "SubnetId": "subnet-0aa29f46adb290ce2",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": []
+    },
+    {
+        "NetworkInterfaceId": "eni-018c76cd8a849b282",
+        "Description": "arn:aws:ecs:us-east-1:517839275515:attachment/c788c8af-a7fc-4b7f-ac04-9d83dab0408d",
+        "Status": "in-use",
+        "PrivateIp": "10.40.11.118",
+        "SubnetId": "subnet-01e254a9daad1653f",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-prod-ecs-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-06c66e79e9c583a65",
+        "Description": "ELB app/multieventos-prod/a2fac1c58e71f965",
+        "Status": "in-use",
+        "PrivateIp": "10.40.1.10",
+        "SubnetId": "subnet-0aa29f46adb290ce2",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-prod-alb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-047b8fa51abfb0fdc",
+        "Description": "ELB app/multieventos-qa/c1ba9fc233a91c7a",
+        "Status": "in-use",
+        "PrivateIp": "10.41.1.232",
+        "SubnetId": "subnet-0de5665abd455cf77",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-qa-alb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-00cb15337a459d66d",
+        "Description": "Interface for NAT Gateway nat-052b4882e277269f8",
+        "Status": "in-use",
+        "PrivateIp": "10.41.1.171",
+        "SubnetId": "subnet-0de5665abd455cf77",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": []
+    },
+    {
+        "NetworkInterfaceId": "eni-0da4e2faba242722c",
+        "Description": "Interface for NAT Gateway nat-07bc1b52ae8d9443d",
+        "Status": "in-use",
+        "PrivateIp": "10.41.1.15",
+        "SubnetId": "subnet-0de5665abd455cf77",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": []
+    },
+    {
+        "NetworkInterfaceId": "eni-0a46d470dadbe56cb",
+        "Description": "arn:aws:ecs:us-east-1:517839275515:attachment/74b95ca3-bb52-451d-ad0f-9ad47e943453",
+        "Status": "in-use",
+        "PrivateIp": "10.41.11.148",
+        "SubnetId": "subnet-076599149feb7c26a",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-qa-ecs-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-0e345965a094530d8",
+        "Description": "ELB app/multieventos-prod/a2fac1c58e71f965",
+        "Status": "in-use",
+        "PrivateIp": "10.40.0.81",
+        "SubnetId": "subnet-0b7df490c2420a62d",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-prod-alb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-09478683696fb7d4c",
+        "Description": "Interface for NAT Gateway nat-0ab048a32f18c43e1",
+        "Status": "in-use",
+        "PrivateIp": "10.41.0.94",
+        "SubnetId": "subnet-0030617a556111156",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": []
+    },
+    {
+        "NetworkInterfaceId": "eni-0bded2812bae74afe",
+        "Description": "ELB app/multieventos-qa/c1ba9fc233a91c7a",
+        "Status": "in-use",
+        "PrivateIp": "10.41.0.242",
+        "SubnetId": "subnet-0030617a556111156",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-qa-alb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-0751ae0e6c5a571f2",
+        "Description": "arn:aws:ecs:us-east-1:517839275515:attachment/9d198d36-8334-46d5-bbc6-9374f458942f",
+        "Status": "in-use",
+        "PrivateIp": "10.40.10.43",
+        "SubnetId": "subnet-0871b6bce322cd208",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": [
+            "multieventos-prod-ecs-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-0cdcac97cca119c56",
+        "Description": "",
+        "Status": "in-use",
+        "PrivateIp": "10.41.10.163",
+        "SubnetId": "subnet-0d56b1b947d89dd8d",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": "i-0a142d73fd029c23a",
+        "Groups": [
+            "multieventos-qa-mongodb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-0b0207ae9d0b853e7",
+        "Description": "Interface for NAT Gateway nat-006a7b705c4636578",
+        "Status": "in-use",
+        "PrivateIp": "10.40.0.180",
+        "SubnetId": "subnet-0b7df490c2420a62d",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": null,
+        "Groups": []
+    },
+    {
+        "NetworkInterfaceId": "eni-0aa2b6cd9af9b6950",
+        "Description": "",
+        "Status": "in-use",
+        "PrivateIp": "10.40.10.111",
+        "SubnetId": "subnet-0871b6bce322cd208",
+        "VpcId": "vpc-01315428936e1c846",
+        "Attachment": "i-02e5a6a650713e5e0",
+        "Groups": [
+            "multieventos-prod-mongodb-sg"
+        ]
+    },
+    {
+        "NetworkInterfaceId": "eni-0aa16e71d12192b73",
+        "Description": "Interface for NAT Gateway nat-0bb1e1cfc37319695",
+        "Status": "in-use",
+        "PrivateIp": "10.41.0.231",
+        "SubnetId": "subnet-0030617a556111156",
+        "VpcId": "vpc-00619f54000651f0e",
+        "Attachment": null,
+        "Groups": []
+    }
+]
+
+===== LOAD BALANCERS =====
+[
+    {
+        "Name": "multieventos-prod",
+        "Type": "application",
+        "Scheme": "internet-facing",
+        "VpcId": "vpc-01315428936e1c846",
+        "State": "active",
+        "DNSName": "multieventos-prod-1438926873.us-east-1.elb.amazonaws.com",
+        "Subnets": [
+            "subnet-0aa29f46adb290ce2",
+            "subnet-0b7df490c2420a62d"
+        ],
+        "SecurityGroups": [
+            "sg-0ac4ffac2b8f8f742"
+        ]
+    },
+    {
+        "Name": "multieventos-qa",
+        "Type": "application",
+        "Scheme": "internet-facing",
+        "VpcId": "vpc-00619f54000651f0e",
+        "State": "active",
+        "DNSName": "multieventos-qa-1583340156.us-east-1.elb.amazonaws.com",
+        "Subnets": [
+            "subnet-0030617a556111156",
+            "subnet-0de5665abd455cf77"
+        ],
+        "SecurityGroups": [
+            "sg-0de17c2c91f96f134"
+        ]
+    }
+]
+
+===== TARGET GROUPS =====
+[
+    {
+        "Name": "multieventos-prod-tg",
+        "Protocol": "HTTP",
+        "Port": 3000,
+        "VpcId": "vpc-01315428936e1c846",
+        "TargetType": "ip",
+        "HealthPath": "/",
+        "LoadBalancerArns": [
+            "arn:aws:elasticloadbalancing:us-east-1:517839275515:loadbalancer/app/multieventos-prod/a2fac1c58e71f965"
+        ]
+    },
+    {
+        "Name": "multieventos-qa-tg",
+        "Protocol": "HTTP",
+        "Port": 3000,
+        "VpcId": "vpc-00619f54000651f0e",
+        "TargetType": "ip",
+        "HealthPath": "/",
+        "LoadBalancerArns": [
+            "arn:aws:elasticloadbalancing:us-east-1:517839275515:loadbalancer/app/multieventos-qa/c1ba9fc233a91c7a"
+        ]
+    }
+]
+
+===== ECS CLUSTERS =====
+{
+    "clusters": [
+        {
+            "clusterArn": "arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-qa-cluster",
+            "clusterName": "multieventos-qa-cluster",
+            "status": "ACTIVE",
+            "registeredContainerInstancesCount": 0,
+            "runningTasksCount": 1,
+            "pendingTasksCount": 0,
+            "activeServicesCount": 1,
+            "statistics": [],
+            "tags": [],
+            "settings": [],
+            "capacityProviders": [],
+            "defaultCapacityProviderStrategy": []
+        },
+        {
+            "clusterArn": "arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-prod-cluster",
+            "clusterName": "multieventos-prod-cluster",
+            "status": "ACTIVE",
+            "registeredContainerInstancesCount": 0,
+            "runningTasksCount": 2,
+            "pendingTasksCount": 0,
+            "activeServicesCount": 1,
+            "statistics": [],
+            "tags": [],
+            "settings": [],
+            "capacityProviders": [],
+            "defaultCapacityProviderStrategy": []
+        }
+    ],
+    "failures": []
+}
+
+===== ECS SERVICES BY CLUSTER =====
+--- Cluster: arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-qa-cluster ---
+{
+    "services": [
+        {
+            "serviceArn": "arn:aws:ecs:us-east-1:517839275515:service/multieventos-qa-cluster/multieventos-qa-service",
+            "serviceName": "multieventos-qa-service",
+            "clusterArn": "arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-qa-cluster",
+            "loadBalancers": [
+                {
+                    "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a",
+                    "containerName": "nextjs",
+                    "containerPort": 3000
+                }
+            ],
+            "serviceRegistries": [],
+            "status": "ACTIVE",
+            "desiredCount": 1,
+            "runningCount": 1,
+            "pendingCount": 0,
+            "launchType": "FARGATE",
+            "platformVersion": "LATEST",
+            "platformFamily": "Linux",
+            "taskDefinition": "arn:aws:ecs:us-east-1:517839275515:task-definition/multieventos-qa:6",
+            "deploymentConfiguration": {
+                "deploymentCircuitBreaker": {
+                    "enable": false,
+                    "rollback": false
+                },
+                "maximumPercent": 200,
+                "minimumHealthyPercent": 100,
+                "strategy": "ROLLING",
+                "bakeTimeInMinutes": 0
+            },
+            "deployments": [
+                {
+                    "id": "ecs-svc/7702928410797192988",
+                    "status": "PRIMARY",
+                    "taskDefinition": "arn:aws:ecs:us-east-1:517839275515:task-definition/multieventos-qa:6",
+                    "desiredCount": 1,
+                    "pendingCount": 0,
+                    "runningCount": 1,
+                    "failedTasks": 0,
+                    "createdAt": "2026-04-16T12:22:18.788000-05:00",
+                    "updatedAt": "2026-04-16T12:25:40.267000-05:00",
+                    "launchType": "FARGATE",
+                    "platformVersion": "1.4.0",
+                    "platformFamily": "Linux",
+                    "networkConfiguration": {
+                        "awsvpcConfiguration": {
+                            "subnets": [
+                                "subnet-076599149feb7c26a",
+                                "subnet-0d56b1b947d89dd8d"
+                            ],
+                            "securityGroups": [
+                                "sg-0c9fb0ae27f181375"
+                            ],
+                            "assignPublicIp": "DISABLED"
+                        }
+                    },
+                    "rolloutState": "COMPLETED",
+                    "rolloutStateReason": "ECS deployment ecs-svc/7702928410797192988 completed."
+                }
+            ],
+            "roleArn": "arn:aws:iam::517839275515:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "events": [
+                {
+                    "id": "45ef8283-e69d-43c2-9dc2-0cae836e7722",
+                    "createdAt": "2026-04-16T12:25:40.274000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "92b6d494-4a91-46e8-8cc3-8ee05563fc5d",
+                    "createdAt": "2026-04-16T12:25:40.273000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/7702928410797192988) deployment completed."
+                },
+                {
+                    "id": "b174cea7-e0f1-44d0-8858-236c5891d8ad",
+                    "createdAt": "2026-04-16T12:24:48.432000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/0090325320522639497) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "33eb24c7-00c3-4090-b37d-f1249220a9fe",
+                    "createdAt": "2026-04-16T12:24:48.428000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "4ba0e75b-9d9d-4018-a6bf-dc14bcf73562",
+                    "createdAt": "2026-04-16T12:24:37.457000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 751af730032a44c5b80b76f97044b3e1)."
+                },
+                {
+                    "id": "598b558e-3420-4990-8e3f-c223f15c193f",
+                    "createdAt": "2026-04-16T12:23:47.228000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "b5043b78-0de1-404a-9520-7dd30cb48da3",
+                    "createdAt": "2026-04-16T12:22:47.777000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 40a4c811650143008f290296825f80e1)."
+                },
+                {
+                    "id": "1ea91ed7-e05c-45f4-8436-f2a54bf9fb8d",
+                    "createdAt": "2026-04-16T11:26:55.877000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "7b15d069-43b7-4480-af8c-20b2e363c2d0",
+                    "createdAt": "2026-04-16T11:26:55.876000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/0090325320522639497) deployment completed."
+                },
+                {
+                    "id": "b9cb1e7e-75eb-4f13-a723-6c3f993a6ca5",
+                    "createdAt": "2026-04-16T11:25:54.075000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/5491886703793695739) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "ac8bb1e6-a2fc-4135-81be-0a917ee0abdf",
+                    "createdAt": "2026-04-16T11:25:54.071000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "4ac193ea-a62c-4db6-b6d4-c8ab179c8180",
+                    "createdAt": "2026-04-16T11:25:43.550000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 9d0c46fea54447eea64f4a32021a044a)."
+                },
+                {
+                    "id": "8a9467af-3d46-4734-8c6c-dd442cddef83",
+                    "createdAt": "2026-04-16T11:24:54.225000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "08c35afc-da07-4952-9afc-e1a75524264a",
+                    "createdAt": "2026-04-16T11:24:03.953000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 751af730032a44c5b80b76f97044b3e1)."
+                },
+                {
+                    "id": "e99bd5ee-0a97-44b6-a4b5-2f186b4b2c9f",
+                    "createdAt": "2026-04-16T10:42:17.494000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "66e602c5-7f5a-4f11-a2ae-bbd6e25c6e77",
+                    "createdAt": "2026-04-16T10:42:17.493000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/5491886703793695739) deployment completed."
+                },
+                {
+                    "id": "98dc9cac-cd6b-4ba0-b8eb-5964befaad56",
+                    "createdAt": "2026-04-16T10:41:25.024000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/2176260635642414260) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "53ccfaf7-39c3-4ded-8210-c60a9336ad53",
+                    "createdAt": "2026-04-16T10:41:25.018000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "415bae6c-c479-4c8c-9516-29a958ad8770",
+                    "createdAt": "2026-04-16T10:41:16.049000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task aa6fe951599e4265ba69dc8835590e9c)."
+                },
+                {
+                    "id": "b98313e7-e867-4b5a-ac30-255a362e3c6e",
+                    "createdAt": "2026-04-16T10:40:25.428000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "f2fa1db8-906b-40f9-b1c5-890ac55098ff",
+                    "createdAt": "2026-04-16T10:39:25.414000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 9d0c46fea54447eea64f4a32021a044a)."
+                },
+                {
+                    "id": "b19bda32-4c17-487f-9202-94ced9a2cd68",
+                    "createdAt": "2026-04-16T07:46:41.676000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "5a9cdd95-09ea-4969-9245-bcd87f88cb16",
+                    "createdAt": "2026-04-16T01:46:02.272000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "e082fcd4-f90b-43db-b862-8af9c9b64bef",
+                    "createdAt": "2026-04-16T01:46:02.271000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/2176260635642414260) deployment completed."
+                },
+                {
+                    "id": "cb2595f6-d1e9-4a32-9b4b-99b6bcb3e5f3",
+                    "createdAt": "2026-04-16T01:45:33.032000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/e20bfd19f3345c9a)"
+                },
+                {
+                    "id": "dbad3d9c-bb96-4b2a-bda5-34cdaf93bdcf",
+                    "createdAt": "2026-04-16T01:44:42.693000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task aa6fe951599e4265ba69dc8835590e9c)."
+                },
+                {
+                    "id": "89369ba2-dc56-429c-b0d4-3f0e12822191",
+                    "createdAt": "2026-04-16T01:44:21.982000-05:00",
+                    "message": "(service multieventos-qa-service) failed to launch a task with (error Error retrieving security group information for [sg-0ee71096001a1c48c]: The security group 'sg-0ee71096001a1c48c' does not exist (ErrorCode: InvalidGroup.NotFound))."
+                },
+                {
+                    "id": "b2637f30-9da2-432e-8baa-5e474d4b9b87",
+                    "createdAt": "2026-04-16T01:15:59.772000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "4db1e749-638f-418a-ae9d-bc2a6ebed8b4",
+                    "createdAt": "2026-04-16T01:15:50.062000-05:00",
+                    "message": "(service multieventos-qa-service) stopped 1 pending tasks."
+                },
+                {
+                    "id": "a6efcd57-417b-4776-9705-c8ea6dddafaf",
+                    "createdAt": "2026-04-16T01:15:11.156000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task f382def609634330b37a4abc78b63387)."
+                },
+                {
+                    "id": "a2112725-10ad-4bc3-aafa-c93085d70817",
+                    "createdAt": "2026-04-16T01:15:10.104000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/4257931737304353920) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "36a3b642-0803-4a60-aa35-b76b4de77d9f",
+                    "createdAt": "2026-04-16T01:15:10.100000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "19a19485-493c-492b-9c8d-3e27578700ee",
+                    "createdAt": "2026-04-16T00:55:27.947000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "8b851c3c-b83e-4e05-9188-12d1e591c54f",
+                    "createdAt": "2026-04-16T00:55:27.946000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/4257931737304353920) deployment completed."
+                },
+                {
+                    "id": "c172112c-0dfc-49b6-b917-7f3782174bea",
+                    "createdAt": "2026-04-16T00:54:35.435000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/8484002023715512612) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "16a3c241-5407-4ea1-8bd8-543ae97957d8",
+                    "createdAt": "2026-04-16T00:54:35.430000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "d046d482-3d91-436c-9e2a-8d42e43692f0",
+                    "createdAt": "2026-04-16T00:54:26.193000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 59a09917221c48d7909fa1348c3b21b7)."
+                },
+                {
+                    "id": "ffb65245-19e1-4a97-baa3-74a38894867a",
+                    "createdAt": "2026-04-16T00:53:35.856000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "47db068c-f6ad-463b-bcaa-a52d296c98ee",
+                    "createdAt": "2026-04-16T00:52:35.137000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task ba14336894a94983abab61f95d0b08a3)."
+                },
+                {
+                    "id": "163c14cd-9134-42bf-ba85-6117aed3aaf8",
+                    "createdAt": "2026-04-16T00:40:11.434000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "733764a9-8bb8-4dc3-972c-fae246be36cf",
+                    "createdAt": "2026-04-16T00:40:11.433000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/8484002023715512612) deployment completed."
+                },
+                {
+                    "id": "f941c3ec-d0e9-4c0a-a999-00ea6b66ec1d",
+                    "createdAt": "2026-04-16T00:39:19.727000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/0592338629338856641) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "dfc42b68-6c6a-4e25-9b69-604924ee3b5b",
+                    "createdAt": "2026-04-16T00:39:19.722000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "eb55a88b-12d9-42bb-aafb-90322d365be6",
+                    "createdAt": "2026-04-16T00:39:09.458000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task de3c73ab137f482ebc736b5b0c3709fd)."
+                },
+                {
+                    "id": "2c161f08-b3f3-4fd9-835a-3849a451bc71",
+                    "createdAt": "2026-04-16T00:38:19.143000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "286b4082-6ab1-4cd4-8217-f26301363f44",
+                    "createdAt": "2026-04-16T00:37:18.180000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 59a09917221c48d7909fa1348c3b21b7)."
+                },
+                {
+                    "id": "364b1cab-ba57-4591-83fd-06041444354a",
+                    "createdAt": "2026-04-16T00:34:54.517000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "0e1d4b33-5e4a-4361-ae66-f53cabc73a49",
+                    "createdAt": "2026-04-16T00:34:54.516000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/0592338629338856641) deployment completed."
+                },
+                {
+                    "id": "9821f237-ad2e-40f1-bedf-f44a2f9285ae",
+                    "createdAt": "2026-04-16T00:33:54.153000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/8030998648681134675) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "087f432d-41e8-44d9-9aa3-e8af84499794",
+                    "createdAt": "2026-04-16T00:33:54.148000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "a90c504d-6ace-4e49-8dd9-d7925bf673e2",
+                    "createdAt": "2026-04-16T00:33:43.759000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 49bed0739f0844e58b3eb6071c3d79f4)."
+                },
+                {
+                    "id": "09199c9a-991a-4ef0-879f-b6a71877222f",
+                    "createdAt": "2026-04-16T00:33:02.964000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "2df3d94d-00fa-4cc1-9bcf-980cf9adbb23",
+                    "createdAt": "2026-04-16T00:32:12.137000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task de3c73ab137f482ebc736b5b0c3709fd)."
+                },
+                {
+                    "id": "3b913e3c-4d00-4473-b0b6-02d14919b4d6",
+                    "createdAt": "2026-04-16T00:31:31.172000-05:00",
+                    "message": "(service multieventos-qa-service) stopped 1 pending tasks."
+                },
+                {
+                    "id": "9d87afb9-9b76-47c0-9788-6f0ac58b2b21",
+                    "createdAt": "2026-04-16T00:31:19.283000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 2be2ccc80714478dad17a84dcd003663)."
+                },
+                {
+                    "id": "e6b8b687-4b13-4fbd-845b-afe9837a0e44",
+                    "createdAt": "2026-04-16T00:30:36.766000-05:00",
+                    "message": "(service multieventos-qa-service) was unable to place a task. Reason: ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve secret from asm: service call has been retried 1 time(s): retrieved secret from Secrets Manager did not contain json key NEXT_PUBLIC_ENCRYPTION_KEY."
+                },
+                {
+                    "id": "dd8f7e76-ea82-4056-8ef0-4750fb2cb1dc",
+                    "createdAt": "2026-04-16T00:30:09.455000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task da29f74ce9b04cb1af309bdf75814ed6)."
+                },
+                {
+                    "id": "cdb1c19e-e34b-4957-8a67-4e5cc8249f78",
+                    "createdAt": "2026-04-16T00:29:19.226000-05:00",
+                    "message": "(service multieventos-qa-service) stopped 1 pending tasks."
+                },
+                {
+                    "id": "6347b4e5-8cc8-40a2-9230-7cf01fad1d52",
+                    "createdAt": "2026-04-16T00:29:00.071000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 1ba62f3a075f4d23ad5e2861dc941c54)."
+                },
+                {
+                    "id": "d9158c71-93b8-449d-9a2c-97460b65a1d5",
+                    "createdAt": "2026-04-16T00:25:24.607000-05:00",
+                    "message": "(service multieventos-qa-service) was unable to place a task. Reason: ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve secret from asm: service call has been retried 1 time(s): invalid character 'M' looking for beginning of object key string."
+                },
+                {
+                    "id": "c2f68c24-3317-43df-9639-005d4ba99626",
+                    "createdAt": "2026-04-16T00:24:55.578000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 26399ee593204a7e94e537716163975e)."
+                },
+                {
+                    "id": "915b28d9-d432-4c0e-868d-53bdf72de789",
+                    "createdAt": "2026-04-16T00:24:24.047000-05:00",
+                    "message": "(service multieventos-qa-service) was unable to place a task. Reason: ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve secret from asm: service call has been retried 1 time(s): invalid character 'M' looking for beginning of object key string."
+                },
+                {
+                    "id": "34639b54-de75-4f8a-a6fa-b576e64581c4",
+                    "createdAt": "2026-04-16T00:23:54.207000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task e57dc716451f4946aaf6a969283e1bd3)."
+                },
+                {
+                    "id": "05bc5432-d2e0-47dd-89b4-9e4cfac03eed",
+                    "createdAt": "2026-04-16T00:23:21.609000-05:00",
+                    "message": "(service multieventos-qa-service) was unable to place a task. Reason: ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve secret from asm: service call has been retried 1 time(s): invalid character 'M' looking for beginning of object key string."
+                },
+                {
+                    "id": "bd4e249b-41c6-4a56-80a1-a7022ed08fc7",
+                    "createdAt": "2026-04-16T00:22:43.011000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task d69b44e10a2c40eb925d19656c03813e)."
+                },
+                {
+                    "id": "7f8d7230-0a84-4daa-b990-e17436b95738",
+                    "createdAt": "2026-04-16T00:18:07.434000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "39d0303b-40fb-451c-9d13-56e4c98ad9b3",
+                    "createdAt": "2026-04-16T00:18:07.433000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/8030998648681134675) deployment completed."
+                },
+                {
+                    "id": "af4c57b9-5b84-47e2-ac37-13a8e0b601c0",
+                    "createdAt": "2026-04-16T00:17:16.165000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/6597772377671773333) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "93eea4f8-e7a6-4d6e-9fa4-7b946c90eb60",
+                    "createdAt": "2026-04-16T00:17:16.160000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "6ffc167a-7a09-4042-b7ab-13eff657276e",
+                    "createdAt": "2026-04-16T00:17:05.020000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task ffda3ca721af403aa2570728d0fa6faf)."
+                },
+                {
+                    "id": "2c2eb2f4-4adf-4ee0-a9b4-24fd64dd1292",
+                    "createdAt": "2026-04-16T00:16:15.199000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "7b1e961b-a643-409b-a1bd-decad7bee918",
+                    "createdAt": "2026-04-16T00:15:14.469000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 49bed0739f0844e58b3eb6071c3d79f4)."
+                },
+                {
+                    "id": "a0ed4635-68bf-45b7-8b4b-ef9459e2afb1",
+                    "createdAt": "2026-04-16T00:14:43.647000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "04db7730-b9f3-4350-8700-b713b32aba13",
+                    "createdAt": "2026-04-16T00:14:43.646000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/6597772377671773333) deployment completed."
+                },
+                {
+                    "id": "763480b2-1cf3-4856-9aa7-b0df32ea0869",
+                    "createdAt": "2026-04-16T00:14:02.576000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/9519278704096232441) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "4ba74899-f3be-4be3-a80b-e9467af28520",
+                    "createdAt": "2026-04-16T00:14:02.575000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "3992704a-7774-4ba8-aa58-2b73cfb2ca16",
+                    "createdAt": "2026-04-16T00:13:52.222000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 7efa89b4c0d142ba9f2e08400c41ffd5)."
+                },
+                {
+                    "id": "c6680728-458b-4eda-96ad-83904b02c5a7",
+                    "createdAt": "2026-04-16T00:13:21.606000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/dbcefe823458e729)"
+                },
+                {
+                    "id": "3104412e-889c-4985-a561-052b2415f9c4",
+                    "createdAt": "2026-04-16T00:12:31.260000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task ffda3ca721af403aa2570728d0fa6faf)."
+                },
+                {
+                    "id": "3adced5d-418c-4ba6-9058-2e8423b4be92",
+                    "createdAt": "2026-04-15T23:57:23.879000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "05a0486f-778e-47a9-8eee-3323abac4e48",
+                    "createdAt": "2026-04-15T23:57:23.878000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/9519278704096232441) deployment completed."
+                },
+                {
+                    "id": "e0074561-9d44-4b2a-80e2-2cf0745be6bc",
+                    "createdAt": "2026-04-15T23:56:22.680000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/8120080282702194705) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "b03d2d61-017b-47dc-8aa9-06de32ad7e81",
+                    "createdAt": "2026-04-15T23:56:22.675000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "095fe943-ab96-4848-80b3-7cf609737858",
+                    "createdAt": "2026-04-15T23:56:12.260000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task d919620b64074873a5030aa6f8a2e02a)."
+                },
+                {
+                    "id": "4875afe4-dbb3-45a7-b4f2-d9b7436fb33d",
+                    "createdAt": "2026-04-15T23:55:22.320000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "2258bf06-817c-41bd-91cd-85c387ad546b",
+                    "createdAt": "2026-04-15T23:54:32.042000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 7efa89b4c0d142ba9f2e08400c41ffd5)."
+                },
+                {
+                    "id": "6a52e82f-10d5-47d3-abe8-3838ea5c8034",
+                    "createdAt": "2026-04-15T23:43:39.754000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "03994941-06c4-4997-9c04-39e1c759c2eb",
+                    "createdAt": "2026-04-15T23:43:39.753000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/8120080282702194705) deployment completed."
+                },
+                {
+                    "id": "2be13b4d-b1d4-4692-b060-4a0a41cd7391",
+                    "createdAt": "2026-04-15T23:42:27.425000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/5647743826992497006) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "9aebd094-55e7-4212-94a3-0e3bc095153a",
+                    "createdAt": "2026-04-15T23:42:27.421000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "ef961591-1cad-4ea3-817a-1ce92998caf4",
+                    "createdAt": "2026-04-15T23:42:18.038000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 6038dfd51cd543918040988a7bfd73f2)."
+                },
+                {
+                    "id": "862eabba-6061-4450-8283-53005cc962f0",
+                    "createdAt": "2026-04-15T23:41:27.677000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "bde32cba-bf15-4349-b412-12742123ea69",
+                    "createdAt": "2026-04-15T23:40:36.580000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task d919620b64074873a5030aa6f8a2e02a)."
+                },
+                {
+                    "id": "b313e7fc-ca24-447c-a0bf-c859657711b7",
+                    "createdAt": "2026-04-15T23:36:01.439000-05:00",
+                    "message": "(service multieventos-qa-service) has reached a steady state."
+                },
+                {
+                    "id": "b1989308-8c53-4953-b10f-11ccad1c95e8",
+                    "createdAt": "2026-04-15T23:36:01.438000-05:00",
+                    "message": "(service multieventos-qa-service) (deployment ecs-svc/5647743826992497006) deployment completed."
+                },
+                {
+                    "id": "efc2f782-4f25-4815-91e7-ecf0f0fb0a09",
+                    "createdAt": "2026-04-15T23:35:10.200000-05:00",
+                    "message": "(service multieventos-qa-service, taskSet ecs-svc/7965631780753967991) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "49045345-5d08-4137-9860-23b5ca827c07",
+                    "createdAt": "2026-04-15T23:35:10.199000-05:00",
+                    "message": "(service multieventos-qa-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/adf881315121de9a)"
+                },
+                {
+                    "id": "18432a78-3280-4e12-b93e-e701f1eb012e",
+                    "createdAt": "2026-04-15T23:34:59.039000-05:00",
+                    "message": "(service multieventos-qa-service) has stopped 1 running tasks: (task 07f19d6951224ed1a244bed9aa383f57)."
+                },
+                {
+                    "id": "46be41cb-8494-4835-a483-cff39cfab55d",
+                    "createdAt": "2026-04-15T23:34:39.437000-05:00",
+                    "message": "(service multieventos-qa-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-qa-tg/1c01bffa9404e889)"
+                },
+                {
+                    "id": "e9ac2d94-ab31-418b-8aa0-351df0fccd05",
+                    "createdAt": "2026-04-15T23:33:49.041000-05:00",
+                    "message": "(service multieventos-qa-service) has started 1 tasks: (task 6038dfd51cd543918040988a7bfd73f2)."
+                }
+            ],
+            "createdAt": "2026-04-10T21:23:57.514000-05:00",
+            "currentServiceRevisions": [
+                {
+                    "arn": "arn:aws:ecs:us-east-1:517839275515:service-revision/multieventos-qa-cluster/multieventos-qa-service/7702928410797192988",
+                    "requestedTaskCount": 1,
+                    "runningTaskCount": 1,
+                    "pendingTaskCount": 0
+                }
+            ],
+            "placementConstraints": [],
+            "placementStrategy": [],
+            "networkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": [
+                        "subnet-076599149feb7c26a",
+                        "subnet-0d56b1b947d89dd8d"
+                    ],
+                    "securityGroups": [
+                        "sg-0c9fb0ae27f181375"
+                    ],
+                    "assignPublicIp": "DISABLED"
+                }
+            },
+            "healthCheckGracePeriodSeconds": 60,
+            "schedulingStrategy": "REPLICA",
+            "deploymentController": {
+                "type": "ECS"
+            },
+            "createdBy": "arn:aws:iam::517839275515:user/multieventos-deployer",
+            "enableECSManagedTags": false,
+            "propagateTags": "NONE",
+            "enableExecuteCommand": true,
+            "availabilityZoneRebalancing": "DISABLED",
+            "resourceManagementType": "CUSTOMER"
+        }
+    ],
+    "failures": []
+}
+
+--- Cluster: arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-prod-cluster ---
+{
+    "services": [
+        {
+            "serviceArn": "arn:aws:ecs:us-east-1:517839275515:service/multieventos-prod-cluster/multieventos-prod-service",
+            "serviceName": "multieventos-prod-service",
+            "clusterArn": "arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-prod-cluster",
+            "loadBalancers": [
+                {
+                    "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b",
+                    "containerName": "nextjs",
+                    "containerPort": 3000
+                }
+            ],
+            "serviceRegistries": [],
+            "status": "ACTIVE",
+            "desiredCount": 2,
+            "runningCount": 2,
+            "pendingCount": 0,
+            "launchType": "FARGATE",
+            "platformVersion": "LATEST",
+            "platformFamily": "Linux",
+            "taskDefinition": "arn:aws:ecs:us-east-1:517839275515:task-definition/multieventos-prod:13",
+            "deploymentConfiguration": {
+                "deploymentCircuitBreaker": {
+                    "enable": false,
+                    "rollback": false
+                },
+                "maximumPercent": 200,
+                "minimumHealthyPercent": 100,
+                "strategy": "ROLLING",
+                "bakeTimeInMinutes": 0
+            },
+            "deployments": [
+                {
+                    "id": "ecs-svc/5456990757202824072",
+                    "status": "PRIMARY",
+                    "taskDefinition": "arn:aws:ecs:us-east-1:517839275515:task-definition/multieventos-prod:13",
+                    "desiredCount": 2,
+                    "pendingCount": 0,
+                    "runningCount": 2,
+                    "failedTasks": 0,
+                    "createdAt": "2026-04-16T12:23:06.470000-05:00",
+                    "updatedAt": "2026-04-16T12:27:11.598000-05:00",
+                    "launchType": "FARGATE",
+                    "platformVersion": "1.4.0",
+                    "platformFamily": "Linux",
+                    "networkConfiguration": {
+                        "awsvpcConfiguration": {
+                            "subnets": [
+                                "subnet-0871b6bce322cd208",
+                                "subnet-01e254a9daad1653f"
+                            ],
+                            "securityGroups": [
+                                "sg-0e43b5da3fb4da035"
+                            ],
+                            "assignPublicIp": "DISABLED"
+                        }
+                    },
+                    "rolloutState": "COMPLETED",
+                    "rolloutStateReason": "ECS deployment ecs-svc/5456990757202824072 completed."
+                }
+            ],
+            "roleArn": "arn:aws:iam::517839275515:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+            "events": [
+                {
+                    "id": "03952596-7a1a-470e-b132-aafd1942c376",
+                    "createdAt": "2026-04-16T12:27:11.603000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "88f3a87b-ac6c-47c1-8f40-47095ef1c551",
+                    "createdAt": "2026-04-16T12:27:11.602000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/5456990757202824072) deployment completed."
+                },
+                {
+                    "id": "2b77e95a-3b16-4225-86fe-4ad621e83fee",
+                    "createdAt": "2026-04-16T12:26:10.770000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/4898212753136065520) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "7c0163c8-ce3b-4077-a7f5-ec3d47e55e6a",
+                    "createdAt": "2026-04-16T12:26:10.763000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "56661823-4e4d-446f-8e5a-41086e597b43",
+                    "createdAt": "2026-04-16T12:26:00.963000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 59ed032d8a174712bca48d2b20c61cc9)."
+                },
+                {
+                    "id": "c5c4af3d-3fa7-482d-8b6e-7f6a58645bb5",
+                    "createdAt": "2026-04-16T12:25:39.276000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/4898212753136065520) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "038bad65-aaeb-4cae-8044-2b00e0913219",
+                    "createdAt": "2026-04-16T12:25:39.269000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "363e1f0a-3817-414e-80b7-32513bcee551",
+                    "createdAt": "2026-04-16T12:25:28.723000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task bd2790a17a544472b9cb07d992684c7a)."
+                },
+                {
+                    "id": "12d7a014-d54a-483d-8aaf-fb66bc0379ba",
+                    "createdAt": "2026-04-16T12:24:38.328000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "5e082795-b6fd-49b5-a8b7-98ebf96c8da9",
+                    "createdAt": "2026-04-16T12:24:07.863000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 5aa9dbac34814e2c9c3a54e268c05479)."
+                },
+                {
+                    "id": "92900130-88b9-4e7c-941c-6425fd08674f",
+                    "createdAt": "2026-04-16T12:23:37.306000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 7de878747bb946dc9668bdd843be9d4f)."
+                },
+                {
+                    "id": "90002b65-d316-4300-9415-33cc262118c7",
+                    "createdAt": "2026-04-16T12:14:20.936000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "b4663135-1907-41cb-b5aa-b9955e9335d1",
+                    "createdAt": "2026-04-16T12:14:20.935000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/4898212753136065520) deployment completed."
+                },
+                {
+                    "id": "da5e262f-efb5-425c-a7d0-f8b4932510d6",
+                    "createdAt": "2026-04-16T12:13:19.737000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/6535885653912635229) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "c04638e3-03c4-48cb-a23b-0e8b90b1c3b4",
+                    "createdAt": "2026-04-16T12:13:19.732000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "68092a62-41a4-4699-955d-082831523e47",
+                    "createdAt": "2026-04-16T12:13:09.404000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 237c303dd8c64365b009ffc962d2f84b)."
+                },
+                {
+                    "id": "7831a23a-9889-4e6b-9fc7-9034478603ed",
+                    "createdAt": "2026-04-16T12:12:48.776000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/6535885653912635229) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "6ba05772-9ef5-443a-8b59-117d349b0b81",
+                    "createdAt": "2026-04-16T12:12:48.770000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "b9231f12-f227-4576-8e59-8e61fd9214dd",
+                    "createdAt": "2026-04-16T12:12:39.043000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 18c1f14d40f446b1b9b5e0bf6b79b0b9)."
+                },
+                {
+                    "id": "b0a89903-77c5-43aa-838e-d416389b5461",
+                    "createdAt": "2026-04-16T12:11:26.189000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "3a376857-fa82-4caa-b196-ac35aa7ceb67",
+                    "createdAt": "2026-04-16T12:11:16.966000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 59ed032d8a174712bca48d2b20c61cc9)."
+                },
+                {
+                    "id": "cd699bf3-20ad-4068-9b01-7c49552c6fd8",
+                    "createdAt": "2026-04-16T12:10:46.737000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task bd2790a17a544472b9cb07d992684c7a)."
+                },
+                {
+                    "id": "bf49d7a2-eb9c-438c-a4f1-ee6c852e220d",
+                    "createdAt": "2026-04-16T12:10:26.865000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 18c1f14d40f446b1b9b5e0bf6b79b0b9)."
+                },
+                {
+                    "id": "2dfc956e-a716-4667-ac96-2ff6aed2861c",
+                    "createdAt": "2026-04-16T11:26:43.839000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "ee433bd6-38b2-4646-9187-642349306d5e",
+                    "createdAt": "2026-04-16T11:26:43.838000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/6535885653912635229) deployment completed."
+                },
+                {
+                    "id": "b28239b8-0f5c-4b71-8b9c-c9f902fda3b9",
+                    "createdAt": "2026-04-16T11:25:51.885000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/1124946812184746602) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "49456bf3-7aa9-458a-b4b5-b79125746cbc",
+                    "createdAt": "2026-04-16T11:25:51.880000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "154be751-2f70-4b4b-bb9b-7cd5e49cbba8",
+                    "createdAt": "2026-04-16T11:25:41.980000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task c99160c896864916a2dc65ca35110e7c)."
+                },
+                {
+                    "id": "9ef86aa3-046a-40dc-be0b-7279333409bb",
+                    "createdAt": "2026-04-16T11:24:50.165000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "ac41f7de-a813-4d5c-bb7d-9d6d45e39b2f",
+                    "createdAt": "2026-04-16T11:23:48.365000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 237c303dd8c64365b009ffc962d2f84b)."
+                },
+                {
+                    "id": "5853d0a4-84a7-4699-9ebf-b0793fa631df",
+                    "createdAt": "2026-04-16T10:42:40.491000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "d406b8f8-cfe8-4751-919b-2deacbfd4fd4",
+                    "createdAt": "2026-04-16T10:42:40.490000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/1124946812184746602) deployment completed."
+                },
+                {
+                    "id": "31d26143-62c0-457a-a88b-033ac9936c7f",
+                    "createdAt": "2026-04-16T10:41:38.341000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/0008929969169790556) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "97ad6e8d-3d52-4ecd-b64c-be7c0bc18d58",
+                    "createdAt": "2026-04-16T10:41:38.335000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "e14f97ab-6371-413f-acdf-0244819807da",
+                    "createdAt": "2026-04-16T10:41:28.558000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task c0248cda53ff4db68906b470b59c3b1f)."
+                },
+                {
+                    "id": "50c18cd2-ec3c-4d50-820b-49a03b439699",
+                    "createdAt": "2026-04-16T10:40:38.193000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "cb1835a2-6617-44ac-abba-88423c36a58b",
+                    "createdAt": "2026-04-16T10:39:36.216000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task c99160c896864916a2dc65ca35110e7c)."
+                },
+                {
+                    "id": "ae956a4b-682d-41ab-b15e-1de8481a9d2c",
+                    "createdAt": "2026-04-16T10:20:24.285000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "56591f01-0fb1-453e-a490-3f5a7d097a7a",
+                    "createdAt": "2026-04-16T10:20:24.284000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/0008929969169790556) deployment completed."
+                },
+                {
+                    "id": "ae0a72b0-a2eb-4a1f-b699-7504e0e4c6c0",
+                    "createdAt": "2026-04-16T10:19:21.972000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/4841606363530060650) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "e9ab2f83-cb52-4932-abda-1c76947b9185",
+                    "createdAt": "2026-04-16T10:19:21.965000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "8d2d5301-6a58-4ab0-ae04-76cfe5949948",
+                    "createdAt": "2026-04-16T10:19:11.873000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 88744db7e60745cd8e9c4b15d72a365f)."
+                },
+                {
+                    "id": "62de3a53-201f-45d8-858f-aab59dec0860",
+                    "createdAt": "2026-04-16T10:18:21.214000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "09d216db-9bb4-4323-8ed6-9cb50efb83be",
+                    "createdAt": "2026-04-16T10:17:29.685000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task c0248cda53ff4db68906b470b59c3b1f)."
+                },
+                {
+                    "id": "54d148cd-85f2-4d94-9d93-52941a71b7e7",
+                    "createdAt": "2026-04-16T10:13:01.354000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "495d8ce8-3d3d-41b2-8546-5b0b7389ac12",
+                    "createdAt": "2026-04-16T10:13:01.353000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/4841606363530060650) deployment completed."
+                },
+                {
+                    "id": "db6130ca-fedb-41b1-90a7-97ace589a374",
+                    "createdAt": "2026-04-16T10:12:00.756000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/9861540906452596498) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "d35dfb20-3e53-4d0b-bedf-0fe67cbab9b1",
+                    "createdAt": "2026-04-16T10:12:00.746000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "70ffbbbf-5465-4735-914e-61315d2ad8f0",
+                    "createdAt": "2026-04-16T10:11:50.518000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 9ba88546af41420c8108a867cd147066)."
+                },
+                {
+                    "id": "0f242dd6-4027-4aab-9c4f-74bfbe88eda3",
+                    "createdAt": "2026-04-16T10:10:58.629000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "db4cb97a-7cf2-43f2-ab55-f8a45e2a4d9c",
+                    "createdAt": "2026-04-16T10:09:58.343000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 88744db7e60745cd8e9c4b15d72a365f)."
+                },
+                {
+                    "id": "d769ee4f-f88a-4ce7-8a28-61f80db0b29f",
+                    "createdAt": "2026-04-16T09:20:04.979000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "1c183563-8e8c-49b1-b888-e0079318319d",
+                    "createdAt": "2026-04-16T09:20:04.978000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/9861540906452596498) deployment completed."
+                },
+                {
+                    "id": "fff418f3-508e-4113-b668-6fef35ae7634",
+                    "createdAt": "2026-04-16T09:19:04.587000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/9385643418116765071) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "4041a912-e2c9-4fbe-ad1f-738a9c46aba9",
+                    "createdAt": "2026-04-16T09:19:04.580000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "89411b62-507b-4091-8048-ac0e358bd4d4",
+                    "createdAt": "2026-04-16T09:18:54.304000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task a6d586f4e9c04db6baf20207479a9950)."
+                },
+                {
+                    "id": "e0808dc9-af4a-4482-a9a3-50fd3e3fb3af",
+                    "createdAt": "2026-04-16T09:18:02.448000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "d3444341-e41c-42db-9cd4-291c69a4d24f",
+                    "createdAt": "2026-04-16T09:17:11.158000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 9ba88546af41420c8108a867cd147066)."
+                },
+                {
+                    "id": "cb2b4162-9fb4-4be2-a06f-69aeee05a42f",
+                    "createdAt": "2026-04-16T07:46:26.071000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "44db9ef5-0f16-44f1-919f-f6375e974a61",
+                    "createdAt": "2026-04-16T01:45:59.793000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "ee906974-69d2-4e2c-9644-7f66e8f69ba8",
+                    "createdAt": "2026-04-16T01:45:59.792000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/9385643418116765071) deployment completed."
+                },
+                {
+                    "id": "c8a1e1ee-f3fa-4d17-a1a0-1d4b5004436a",
+                    "createdAt": "2026-04-16T01:45:29.219000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/d9d03c6b0621380b)"
+                },
+                {
+                    "id": "b8444132-80cd-4a2d-bfd0-7e3f8d0239c1",
+                    "createdAt": "2026-04-16T01:44:38.289000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task a6d586f4e9c04db6baf20207479a9950)."
+                },
+                {
+                    "id": "2f404fcb-5de1-4b39-8f20-5662ce386b54",
+                    "createdAt": "2026-04-16T01:44:17.372000-05:00",
+                    "message": "(service multieventos-prod-service) failed to launch a task with (error Error retrieving security group information for [sg-0c8525681e3862fd1]: The security group 'sg-0c8525681e3862fd1' does not exist (ErrorCode: InvalidGroup.NotFound))."
+                },
+                {
+                    "id": "03768bb0-9f1a-4e3b-9188-32a69b3d9df1",
+                    "createdAt": "2026-04-16T01:15:51.347000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "19f187fe-ce36-435f-a9c9-0f6ce692ce93",
+                    "createdAt": "2026-04-16T01:15:49.151000-05:00",
+                    "message": "(service multieventos-prod-service) stopped 2 pending tasks."
+                },
+                {
+                    "id": "da7a66f2-d15a-4af7-b32d-8bae7c101341",
+                    "createdAt": "2026-04-16T01:15:01.255000-05:00",
+                    "message": "(service multieventos-prod-service) has started 2 tasks: (task a71e1061fbfc454790b1b0b41c1a8879) (task e173541316034bc582bef7d91d049c56)."
+                },
+                {
+                    "id": "cf40441b-1f45-4162-86da-014a72e61cdd",
+                    "createdAt": "2026-04-16T01:15:00.155000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/3471772491838753852) has begun draining connections on 2 tasks."
+                },
+                {
+                    "id": "db50e25f-26f7-4b65-8991-305e37c3e9e5",
+                    "createdAt": "2026-04-16T01:15:00.149000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 2 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "68ded50e-1ee8-415b-a2bb-fe10730dd4ff",
+                    "createdAt": "2026-04-16T00:55:48.591000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "13dcd61f-b4c4-4eb9-9d1e-a9f3ed42dfc2",
+                    "createdAt": "2026-04-16T00:55:48.590000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/3471772491838753852) deployment completed."
+                },
+                {
+                    "id": "9f7dd786-1a67-4ace-8085-3c6aacc882c0",
+                    "createdAt": "2026-04-16T00:54:46.926000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/4370422367957187912) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "68a7c0d9-2934-4efc-be55-a56891e65e22",
+                    "createdAt": "2026-04-16T00:54:46.921000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "4204d09b-e6ed-4305-bd9b-c3605f2c6dcc",
+                    "createdAt": "2026-04-16T00:54:36.216000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 4d0ee00e41c342c0abe2fad1a3c56699)."
+                },
+                {
+                    "id": "02fb4fd5-122e-4b47-b108-7846ab0f5dd3",
+                    "createdAt": "2026-04-16T00:54:26.064000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/4370422367957187912) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "af74cbc2-f7a0-4330-a597-0afa9d813925",
+                    "createdAt": "2026-04-16T00:54:26.058000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "603bedc6-52f2-4429-9bfc-7a093663d168",
+                    "createdAt": "2026-04-16T00:54:16.056000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 345051c76cc34c54b786ac58670fcab2)."
+                },
+                {
+                    "id": "91a275a5-9658-4167-8c0c-e8e2b25468c8",
+                    "createdAt": "2026-04-16T00:53:24.434000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "e81bf112-d3a5-4001-9f01-1ef5b13cc003",
+                    "createdAt": "2026-04-16T00:52:54.725000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task fd71184da8064b7388dce219e57fa66a)."
+                },
+                {
+                    "id": "ee1c34e2-ad9e-4631-a1a3-d0e86f97f20c",
+                    "createdAt": "2026-04-16T00:52:34.394000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task ac6f8912b95143fa9805ab9ba8f61b66)."
+                },
+                {
+                    "id": "aa0374d4-c5d7-4ccd-b69c-7b889375a4ca",
+                    "createdAt": "2026-04-16T00:40:33.583000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "526df7ca-732b-436c-a2a2-f9236f59a4c8",
+                    "createdAt": "2026-04-16T00:40:33.582000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/4370422367957187912) deployment completed."
+                },
+                {
+                    "id": "1ebd916e-e631-4ca2-9bbc-2741b3dcd89c",
+                    "createdAt": "2026-04-16T00:39:31.785000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/5673381774351079801) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "85d4795c-d1d2-4672-a59e-452bed39b2c9",
+                    "createdAt": "2026-04-16T00:39:31.781000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "dc54e409-cdd8-4e11-bc82-0e0e6c11a7c1",
+                    "createdAt": "2026-04-16T00:39:22.272000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 5d3fb84848ff468385acc10f7b7d3600)."
+                },
+                {
+                    "id": "9a8bf07b-dfe8-4ed1-8f10-61fea8eed80f",
+                    "createdAt": "2026-04-16T00:39:11.694000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/5673381774351079801) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "d1dc304b-1262-415d-9cd8-9ba3c5a89db8",
+                    "createdAt": "2026-04-16T00:39:11.690000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "aea97487-8fe3-41eb-a7b3-1a21d80f8368",
+                    "createdAt": "2026-04-16T00:39:00.542000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task 601736289b474a449e6582c77f83c8f9)."
+                },
+                {
+                    "id": "f367da1a-8967-4d2a-8a94-112b7fee7ede",
+                    "createdAt": "2026-04-16T00:38:10.280000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "37b5da6d-4893-494d-992d-f8c30cd6d7a6",
+                    "createdAt": "2026-04-16T00:37:39.381000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 4d0ee00e41c342c0abe2fad1a3c56699)."
+                },
+                {
+                    "id": "83b86dfb-e67b-429f-9e83-b7d141baca55",
+                    "createdAt": "2026-04-16T00:37:19.449000-05:00",
+                    "message": "(service multieventos-prod-service) has started 1 tasks: (task 345051c76cc34c54b786ac58670fcab2)."
+                },
+                {
+                    "id": "a6985369-cf71-4636-b87d-8675b6ae0eca",
+                    "createdAt": "2026-04-16T00:35:14.856000-05:00",
+                    "message": "(service multieventos-prod-service) has reached a steady state."
+                },
+                {
+                    "id": "028201c4-0238-425c-b4e2-43fca6e54106",
+                    "createdAt": "2026-04-16T00:35:14.855000-05:00",
+                    "message": "(service multieventos-prod-service) (deployment ecs-svc/5673381774351079801) deployment completed."
+                },
+                {
+                    "id": "b8db7e74-abfa-4dcf-8a6d-be3368234a63",
+                    "createdAt": "2026-04-16T00:33:53.158000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/2313500701625593471) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "86278beb-cac5-4ec0-9b64-7b97bddb1439",
+                    "createdAt": "2026-04-16T00:33:53.152000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "27be6ef9-0a30-476d-9d05-d9e05ad6339d",
+                    "createdAt": "2026-04-16T00:33:43.049000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task b0ea56bd52004b3ab0dbb3ff2e0b8b36)."
+                },
+                {
+                    "id": "97ad8580-a4c0-4045-97a8-3307c0c87943",
+                    "createdAt": "2026-04-16T00:33:12.645000-05:00",
+                    "message": "(service multieventos-prod-service, taskSet ecs-svc/2313500701625593471) has begun draining connections on 1 tasks."
+                },
+                {
+                    "id": "85ff6a1c-5df4-4177-a39e-fc24a46b715e",
+                    "createdAt": "2026-04-16T00:33:12.641000-05:00",
+                    "message": "(service multieventos-prod-service) deregistered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                },
+                {
+                    "id": "6a8edc3b-7ed2-467a-9442-0661a2fdabf2",
+                    "createdAt": "2026-04-16T00:33:11.334000-05:00",
+                    "message": "(service multieventos-prod-service) has stopped 1 running tasks: (task f76a8385d22e4da18e7f2c887bf90676)."
+                },
+                {
+                    "id": "0f136f79-3f0d-47a6-8afc-5c88083b3837",
+                    "createdAt": "2026-04-16T00:32:20.774000-05:00",
+                    "message": "(service multieventos-prod-service) registered 1 targets in (target-group arn:aws:elasticloadbalancing:us-east-1:517839275515:targetgroup/multieventos-prod-tg/ecf8ca1867c20f0b)"
+                }
+            ],
+            "createdAt": "2026-03-25T17:10:16.935000-05:00",
+            "currentServiceRevisions": [
+                {
+                    "arn": "arn:aws:ecs:us-east-1:517839275515:service-revision/multieventos-prod-cluster/multieventos-prod-service/5456990757202824072",
+                    "requestedTaskCount": 2,
+                    "runningTaskCount": 2,
+                    "pendingTaskCount": 0
+                }
+            ],
+            "placementConstraints": [],
+            "placementStrategy": [],
+            "networkConfiguration": {
+                "awsvpcConfiguration": {
+                    "subnets": [
+                        "subnet-0871b6bce322cd208",
+                        "subnet-01e254a9daad1653f"
+                    ],
+                    "securityGroups": [
+                        "sg-0e43b5da3fb4da035"
+                    ],
+                    "assignPublicIp": "DISABLED"
+                }
+            },
+            "healthCheckGracePeriodSeconds": 60,
+            "schedulingStrategy": "REPLICA",
+            "deploymentController": {
+                "type": "ECS"
+            },
+            "createdBy": "arn:aws:iam::517839275515:user/multieventos-deployer",
+            "enableECSManagedTags": false,
+            "propagateTags": "NONE",
+            "enableExecuteCommand": true,
+            "availabilityZoneRebalancing": "DISABLED",
+            "resourceManagementType": "CUSTOMER"
+        }
+    ],
+    "failures": []
+}
+
+===== ROUTE53 HOSTED ZONES =====
+{
+    "HostedZones": [
+        {
+            "Id": "/hostedzone/Z0691736B6SRMFK869MS",
+            "Name": "perumin.com.",
+            "CallerReference": "92b5e6ad-07e9-4166-8d19-b6a27b516486",
+            "Config": {
+                "Comment": "nuevo registro zona perumin",
+                "PrivateZone": false
+            },
+            "ResourceRecordSetCount": 22
+        },
+        {
+            "Id": "/hostedzone/Z03400882PU6X1C3UCNWY",
+            "Name": "sistemasiimp.org.pe.",
+            "CallerReference": "terraform-20260409231147169500000002",
+            "Config": {
+                "Comment": "Managed by Terraform",
+                "PrivateZone": false
+            },
+            "ResourceRecordSetCount": 6
+        },
+        {
+            "Id": "/hostedzone/Z08827571SVONWUJLKBKI",
+            "Name": "convencionminera.com.",
+            "CallerReference": "1f7f0498-ed16-4a3f-a129-e07635273080",
+            "Config": {
+                "Comment": "nueva zona convencionminera",
+                "PrivateZone": false
+            },
+            "ResourceRecordSetCount": 8
+        },
+        {
+            "Id": "/hostedzone/Z06657362AC2PG13HPSNC",
+            "Name": "wmc2026.org.",
+            "CallerReference": "16ec3c73-f94d-4cbd-b585-9aa04a32a305",
+            "Config": {
+                "Comment": "zona wmc 2026",
+                "PrivateZone": false
+            },
+            "ResourceRecordSetCount": 11
+        }
+    ]
+}
+
+===== ROUTE53 RECORDS (TOP ZONES) =====
+--- Zone: /hostedzone/Z0691736B6SRMFK869MS ---
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.164.239.223"
+                }
+            ]
+        },
+        {
+            "Name": "perumin.com.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-2046.awsdns-63.co.uk."
+                },
+                {
+                    "Value": "ns-1532.awsdns-63.org."
+                },
+                {
+                    "Value": "ns-287.awsdns-35.com."
+                },
+                {
+                    "Value": "ns-780.awsdns-33.net."
+                }
+            ]
+        },
+        {
+            "Name": "perumin.com.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-2046.awsdns-63.co.uk. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "perumin.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"mandrill_verify.xTwl2FADJJqIRVBfgIuMtw\""
+                }
+            ]
+        },
+        {
+            "Name": "\\052.perumin.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"mandrill_verify.xTwl2FADJJqIRVBfgIuMtw\""
+                }
+            ]
+        },
+        {
+            "Name": "_dmarc.perumin.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"v=DMARC1; p=none;\""
+                }
+            ]
+        },
+        {
+            "Name": "mte1._domainkey.perumin.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "dkim1.mandrillapp.com"
+                }
+            ]
+        },
+        {
+            "Name": "mte2._domainkey.perumin.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "dkim2.mandrillapp.com"
+                }
+            ]
+        },
+        {
+            "Name": "backend-forotis.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "52.10.232.104"
+                }
+            ]
+        },
+        {
+            "Name": "ecommerce.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "44.233.89.24"
+                }
+            ]
+        },
+        {
+            "Name": "_dmarc.ecommerce.perumin.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"v=DMARC1; p=none;\""
+                }
+            ]
+        },
+        {
+            "Name": "mte1._domainkey.ecommerce.perumin.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "dkim1.mandrillapp.com"
+                }
+            ]
+        },
+        {
+            "Name": "mte2._domainkey.ecommerce.perumin.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "dkim2.mandrillapp.com"
+                }
+            ]
+        },
+        {
+            "Name": "food.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "44.238.3.26"
+                }
+            ]
+        },
+        {
+            "Name": "forotis.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "52.10.232.104"
+                }
+            ]
+        },
+        {
+            "Name": "inscripciones.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "44.233.89.24"
+                }
+            ]
+        },
+        {
+            "Name": "minisite.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "23.185.0.2"
+                }
+            ]
+        },
+        {
+            "Name": "minisite.perumin.com.",
+            "Type": "AAAA",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "2620:12a:8000::2"
+                }
+            ]
+        },
+        {
+            "Name": "montaje.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "44.233.89.24"
+                }
+            ]
+        },
+        {
+            "Name": "salas.perumin.com.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z2FDTNDATAQYW2",
+                "DNSName": "dt0i4n0y3og17.cloudfront.net.",
+                "EvaluateTargetHealth": false
+            }
+        },
+        {
+            "Name": "_55a3c13cffbab4ff226483a7e7e5846d.salas.perumin.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "_0645a3a6dde081429cf7a645334f948d.xlfgrmvvlj.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "www.perumin.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.164.239.223"
+                }
+            ]
+        }
+    ]
+}
+
+--- Zone: /hostedzone/Z03400882PU6X1C3UCNWY ---
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "sistemasiimp.org.pe.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-376.awsdns-47.com."
+                },
+                {
+                    "Value": "ns-1640.awsdns-13.co.uk."
+                },
+                {
+                    "Value": "ns-1435.awsdns-51.org."
+                },
+                {
+                    "Value": "ns-892.awsdns-47.net."
+                }
+            ]
+        },
+        {
+            "Name": "sistemasiimp.org.pe.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-376.awsdns-47.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "eventos.sistemasiimp.org.pe.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z35SXDOTRQ7X7K",
+                "DNSName": "multieventos-prod-1438926873.us-east-1.elb.amazonaws.com.",
+                "EvaluateTargetHealth": true
+            }
+        },
+        {
+            "Name": "_5244b0404517a4cd9383e355ac91ea1b.eventos.sistemasiimp.org.pe.",
+            "Type": "CNAME",
+            "TTL": 60,
+            "ResourceRecords": [
+                {
+                    "Value": "_22d902e4e18bd047a170eaca649cc036.jkddzztszm.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "qa-eventos.sistemasiimp.org.pe.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z35SXDOTRQ7X7K",
+                "DNSName": "multieventos-qa-1583340156.us-east-1.elb.amazonaws.com.",
+                "EvaluateTargetHealth": true
+            }
+        },
+        {
+            "Name": "_e237a6ff7470e9ee6ebe3d5abc6c78b5.qa-eventos.sistemasiimp.org.pe.",
+            "Type": "CNAME",
+            "TTL": 60,
+            "ResourceRecords": [
+                {
+                    "Value": "_84871e13eb0fa09f5edf38e07cd2535b.jkddzztszm.acm-validations.aws."
+                }
+            ]
+        }
+    ]
+}
+
+--- Zone: /hostedzone/Z08827571SVONWUJLKBKI ---
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "convencionminera.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.164.239.223"
+                }
+            ]
+        },
+        {
+            "Name": "convencionminera.com.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-1810.awsdns-34.co.uk."
+                },
+                {
+                    "Value": "ns-1343.awsdns-39.org."
+                },
+                {
+                    "Value": "ns-126.awsdns-15.com."
+                },
+                {
+                    "Value": "ns-894.awsdns-47.net."
+                }
+            ]
+        },
+        {
+            "Name": "convencionminera.com.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-1810.awsdns-34.co.uk. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "convencionminera.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"ei2qm2hlp5ucm28ppprmodp4fm\""
+                }
+            ]
+        },
+        {
+            "Name": "\\100.convencionminera.com.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"ei2qm2hlp5ucm28ppprmodp4fm\""
+                }
+            ]
+        },
+        {
+            "Name": "_0910e853aaa574059ab0d691f1e61636.convencionminera.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "_3e789090f49cda10d56d1b3316bdf182.jfrzftwwjs.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "_399d11357da3134bfb406578130edd9b.convencionminera.com.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "_1c061c602a68de21af2fbd9b247263e9.jfrzftwwjs.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "www.convencionminera.com.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.164.239.223"
+                }
+            ]
+        }
+    ]
+}
+
+--- Zone: /hostedzone/Z06657362AC2PG13HPSNC ---
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "16.146.128.64"
+                }
+            ]
+        },
+        {
+            "Name": "wmc2026.org.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-435.awsdns-54.com."
+                },
+                {
+                    "Value": "ns-696.awsdns-23.net."
+                },
+                {
+                    "Value": "ns-1400.awsdns-47.org."
+                },
+                {
+                    "Value": "ns-1978.awsdns-55.co.uk."
+                }
+            ]
+        },
+        {
+            "Name": "wmc2026.org.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-435.awsdns-54.com. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "wmc2026.org.",
+            "Type": "TXT",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "\"49hq4me7qac8c1hngcgf0r807l\""
+                }
+            ]
+        },
+        {
+            "Name": "backend-papers.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.89.46.24"
+                }
+            ]
+        },
+        {
+            "Name": "inscripciones.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "52.89.26.74"
+                }
+            ]
+        },
+        {
+            "Name": "papers.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "35.89.46.24"
+                }
+            ]
+        },
+        {
+            "Name": "pruebas.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "18.237.30.163"
+                }
+            ]
+        },
+        {
+            "Name": "pruebasproexplo.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "18.237.30.163"
+                }
+            ]
+        },
+        {
+            "Name": "registration.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "52.89.26.74"
+                }
+            ]
+        },
+        {
+            "Name": "www.wmc2026.org.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "16.146.128.64"
+                }
+            ]
+        }
+    ]
+}
+
+===== S3 BUCKETS =====
+app-multieventos-qr	aws-sam-cli-managed-default-samclisourcebucket-klrylkbr45ie	multieventos-qa-logos	perumin-sala-frontend-app	perumin-sala-reportes
+
+===== S3 BUCKET LOCATIONS =====
+--- Bucket: app-multieventos-qr ---
+{
+    "LocationConstraint": null
+}
+
+--- Bucket: aws-sam-cli-managed-default-samclisourcebucket-klrylkbr45ie ---
+{
+    "LocationConstraint": null
+}
+
+--- Bucket: multieventos-qa-logos ---
+{
+    "LocationConstraint": null
+}
+
+--- Bucket: perumin-sala-frontend-app ---
+{
+    "LocationConstraint": null
+}
+
+--- Bucket: perumin-sala-reportes ---
+{
+    "LocationConstraint": null
+}
+
+===== S3 BUCKET TAGS =====
+--- Bucket: app-multieventos-qr ---
+{
+    "TagSet": [
+        {
+            "Key": "Project",
+            "Value": "multieventos"
+        },
+        {
+            "Key": "Environment",
+            "Value": "prod"
+        },
+        {
+            "Key": "ManagedBy",
+            "Value": "terraform"
+        },
+        {
+            "Key": "Name",
+            "Value": "multieventos-prod-logos"
+        }
+    ]
+}
+
+--- Bucket: aws-sam-cli-managed-default-samclisourcebucket-klrylkbr45ie ---
+{
+    "TagSet": [
+        {
+            "Key": "aws:cloudformation:stack-name",
+            "Value": "aws-sam-cli-managed-default"
+        },
+        {
+            "Key": "aws:cloudformation:logical-id",
+            "Value": "SamCliSourceBucket"
+        },
+        {
+            "Key": "ManagedStackSource",
+            "Value": "AwsSamCli"
+        },
+        {
+            "Key": "aws:cloudformation:stack-id",
+            "Value": "arn:aws:cloudformation:us-east-1:517839275515:stack/aws-sam-cli-managed-default/007f9bd0-966d-11f0-8c1c-0affdf86c0cb"
+        }
+    ]
+}
+
+--- Bucket: multieventos-qa-logos ---
+{
+    "TagSet": [
+        {
+            "Key": "Project",
+            "Value": "multieventos"
+        },
+        {
+            "Key": "Environment",
+            "Value": "qa"
+        },
+        {
+            "Key": "ManagedBy",
+            "Value": "terraform"
+        },
+        {
+            "Key": "Name",
+            "Value": "multieventos-qa-logos"
+        }
+    ]
+}
+
+--- Bucket: perumin-sala-frontend-app ---
+{
+    "TagSet": [
+        {
+            "Key": "app",
+            "Value": "convepass"
+        },
+        {
+            "Key": "aws:cloudformation:stack-name",
+            "Value": "app-sala-check-perumin"
+        },
+        {
+            "Key": "aws:cloudformation:logical-id",
+            "Value": "FrontendBucket"
+        },
+        {
+            "Key": "aws:cloudformation:stack-id",
+            "Value": "arn:aws:cloudformation:us-east-1:517839275515:stack/app-sala-check-perumin/7407df40-966d-11f0-8c21-1276e26b245f"
+        },
+        {
+            "Key": "tier",
+            "Value": "frontend"
+        }
+    ]
+}
+
+--- Bucket: perumin-sala-reportes ---
+No tags or access denied
+
+===== CLOUDFRONT DISTRIBUTIONS =====
+{
+    "DistributionList": {
+        "Items": [
+            {
+                "Id": "E3B8ITH3TFXAMQ",
+                "ARN": "arn:aws:cloudfront::517839275515:distribution/E3B8ITH3TFXAMQ",
+                "ETag": "E12III2BIZX6VI",
+                "Status": "Deployed",
+                "LastModifiedTime": "2025-09-20T22:19:32.483000+00:00",
+                "DomainName": "dt0i4n0y3og17.cloudfront.net",
+                "Aliases": {
+                    "Quantity": 1,
+                    "Items": [
+                        "salas.perumin.com"
+                    ]
+                },
+                "Origins": {
+                    "Quantity": 2,
+                    "Items": [
+                        {
+                            "Id": "api-origin",
+                            "DomainName": "87ev4gmi14.execute-api.us-east-1.amazonaws.com",
+                            "OriginPath": "/prod",
+                            "CustomHeaders": {
+                                "Quantity": 0
+                            },
+                            "CustomOriginConfig": {
+                                "HTTPPort": 80,
+                                "HTTPSPort": 443,
+                                "OriginProtocolPolicy": "https-only",
+                                "OriginSslProtocols": {
+                                    "Quantity": 1,
+                                    "Items": [
+                                        "TLSv1.2"
+                                    ]
+                                },
+                                "OriginReadTimeout": 30,
+                                "OriginKeepaliveTimeout": 5
+                            },
+                            "ConnectionAttempts": 3,
+                            "ConnectionTimeout": 10,
+                            "OriginShield": {
+                                "Enabled": false
+                            },
+                            "OriginAccessControlId": ""
+                        },
+                        {
+                            "Id": "s3-frontend",
+                            "DomainName": "perumin-sala-frontend-app.s3.us-east-1.amazonaws.com",
+                            "OriginPath": "",
+                            "CustomHeaders": {
+                                "Quantity": 0
+                            },
+                            "S3OriginConfig": {
+                                "OriginAccessIdentity": "",
+                                "OriginReadTimeout": 30
+                            },
+                            "ConnectionAttempts": 3,
+                            "ConnectionTimeout": 10,
+                            "OriginShield": {
+                                "Enabled": false
+                            },
+                            "OriginAccessControlId": "E23BJ7X3G19LUK"
+                        }
+                    ]
+                },
+                "OriginGroups": {
+                    "Quantity": 0
+                },
+                "DefaultCacheBehavior": {
+                    "TargetOriginId": "s3-frontend",
+                    "TrustedSigners": {
+                        "Enabled": false,
+                        "Quantity": 0
+                    },
+                    "TrustedKeyGroups": {
+                        "Enabled": false,
+                        "Quantity": 0
+                    },
+                    "ViewerProtocolPolicy": "redirect-to-https",
+                    "AllowedMethods": {
+                        "Quantity": 3,
+                        "Items": [
+                            "HEAD",
+                            "GET",
+                            "OPTIONS"
+                        ],
+                        "CachedMethods": {
+                            "Quantity": 2,
+                            "Items": [
+                                "HEAD",
+                                "GET"
+                            ]
+                        }
+                    },
+                    "SmoothStreaming": false,
+                    "Compress": true,
+                    "LambdaFunctionAssociations": {
+                        "Quantity": 0
+                    },
+                    "FunctionAssociations": {
+                        "Quantity": 0
+                    },
+                    "FieldLevelEncryptionId": "",
+                    "GrpcConfig": {
+                        "Enabled": false
+                    },
+                    "ForwardedValues": {
+                        "QueryString": false,
+                        "Cookies": {
+                            "Forward": "none"
+                        },
+                        "Headers": {
+                            "Quantity": 0
+                        },
+                        "QueryStringCacheKeys": {
+                            "Quantity": 0
+                        }
+                    },
+                    "MinTTL": 0,
+                    "DefaultTTL": 86400,
+                    "MaxTTL": 31536000
+                },
+                "CacheBehaviors": {
+                    "Quantity": 1,
+                    "Items": [
+                        {
+                            "PathPattern": "api/*",
+                            "TargetOriginId": "api-origin",
+                            "TrustedSigners": {
+                                "Enabled": false,
+                                "Quantity": 0
+                            },
+                            "TrustedKeyGroups": {
+                                "Enabled": false,
+                                "Quantity": 0
+                            },
+                            "ViewerProtocolPolicy": "redirect-to-https",
+                            "AllowedMethods": {
+                                "Quantity": 7,
+                                "Items": [
+                                    "HEAD",
+                                    "DELETE",
+                                    "POST",
+                                    "GET",
+                                    "OPTIONS",
+                                    "PUT",
+                                    "PATCH"
+                                ],
+                                "CachedMethods": {
+                                    "Quantity": 2,
+                                    "Items": [
+                                        "HEAD",
+                                        "GET"
+                                    ]
+                                }
+                            },
+                            "SmoothStreaming": false,
+                            "Compress": true,
+                            "LambdaFunctionAssociations": {
+                                "Quantity": 0
+                            },
+                            "FunctionAssociations": {
+                                "Quantity": 0
+                            },
+                            "FieldLevelEncryptionId": "",
+                            "GrpcConfig": {
+                                "Enabled": false
+                            },
+                            "ForwardedValues": {
+                                "QueryString": true,
+                                "Cookies": {
+                                    "Forward": "none"
+                                },
+                                "Headers": {
+                                    "Quantity": 3,
+                                    "Items": [
+                                        "Authorization",
+                                        "x-staff-dni",
+                                        "x-room-id"
+                                    ]
+                                },
+                                "QueryStringCacheKeys": {
+                                    "Quantity": 0
+                                }
+                            },
+                            "MinTTL": 0,
+                            "DefaultTTL": 86400,
+                            "MaxTTL": 31536000
+                        }
+                    ]
+                },
+                "CustomErrorResponses": {
+                    "Quantity": 2,
+                    "Items": [
+                        {
+                            "ErrorCode": 403,
+                            "ResponsePagePath": "/index.html",
+                            "ResponseCode": "200",
+                            "ErrorCachingMinTTL": 5
+                        },
+                        {
+                            "ErrorCode": 404,
+                            "ResponsePagePath": "/index.html",
+                            "ResponseCode": "200",
+                            "ErrorCachingMinTTL": 5
+                        }
+                    ]
+                },
+                "Comment": "",
+                "PriceClass": "PriceClass_100",
+                "Enabled": true,
+                "ViewerCertificate": {
+                    "CloudFrontDefaultCertificate": false,
+                    "ACMCertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/016e9f0b-6c24-4f5d-bd70-9349d495d762",
+                    "SSLSupportMethod": "sni-only",
+                    "MinimumProtocolVersion": "TLSv1.3_2025",
+                    "Certificate": "arn:aws:acm:us-east-1:517839275515:certificate/016e9f0b-6c24-4f5d-bd70-9349d495d762",
+                    "CertificateSource": "acm"
+                },
+                "Restrictions": {
+                    "GeoRestriction": {
+                        "RestrictionType": "none",
+                        "Quantity": 0
+                    }
+                },
+                "WebACLId": "",
+                "HttpVersion": "HTTP2",
+                "IsIPV6Enabled": true,
+                "AliasICPRecordals": [
+                    {
+                        "CNAME": "salas.perumin.com",
+                        "ICPRecordalStatus": "APPROVED"
+                    }
+                ],
+                "Staging": false,
+                "ConnectionMode": "direct"
+            }
+        ]
+    }
+}
+
+===== WAF CLOUDFRONT =====
+{
+    "WebACLs": []
+}
+
+===== ACM CERTIFICATES us-east-1 =====
+{
+    "CertificateSummaryList": [
+        {
+            "CertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/016e9f0b-6c24-4f5d-bd70-9349d495d762",
+            "DomainName": "salas.perumin.com",
+            "SubjectAlternativeNameSummaries": [
+                "salas.perumin.com"
+            ],
+            "HasAdditionalSubjectAlternativeNames": false,
+            "Status": "ISSUED",
+            "Type": "AMAZON_ISSUED",
+            "KeyAlgorithm": "RSA-2048",
+            "KeyUsages": [
+                "DIGITAL_SIGNATURE",
+                "KEY_ENCIPHERMENT"
+            ],
+            "ExtendedKeyUsages": [
+                "TLS_WEB_SERVER_AUTHENTICATION"
+            ],
+            "ExportOption": "DISABLED",
+            "InUse": true,
+            "Exported": false,
+            "RenewalEligibility": "ELIGIBLE",
+            "NotBefore": "2025-09-19T19:00:00-05:00",
+            "NotAfter": "2026-10-19T18:59:59-05:00",
+            "CreatedAt": "2025-09-20T17:11:13.892000-05:00",
+            "IssuedAt": "2025-09-20T17:15:47.745000-05:00"
+        },
+        {
+            "CertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/172b69d1-9c2d-417a-b6c5-9f42543035f9",
+            "DomainName": "eventos.sistemasiimp.org.pe",
+            "SubjectAlternativeNameSummaries": [
+                "eventos.sistemasiimp.org.pe"
+            ],
+            "HasAdditionalSubjectAlternativeNames": false,
+            "Status": "ISSUED",
+            "Type": "AMAZON_ISSUED",
+            "KeyAlgorithm": "RSA-2048",
+            "KeyUsages": [
+                "DIGITAL_SIGNATURE",
+                "KEY_ENCIPHERMENT"
+            ],
+            "ExtendedKeyUsages": [
+                "TLS_WEB_SERVER_AUTHENTICATION"
+            ],
+            "ExportOption": "DISABLED",
+            "InUse": true,
+            "Exported": false,
+            "RenewalEligibility": "ELIGIBLE",
+            "NotBefore": "2026-04-09T19:00:00-05:00",
+            "NotAfter": "2026-10-24T18:59:59-05:00",
+            "CreatedAt": "2026-04-09T18:22:15.513000-05:00",
+            "IssuedAt": "2026-04-09T19:54:45.189000-05:00"
+        },
+        {
+            "CertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/326375be-dd65-4376-a7e5-cd534d334e89",
+            "DomainName": "qa-eventos.sistemasiimp.org.pe",
+            "SubjectAlternativeNameSummaries": [
+                "qa-eventos.sistemasiimp.org.pe"
+            ],
+            "HasAdditionalSubjectAlternativeNames": false,
+            "Status": "ISSUED",
+            "Type": "AMAZON_ISSUED",
+            "KeyAlgorithm": "RSA-2048",
+            "KeyUsages": [
+                "DIGITAL_SIGNATURE",
+                "KEY_ENCIPHERMENT"
+            ],
+            "ExtendedKeyUsages": [
+                "TLS_WEB_SERVER_AUTHENTICATION"
+            ],
+            "ExportOption": "DISABLED",
+            "InUse": false,
+            "Exported": false,
+            "RenewalEligibility": "INELIGIBLE",
+            "NotBefore": "2026-04-10T19:00:00-05:00",
+            "NotAfter": "2026-10-25T18:59:59-05:00",
+            "CreatedAt": "2026-04-10T21:00:58.610000-05:00",
+            "IssuedAt": "2026-04-10T21:03:29.829000-05:00"
+        },
+        {
+            "CertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/bf87ee41-1188-47a1-a001-4b7fac12b2c1",
+            "DomainName": "qa-eventos.sistemasiimp.org.pe",
+            "SubjectAlternativeNameSummaries": [
+                "qa-eventos.sistemasiimp.org.pe"
+            ],
+            "HasAdditionalSubjectAlternativeNames": false,
+            "Status": "ISSUED",
+            "Type": "AMAZON_ISSUED",
+            "KeyAlgorithm": "RSA-2048",
+            "KeyUsages": [
+                "DIGITAL_SIGNATURE",
+                "KEY_ENCIPHERMENT"
+            ],
+            "ExtendedKeyUsages": [
+                "TLS_WEB_SERVER_AUTHENTICATION"
+            ],
+            "ExportOption": "DISABLED",
+            "InUse": true,
+            "Exported": false,
+            "RenewalEligibility": "ELIGIBLE",
+            "NotBefore": "2026-04-15T19:00:00-05:00",
+            "NotAfter": "2026-10-30T18:59:59-05:00",
+            "CreatedAt": "2026-04-15T23:37:47.749000-05:00",
+            "IssuedAt": "2026-04-15T23:38:03.543000-05:00"
+        },
+        {
+            "CertificateArn": "arn:aws:acm:us-east-1:517839275515:certificate/9bef128f-d76f-46c5-ad0d-da3b655b7e44",
+            "DomainName": "eventos.sistemasiimp.org.pe",
+            "SubjectAlternativeNameSummaries": [
+                "eventos.sistemasiimp.org.pe"
+            ],
+            "HasAdditionalSubjectAlternativeNames": false,
+            "Status": "ISSUED",
+            "Type": "AMAZON_ISSUED",
+            "KeyAlgorithm": "RSA-2048",
+            "KeyUsages": [
+                "DIGITAL_SIGNATURE",
+                "KEY_ENCIPHERMENT"
+            ],
+            "ExtendedKeyUsages": [
+                "TLS_WEB_SERVER_AUTHENTICATION"
+            ],
+            "ExportOption": "DISABLED",
+            "InUse": false,
+            "Exported": false,
+            "RenewalEligibility": "INELIGIBLE",
+            "NotBefore": "2026-04-15T19:00:00-05:00",
+            "NotAfter": "2026-10-30T18:59:59-05:00",
+            "CreatedAt": "2026-04-16T10:00:16.820000-05:00",
+            "IssuedAt": "2026-04-16T10:00:34.594000-05:00"
+        }
+    ]
+}
+
+===== ACM CERTIFICATES sa-east-1 =====
+{
+    "CertificateSummaryList": []
+}
+

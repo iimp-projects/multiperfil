@@ -1,0 +1,51 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: 'standalone',
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+        port: '',
+        pathname: '/api/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'multiperfil-qa-files.s3.sa-east-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'multiperfil-prod-files.s3.sa-east-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/proxy/:path*",
+        // Proxy to External API
+        destination: `${process.env.NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443'}${process.env.NEXT_PUBLIC_API_BASE_PATH || '/rest'}/:path*`, 
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+

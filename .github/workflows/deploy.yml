@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm install --frozen-lockfile
+      - run: npm run lint -- --max-warnings 0
+
+  build-and-deploy:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+            echo "ECR_REPOSITORY_VAL=${{ secrets.PROD_ECR_REPOSITORY }}" >> $GITHUB_ENV
+          else
+            echo "ENV=qa" >> $GITHUB_ENV
+            echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.QA_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+            echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.QA_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+            echo "ECR_REPOSITORY_VAL=${{ secrets.QA_ECR_REPOSITORY }}" >> $GITHUB_ENV
+          fi
+          echo "AWS_REGION=sa-east-1" >> $GITHUB_ENV
+          echo "APP_NAME=multiperfil" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_VAL }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_VAL }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          IMAGE_TAG: ${{ github.ref_name }}
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG .
+          docker push ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service --cluster ${{ env.APP_NAME }}-${{ env.ENV }}-ecs-cluster --service ${{ env.APP_NAME }}-${{ env.ENV }}-service --force-new-deployment --region ${{ env.AWS_REGION }}

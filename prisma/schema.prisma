@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model UserSession {
+  id         String   @id @map("_id")
+  userKey    String
+  event      String
+  docType    String
+  document   String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  endedAt    DateTime?
+
+  userAgent  String?
+  ip         String?
+
+  @@index([userKey])
+  @@index([event, docType, document])
+}
+
+model UserSessionLock {
+  userKey         String   @id @map("_id")
+  activeSessionId String
+  updatedAt       DateTime @updatedAt
+}

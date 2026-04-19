@@ -1,0 +1,206 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+@import "@nrivera-iimp/ui-kit-iimp/styles.css";
+
+@theme {
+  --font-sans: var(--font-poppins);
+
+  @keyframes pulse {
+    0% {
+      transform: scale3d(0.7, 0.7, 1);
+      border-color: var(--pulse-color, rgba(34, 197, 94, 0.5));
+      opacity: 0.8;
+    }
+    50% {
+      border-color: var(--pulse-color, rgba(34, 197, 94, 0.3));
+      opacity: 0.5;
+    }
+    100% {
+      border-color: transparent;
+      transform: scale3d(1.5, 1.5, 1);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse-dot {
+    0% {
+      transform: scale(0.8);
+    }
+    50% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0.8);
+    }
+  }
+
+  --animate-pulse-refined: pulse 1.05s ease-out 1s infinite;
+  --animate-pulse-dot: pulse-dot 1.25s
+    cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+}
+
+/* Hide Google Translate Toolbar and UI elements */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame,
+iframe.skiptranslate,
+.goog-te-gadget-icon,
+img.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-te-balloon-frame,
+#google_translate_element2 {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+button,
+a {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Forzar escaneo de componentes del UI-Kit en Tailwind v4 */
+@source "../node_modules/@nrivera-iimp/ui-kit-iimp/dist";
+
+/* Tiptap Editor Styles */
+.tiptap {
+  outline: none !important;
+}
+
+.tiptap p {
+  margin-bottom: 0.5rem;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tiptap li {
+  margin-bottom: 0.25rem;
+}
+
+.tiptap strong {
+  font-weight: 700;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap u {
+  text-decoration: underline;
+}
+
+.tiptap h1 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+
+.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #334155;
+}
+
+.tiptap blockquote {
+  border-left: 4px solid #e2e8f0;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #64748b;
+  margin: 1.5rem 0;
+}
+
+.tiptap hr {
+  border: none;
+  border-top: 2px solid #f1f5f9;
+  margin: 2rem 0;
+}
+
+.tiptap [style*="text-align: center"] {
+  text-align: center;
+}
+
+.tiptap [style*="text-align: right"] {
+  text-align: right;
+}
+
+.tiptap [style*="text-align: justify"] {
+  text-align: justify;
+}
+
+/* Custom Elegant Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+/* Momentum scrolling for iOS/WebKit */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent layout shift during transitions */
+.no-scrollbar-gutter {
+  scrollbar-gutter: stable;
+}
+
+/* Better overscroll behavior for root/overlays */
+.overscroll-contain {
+  overscroll-behavior: contain;
+}

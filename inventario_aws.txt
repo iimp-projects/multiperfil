@@ -1,0 +1,38 @@
+===== ACCOUNT INFO =====
+{
+    "UserId": "AIDAXRENAIX5ZLJSWHH7S",
+    "Account": "517839275515",
+    "Arn": "arn:aws:iam::517839275515:user/multieventos-deployer"
+}
+\n===== REGIONS =====
+ap-south-1	eu-north-1	eu-west-3	eu-west-2	eu-west-1	ap-northeast-3	ap-northeast-2	ap-northeast-1	ca-central-1	sa-east-1	ap-southeast-1	ap-southeast-2	eu-central-1	us-east-1	us-east-2	us-west-1	us-west-2
+\n===== VPCS =====
+vpc-00619f54000651f0e	vpc-03d7f92978ad30ebd	vpc-0e07e474f07d11ba9	vpc-01315428936e1c846	vpc-0addc3ec2144d006e
+\n===== SUBNETS =====
+subnet-01b0fe3056831ee8b	subnet-0513087e77ceb37dc	subnet-00bb5943e07523bf7	subnet-076599149feb7c26a	subnet-0101f0f6c70544d09	subnet-06432eec35cd54515	subnet-0aa29f46adb290ce2	subnet-08d4684b8d32d849c	subnet-0d56b1b947d89dd8d	subnet-0b7df490c2420a62d	subnet-053bd35a455921abe	subnet-0e0156407ba2c72fc	subnet-02e7ef07276eaf283	subnet-0c7ba01558241ac96	subnet-0030617a556111156	subnet-0871b6bce322cd208	subnet-04bcb07151f6d6692	subnet-01e254a9daad1653f	subnet-09f59bb78e6df44b6	subnet-0de5665abd455cf77	subnet-02579ef8da98ac6da	subnet-00e82d9213e8bedc1
+\n===== EC2 INSTANCES =====
+i-0a142d73fd029c23a	i-02e5a6a650713e5e0
+\n===== LOAD BALANCERS =====
+multieventos-prod	multieventos-qa
+\n===== S3 BUCKETS =====
+2026-04-09 23:19:14 app-multieventos-qr
+2025-09-20 16:59:18 aws-sam-cli-managed-default-samclisourcebucket-klrylkbr45ie
+2026-04-10 21:08:39 multieventos-qa-logos
+2025-09-20 17:02:21 perumin-sala-frontend-app
+2025-09-22 18:33:19 perumin-sala-reportes
+\n===== ROUTE53 HOSTED ZONES =====
+perumin.com.	sistemasiimp.org.pe.	convencionminera.com.	wmc2026.org.
+\n===== CLOUDFRONT =====
+dt0i4n0y3og17.cloudfront.net
+\n===== WAF =====
+\n===== IAM USERS =====
+aleon	multieventos-deployer
+\n===== IAM ROLES =====
+app-sala-check-perumin-AccessLogsFunctionRole-dqb6AWoXxfXK	AWSBackupDefaultServiceRole	AWSServiceRoleForAPIGateway	AWSServiceRoleForApplicationAutoScaling_ECSService	AWSServiceRoleForBackup	AWSServiceRoleForCloudWatchEvents	AWSServiceRoleForECS	AWSServiceRoleForElasticLoadBalancing	AWSServiceRoleForRDS	AWSServiceRoleForResourceExplorer	AWSServiceRoleForServiceQuotas	AWSServiceRoleForSMSVoice	AWSServiceRoleForSupport	AWSServiceRoleForTrustedAdvisor	EC2-CloudWatchAgent-Role	EC2-SSM-CloudWatchAgent-Role	multieventos-prod-backup-role	multieventos-prod-ecs-exec-role	multieventos-prod-ecs-task-role	multieventos-prod-gitlab-deploy	multieventos-prod-mongodb-role	multieventos-qa-backup-role	multieventos-qa-ecs-exec-role	multieventos-qa-ecs-task-role	multieventos-qa-gitlab-deploy	multieventos-qa-mongodb-role	rds-monitoring-role	reports_export_daily-role-sma4xt0l
+\n===== ECS CLUSTERS =====
+arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-qa-cluster	arn:aws:ecs:us-east-1:517839275515:cluster/multieventos-prod-cluster
+\n===== RDS =====
+\n===== SECURITY GROUPS =====
+multieventos-qa-alb-sg	multieventos-prod-ecs-sg	default	multieventos-qa-mongodb-sg	default	multieventos-prod-alb-sg	default	default	default	multieventos-qa-ecs-sg	multieventos-prod-mongodb-sg
+\n===== EBS VOLUMES =====
+vol-03f69f84c3ce51adf	vol-0650f9f84e2b872ac	vol-024cb430654c6d576	vol-0c9e7662923ed02ce	vol-09e0dde5e8de40e7f	vol-0a37d13bfbc705869	vol-09b6b40c64633af94	vol-0cae4bdb8f46d7697	vol-01530688e125db8e3	vol-087c7e8507df6b077	vol-0b8a427eb40ef60d8	vol-096cb1e60ce15b111
