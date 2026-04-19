@@ -33,13 +33,11 @@ variable "vpc_cidr" {
 variable "db_user" {
   type      = string
   sensitive = true
-  default   = "multiuser"
 }
 
 variable "db_pass" {
   type      = string
   sensitive = true
-  default   = "multiperfil2026"
 }
 
 variable "app_version" {
@@ -49,18 +47,27 @@ variable "app_version" {
 
 variable "api_base_path" {
   type    = string
-  default = "/rest"
 }
 
 variable "api_domain" {
   type    = string
-  default = "https://secure2.iimp.org:8443"
 }
 
 variable "next_public_api_key" {
   type      = string
   sensitive = true
-  default   = ""
+}
+
+variable "api_base_path_qa" {
+  description = "NEXT_PUBLIC_API_BASE_PATH para QA"
+  type        = string
+  default     = "/KBServiciosPruebaIIMPJavaEnvironment/rest"
+}
+
+variable "api_base_path_prod" {
+  description = "NEXT_PUBLIC_API_BASE_PATH para Prod"
+  type        = string
+  default     = "/KBServiciosIIMPJavaEnvironment/rest"
 }
 
 # --- SMTP ---

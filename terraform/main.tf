@@ -57,9 +57,9 @@ module "backup" {
 locals {
   app_environment = [
     { name = "NEXT_PUBLIC_APP_VERSION", value = var.app_version },
-    { name = "NEXT_PUBLIC_API_BASE_PATH", value = local.env == "prod" ? "/KBServiciosIIMPJavaEnvironment/rest" : "/KBServiciosPruebaIIMPJavaEnvironment/rest" },
-    { name = "NEXT_PUBLIC_API_DOMAIN", value = "https://secure2.iimp.org:8443" },
-    { name = "NEXT_PUBLIC_API_KEY", value = "NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" },
+    { name = "NEXT_PUBLIC_API_BASE_PATH", value = local.env == "prod" ? var.api_base_path_prod : var.api_base_path_qa },
+    { name = "NEXT_PUBLIC_API_DOMAIN", value = var.api_domain },
+    { name = "NEXT_PUBLIC_API_KEY", value = var.next_public_api_key },
     { name = "SMTP_FROM", value = var.smtp_from },
     { name = "SMTP_HOST", value = var.smtp_host },
     { name = "SMTP_USER", value = var.smtp_user },

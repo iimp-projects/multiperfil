@@ -3,6 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main, develop ]
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -14,7 +15,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm install --frozen-lockfile
+      - run: npm ci
       - run: npm run lint -- --max-warnings 0
 
   build-and-deploy:
@@ -30,15 +31,19 @@ jobs:
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.PROD_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" >> $GITHUB_ENV
-            echo "API_BASE_PATH=/KBServiciosIIMPJavaEnvironment/rest" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.PROD_NEXT_PUBLIC_API_KEY || vars.PROD_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_BASE_PATH_VAL=${{ vars.PROD_NEXT_PUBLIC_API_BASE_PATH || secrets.PROD_NEXT_PUBLIC_API_BASE_PATH || '/KBServiciosIIMPJavaEnvironment/rest' }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_DOMAIN_VAL=${{ vars.PROD_NEXT_PUBLIC_API_DOMAIN || secrets.PROD_NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443' }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_APP_VERSION_VAL=${{ vars.PROD_NEXT_PUBLIC_APP_VERSION || secrets.PROD_NEXT_PUBLIC_APP_VERSION || 'V1' }}" >> $GITHUB_ENV
           else
             echo "ENV=qa" >> $GITHUB_ENV
             echo "AWS_ACCESS_KEY_ID_VAL=${{ secrets.QA_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
             echo "AWS_SECRET_ACCESS_KEY_VAL=${{ secrets.QA_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
             echo "ECR_REPOSITORY_VAL=${{ secrets.QA_ECR_REPOSITORY }}" >> $GITHUB_ENV
-            echo "NEXT_PUBLIC_API_KEY_VAL=NqP4ymWMM6Qyovruc6qEL4xBsyvnHJekQI4Xjwp3XRpcW3qSRxSMeUfChPdi8iYK" >> $GITHUB_ENV
-            echo "API_BASE_PATH=/KBServiciosPruebaIIMPJavaEnvironment/rest" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_KEY_VAL=${{ secrets.QA_NEXT_PUBLIC_API_KEY || vars.QA_NEXT_PUBLIC_API_KEY }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_BASE_PATH_VAL=${{ vars.QA_NEXT_PUBLIC_API_BASE_PATH || secrets.QA_NEXT_PUBLIC_API_BASE_PATH || '/KBServiciosPruebaIIMPJavaEnvironment/rest' }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_API_DOMAIN_VAL=${{ vars.QA_NEXT_PUBLIC_API_DOMAIN || secrets.QA_NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443' }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_APP_VERSION_VAL=${{ vars.QA_NEXT_PUBLIC_APP_VERSION || secrets.QA_NEXT_PUBLIC_APP_VERSION || 'V1' }}" >> $GITHUB_ENV
           fi
           echo "AWS_REGION=sa-east-1" >> $GITHUB_ENV
           echo "APP_NAME=multiperfil" >> $GITHUB_ENV
@@ -60,8 +65,9 @@ jobs:
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_API_KEY=${{ env.NEXT_PUBLIC_API_KEY_VAL }} \
-            --build-arg NEXT_PUBLIC_API_BASE_PATH=${{ env.API_BASE_PATH }} \
-            --build-arg NEXT_PUBLIC_API_DOMAIN=https://secure2.iimp.org:8443 \
+            --build-arg NEXT_PUBLIC_API_BASE_PATH=${{ env.NEXT_PUBLIC_API_BASE_PATH_VAL }} \
+            --build-arg NEXT_PUBLIC_API_DOMAIN=${{ env.NEXT_PUBLIC_API_DOMAIN_VAL }} \
+            --build-arg NEXT_PUBLIC_APP_VERSION=${{ env.NEXT_PUBLIC_APP_VERSION_VAL }} \
             -t ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG .
           docker push ${{ env.ECR_REPOSITORY_VAL }}:$IMAGE_TAG
 
