@@ -112,19 +112,20 @@ function getIp(req: NextRequest) {
  * If it's an object (but not an array), it wraps it in an array.
  * If it's null/undefined, it returns an empty array.
  */
-function normalizeArray<T>(data: any): T[] {
-  if (!data) return [];
-  if (Array.isArray(data)) return data;
+function normalizeArray<T>(
+  data: T | T[] | Record<string, unknown> | null | undefined,
+): T[] {
+  if (data == null) return [];
+  if (Array.isArray(data)) return data as T[];
   if (typeof data === "object") {
-    // If it's an empty object, return empty array. 
+    // If it's an empty object, return empty array.
     // Otherwise wrap the single object in an array (common Genexus behavior)
-    return Object.keys(data).length === 0 ? [] : [data];
+    return Object.keys(data).length === 0 ? [] : [data as T];
   }
   return [];
 }
 
-function normalizeUser(user: any): User {
-  if (!user) return user;
+function normalizeUser(user: User): User {
   return {
     ...user,
     qr: normalizeArray(user.qr),
