@@ -94,9 +94,12 @@ export default function MailboxView() {
     switch (vertical) {
       case "gess":
         return "/logos/favicon-gess.png";
+      case "perumin":
+        return "/logos/favicon-perumin.png";
       case "wmc":
         return "/logos/favicon-wmc.png";
       case "proexplo":
+        return "/logos/favicon-proexplo.png";
       default:
         return "/logos/favicon-iimp.png";
     }

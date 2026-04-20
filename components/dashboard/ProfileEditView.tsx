@@ -318,6 +318,13 @@ export default function ProfileEditView() {
     correoElectronico: "",
   });
 
+  const [errors, setErrors] = React.useState({
+    nombreCompleto: "",
+    numeroTelefono: "",
+    cargoProfesional: "",
+    correoElectronico: "",
+  });
+
   const { vertical } = useVertical();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -346,6 +353,28 @@ export default function ProfileEditView() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Real-time validation
+    let error = "";
+    if (name === "nombreCompleto") {
+      if (value && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+        error = "Sólo se permiten letras y espacios";
+      }
+    } else if (name === "numeroTelefono") {
+      if (value && !/^\+?[0-9\s]*$/.test(value)) {
+        error = "Sólo se permiten números y el símbolo '+'";
+      }
+    } else if (name === "cargoProfesional") {
+      if (value && !/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]*$/.test(value)) {
+        error = "Sólo se permiten letras, números y espacios";
+      }
+    } else if (name === "correoElectronico") {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        error = "Formato de correo electrónico inválido";
+      }
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (newPictureKey?: string) => {
@@ -355,6 +384,12 @@ export default function ProfileEditView() {
     if (!userIdentifier) {
       toast.error("No se pudo identificar al participante para guardar los cambios");
       setIsSubmitting(false);
+      return;
+    }
+
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+    if (hasErrors) {
+      toast.error("Por favor corrija los errores en el formulario antes de guardar");
       return;
     }
 
@@ -573,9 +608,16 @@ export default function ProfileEditView() {
                       name="nombreCompleto"
                       value={formData.nombreCompleto}
                       onChange={handleInputChange}
-                      className="pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!"
+                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! ${
+                        errors.nombreCompleto ? "border-red-500 ring-1 ring-red-500/10" : ""
+                      }`}
                     />
                   </div>
+                  {errors.nombreCompleto && (
+                    <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 uppercase tracking-wider">
+                      {errors.nombreCompleto}
+                    </p>
+                  )}
                 </Field>
 
                 <Field>
@@ -591,9 +633,16 @@ export default function ProfileEditView() {
                       name="numeroTelefono"
                       value={formData.numeroTelefono}
                       onChange={handleInputChange}
-                      className="pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!!"
+                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!! ${
+                        errors.numeroTelefono ? "border-red-500 ring-1 ring-red-500/10" : ""
+                      }`}
                     />
                   </div>
+                  {errors.numeroTelefono && (
+                    <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 uppercase tracking-wider">
+                      {errors.numeroTelefono}
+                    </p>
+                  )}
                 </Field>
 
                 <Field>
@@ -609,9 +658,16 @@ export default function ProfileEditView() {
                       name="cargoProfesional"
                       value={formData.cargoProfesional}
                       onChange={handleInputChange}
-                      className="pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!!"
+                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!! ${
+                        errors.cargoProfesional ? "border-red-500 ring-1 ring-red-500/10" : ""
+                      }`}
                     />
                   </div>
+                  {errors.cargoProfesional && (
+                    <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 uppercase tracking-wider">
+                      {errors.cargoProfesional}
+                    </p>
+                  )}
                 </Field>
 
                 <Field className="md:col-span-1">
@@ -627,9 +683,16 @@ export default function ProfileEditView() {
                       name="correoElectronico"
                       value={formData.correoElectronico}
                       onChange={handleInputChange}
-                      className="pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!"
+                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! ${
+                        errors.correoElectronico ? "border-red-500 ring-1 ring-red-500/10" : ""
+                      }`}
                     />
                   </div>
+                  {errors.correoElectronico && (
+                    <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1 uppercase tracking-wider">
+                      {errors.correoElectronico}
+                    </p>
+                  )}
                 </Field>
 
                 <Field className="md:col-span-2">

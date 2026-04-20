@@ -274,22 +274,25 @@ export default function DashboardLayout({
   const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const kickedRef = useRef(false);
 
-  const endSession = useCallback(async (reason?: string) => {
-    if (kickedRef.current) return;
-    kickedRef.current = true;
+  const endSession = useCallback(
+    async (reason?: string) => {
+      if (kickedRef.current) return;
+      kickedRef.current = true;
 
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore
-    }
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch {
+        // ignore
+      }
 
-    logout();
-    if (reason) {
-      toast.error("Sesión finalizada", { description: reason });
-    }
-    router.push("/");
-  }, [logout, router]);
+      logout();
+      if (reason) {
+        toast.error("Sesión finalizada", { description: reason });
+      }
+      router.push("/");
+    },
+    [logout, router],
+  );
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -304,9 +307,10 @@ export default function DashboardLayout({
         const res = await fetch("/api/auth/validate", { cache: "no-store" });
         if (res.ok) return;
 
-        const payload = (await res.json().catch(() => null)) as
-          | { code?: string; message?: string }
-          | null;
+        const payload = (await res.json().catch(() => null)) as {
+          code?: string;
+          message?: string;
+        } | null;
 
         if (payload?.code === "SESSION_REPLACED") {
           await endSession(
@@ -338,13 +342,14 @@ export default function DashboardLayout({
     );
   }, [user]);
 
-
   const getLogo = () => {
     switch (vertical) {
       case "gess":
         return "/logos/logo-gess.png";
       case "wmc":
         return "/logos/logo-wmc.png";
+      case "perumin":
+        return "/logos/logo-perumin.png";
       case "proexplo":
         return "/logos/logo-iimp.png";
       default:
@@ -393,11 +398,13 @@ export default function DashboardLayout({
       icon: <Mail size={20} />,
       label: "Mi buzón",
       href: "/dashboard/mailbox",
+      hidden: true,
     },
     {
       icon: <MapIcon size={20} />,
       label: "Mapa del evento",
       ...mapLink,
+      hidden: true,
     },
     {
       icon: <Radio size={20} className="text-red-500" />,
@@ -411,6 +418,7 @@ export default function DashboardLayout({
         </div>
       ),
       href: "/dashboard/streaming",
+      hidden: true,
     },
   ];
 
@@ -424,6 +432,7 @@ export default function DashboardLayout({
       icon: <Users size={20} />,
       label: "Networking",
       href: "/dashboard/networking",
+      hidden: true,
     },
   ];
 
@@ -432,6 +441,7 @@ export default function DashboardLayout({
       icon: <ClipboardList size={20} />,
       label: "Encuesta de satisfacción",
       href: "/dashboard/survey",
+      hidden: true,
     },
     {
       icon: <Settings size={20} />,
@@ -481,14 +491,16 @@ export default function DashboardLayout({
                 Menú Principal
               </span>
             </div>
-            {navItems.map((item) => (
-              <SidebarItem
-                key={item.href}
-                {...item}
-                active={pathname === item.href}
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            ))}
+            {navItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <SidebarItem
+                  key={item.href}
+                  {...item}
+                  active={pathname === item.href}
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+              ))}
 
             {/* Networking */}
             <div className="pt-8 px-2 mb-4">
@@ -496,32 +508,36 @@ export default function DashboardLayout({
                 Networking
               </span>
             </div>
-            {networkingItems.map((item) => (
-              <SidebarItem
-                key={item.href}
-                {...item}
-                active={pathname === item.href}
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            ))}
+            {networkingItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <SidebarItem
+                  key={item.href}
+                  {...item}
+                  active={pathname === item.href}
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+              ))}
 
             <div className="pt-8 px-2 mb-4">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Sistema
               </span>
             </div>
-            {secondaryItems.map((item) => (
-              <SidebarItem
-                key={item.href}
-                {...item}
-                active={pathname === item.href}
-                onClick={() => setIsSidebarOpen(false)}
-              />
-            ))}
+            {secondaryItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <SidebarItem
+                  key={item.href}
+                  {...item}
+                  active={pathname === item.href}
+                  onClick={() => setIsSidebarOpen(false)}
+                />
+              ))}
 
             {/* Bottom items moved inside scroll to ensure visibility on small screens */}
             <div className="mt-8 pt-6 border-t border-slate-100 pb-6">
-              <Link
+              {/* <Link
                 href="/support"
                 onClick={() => setIsSidebarOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors group"
@@ -531,7 +547,7 @@ export default function DashboardLayout({
                   className="text-slate-400 group-hover:text-primary transition-colors"
                 />
                 <span className="text-sm font-semibold">Soporte 2026</span>
-              </Link>
+              </Link> */}
 
               <button
                 onClick={() => {
@@ -565,7 +581,8 @@ export default function DashboardLayout({
               <span className="text-slate-900 font-black text-lg tracking-tight capitalize">
                 {(() => {
                   const segments = pathname.split("/").filter(Boolean);
-                  if (segments.length === 1 && segments[0] === "dashboard") return "Dashboard";
+                  if (segments.length === 1 && segments[0] === "dashboard")
+                    return "Dashboard";
                   const lastSegment = segments[segments.length - 1];
                   const routeMap: Record<string, string> = {
                     vouchers: "Pagos",
@@ -656,14 +673,14 @@ export default function DashboardLayout({
 
             <button
               onClick={() => setIsNotificationsOpen(true)}
-              className="cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors h-auto bg-transparent border-none"
+              className="!hidden cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors h-auto bg-transparent border-none"
             >
               <Bell size={20} />
               <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
             </button>
             <Link
               href="/dashboard/mailbox"
-              className="cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+              className="!hidden cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
             >
               <Mail size={20} />
               <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
@@ -680,14 +697,14 @@ export default function DashboardLayout({
                   {user?.cargo || "Inscrito"}
                 </p>
               </div>
-              <div 
+              <div
                 key={user?.picture || "no-picture"}
                 className="w-10 h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center text-slate-600 font-bold overflow-hidden ring-2 ring-primary/10"
               >
                 {user?.picture ? (
-                  <Image 
-                    src={getFullImageUrl(user.picture) || ""} 
-                    alt="User" 
+                  <Image
+                    src={getFullImageUrl(user.picture) || ""}
+                    alt="User"
                     width={40}
                     height={40}
                     className="w-full h-full object-cover"
@@ -843,7 +860,9 @@ export default function DashboardLayout({
                   >
                     <div className="flex gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 shrink-0 group-hover:scale-110 transition-transform">
-                        {notif.icon || <Bell size={18} className="text-primary" />}
+                        {notif.icon || (
+                          <Bell size={18} className="text-primary" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
@@ -866,36 +885,54 @@ export default function DashboardLayout({
                 ))}
               </div>
             )}
-            
+
             {activeTab === "events" && (
-               <div className="space-y-6">
-                 {mockEvents.map((event) => (
-                   <div key={event.id} className="relative pl-6 border-l-2 border-slate-100">
-                     <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${
-                       event.variant === 'success' ? 'bg-emerald-500' : 
-                       event.variant === 'warning' ? 'bg-amber-500' :
-                       event.variant === 'error' ? 'bg-red-500' : 'bg-primary'
-                     }`} />
-                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                       <h4 className="font-bold text-slate-900">{event.title}</h4>
-                       <div className="flex items-center gap-4 mt-2">
-                         <span className="text-xs text-slate-400 font-medium">{event.time}</span>
-                         <span className="text-xs text-slate-400 font-medium">{event.location}</span>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
+              <div className="space-y-6">
+                {mockEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className="relative pl-6 border-l-2 border-slate-100"
+                  >
+                    <div
+                      className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${
+                        event.variant === "success"
+                          ? "bg-emerald-500"
+                          : event.variant === "warning"
+                            ? "bg-amber-500"
+                            : event.variant === "error"
+                              ? "bg-red-500"
+                              : "bg-primary"
+                      }`}
+                    />
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                      <h4 className="font-bold text-slate-900">
+                        {event.title}
+                      </h4>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="text-xs text-slate-400 font-medium">
+                          {event.time}
+                        </span>
+                        <span className="text-xs text-slate-400 font-medium">
+                          {event.location}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
       </aside>
 
-      <Dialog open={!!modalNotification} onOpenChange={() => setModalNotification(null)}>
+      <Dialog
+        open={!!modalNotification}
+        onOpenChange={() => setModalNotification(null)}
+      >
         <DialogContent className="max-w-2xl rounded-[2.5rem] p-0 overflow-hidden border-none">
           <div className="relative p-10 space-y-6">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
-            
+
             {modalNotification && (
               <>
                 <div className="flex items-center gap-4">
@@ -912,9 +949,14 @@ export default function DashboardLayout({
                   </div>
                 </div>
 
-                <div 
+                <div
                   className="text-slate-600 leading-relaxed font-medium text-lg"
-                  dangerouslySetInnerHTML={{ __html: modalNotification.htmlContent || modalNotification.description || "" }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      modalNotification.htmlContent ||
+                      modalNotification.description ||
+                      "",
+                  }}
                 />
 
                 <div className="flex justify-end pt-4">
