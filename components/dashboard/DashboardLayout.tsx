@@ -723,55 +723,57 @@ export default function DashboardLayout({
         {/* Page Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-10 mx-auto w-full max-w-7xl">
           {/* Premium Streaming Alert */}
-          <AnimatePresence>
-            {isPaidUser && pathname === "/dashboard" && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-8 relative overflow-hidden group"
-              >
-                <Link href="/dashboard/streaming">
-                  <div className="relative overflow-hidden rounded-3xl p-6 bg-slate-900 shadow-2xl shadow-slate-200 group-hover:scale-[1.01] transition-all duration-500">
-                    {/* Decorative Background Elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-primary/30 transition-colors" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
+          <div className="!hidden">
+            <AnimatePresence>
+              {isPaidUser && pathname === "/dashboard" && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-8 relative overflow-hidden group"
+                >
+                  <Link href="/dashboard/streaming">
+                    <div className="relative overflow-hidden rounded-3xl p-6 bg-slate-900 shadow-2xl shadow-slate-200 group-hover:scale-[1.01] transition-all duration-500">
+                      {/* Decorative Background Elements */}
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-primary/30 transition-colors" />
+                      <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
-                    <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
-                      <div className="flex md:flex-row flex-col items-center gap-5">
-                        <div className="min-w-14! h-14  backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-xl group-hover:rotate-6 transition-transform !bg-white">
-                          <Radio
-                            className="text-red-500 animate-pulse"
-                            size={28}
-                          />
+                      <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex md:flex-row flex-col items-center gap-5">
+                          <div className="min-w-14! h-14  backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-xl group-hover:rotate-6 transition-transform !bg-white">
+                            <Radio
+                              className="text-red-500 animate-pulse"
+                              size={28}
+                            />
+                          </div>
+                          <div className="space-y-1 text-center md:text-left">
+                            <h3 className="text-lg font-black text-white tracking-tight uppercase">
+                              ¡Acceso Anticipado Disponible!
+                            </h3>
+                            <p className="text-slate-300 text-sm font-medium leading-relaxed">
+                              Felicitaciones, estás al día en tus pagos y puedes{" "}
+                              <span className="text-white font-bold underline decoration-primary decoration-2 underline-offset-4">
+                                ver el evento antes que muchos
+                              </span>
+                              .
+                            </p>
+                          </div>
                         </div>
-                        <div className="space-y-1 text-center md:text-left">
-                          <h3 className="text-lg font-black text-white tracking-tight uppercase">
-                            ¡Acceso Anticipado Disponible!
-                          </h3>
-                          <p className="text-slate-300 text-sm font-medium leading-relaxed">
-                            Felicitaciones, estás al día en tus pagos y puedes{" "}
-                            <span className="text-white font-bold underline decoration-primary decoration-2 underline-offset-4">
-                              ver el evento antes que muchos
-                            </span>
-                            .
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center gap-4">
-                        <span className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          Click para ingresar
-                        </span>
-                        <div className="px-6 py-3 bg-white text-slate-950 font-black rounded-xl text-xs uppercase tracking-widest shadow-lg group-hover:bg-primary group-hover:text-white transition-all">
-                          Streaming Live
+                        <div className="flex items-center gap-4">
+                          <span className="hidden md:block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Click para ingresar
+                          </span>
+                          <div className="px-6 py-3 bg-white text-slate-950 font-black rounded-xl text-xs uppercase tracking-widest shadow-lg group-hover:bg-primary group-hover:text-white transition-all">
+                            Streaming Live
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {children}
         </main>
