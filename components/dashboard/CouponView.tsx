@@ -284,7 +284,7 @@ export default function CouponView() {
 
       {/* ── Content List ── */}
       <div className="space-y-12">
-        {user?.cupon &&
+        {Array.isArray(user?.cupon) &&
         user.cupon.filter(
           (c) =>
             c.vertical.toUpperCase() === `${vertical.toUpperCase()}${yearSuffix}` ||

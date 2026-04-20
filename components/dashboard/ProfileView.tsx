@@ -71,13 +71,15 @@ const SectionTitle = ({
 export default function ProfileView() {
   const { user } = useAuthStore();
   const { vertical } = useVertical();
-  const vouchers = user?.comprobantes || [];
+  const vouchers = Array.isArray(user?.comprobantes) ? user.comprobantes : [];
 
   // Logic: Find the correct QR for the current vertical (e.g. "PROEXPLO26")
   const suffix = new Date().getFullYear().toString().slice(-2);
   const currentVerticalKey = `${vertical.toUpperCase()}${suffix}`;
-  const qrEntry = user?.qr?.find((q) => q.vertical.toUpperCase() === currentVerticalKey) || 
-                   user?.qr?.find((q) => q.vertical.toUpperCase().startsWith(vertical.toUpperCase()));
+  
+  const qrArray = Array.isArray(user?.qr) ? user.qr : [];
+  const qrEntry = qrArray.find((q) => q.vertical.toUpperCase() === currentVerticalKey) || 
+                   qrArray.find((q) => q.vertical.toUpperCase().startsWith(vertical.toUpperCase()));
   
   const qrValue = qrEntry?.codigo;
 

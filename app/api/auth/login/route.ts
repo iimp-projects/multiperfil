@@ -107,6 +107,32 @@ function getIp(req: NextRequest) {
   return req.headers.get("x-real-ip") || null;
 }
 
+/**
+ * Ensures that a field is always an array.
+ * If it's an object (but not an array), it wraps it in an array.
+ * If it's null/undefined, it returns an empty array.
+ */
+function normalizeArray<T>(data: any): T[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (typeof data === "object") {
+    // If it's an empty object, return empty array. 
+    // Otherwise wrap the single object in an array (common Genexus behavior)
+    return Object.keys(data).length === 0 ? [] : [data];
+  }
+  return [];
+}
+
+function normalizeUser(user: any): User {
+  if (!user) return user;
+  return {
+    ...user,
+    qr: normalizeArray(user.qr),
+    cupon: normalizeArray(user.cupon),
+    comprobantes: normalizeArray(user.comprobantes),
+  };
+}
+
 async function authenticateWithGenexus(
   request: LoginRequest,
 ): Promise<ApiResponse<User>> {
@@ -184,6 +210,9 @@ export async function POST(req: NextRequest) {
       console.warn(`[LOGIN] Authentication failed for ${request.document}: ${auth.message}`);
       return NextResponse.json(auth, { status: 401 });
     }
+
+    // Normalize user data to ensure arrays are actually arrays
+    auth.data = normalizeUser(auth.data);
 
     // Ensure the user object has the identifier (siecode) for subsequent service calls
     if (!auth.data.siecode) {

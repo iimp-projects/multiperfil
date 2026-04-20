@@ -54,7 +54,7 @@ export default function VouchersView() {
   };
 
   // Logic: User comprobantes from store
-  const vouchers = user?.comprobantes || [];
+  const vouchers = Array.isArray(user?.comprobantes) ? user.comprobantes : [];
 
   // Filtering
   const filteredVouchers = vouchers.filter((v) => {
