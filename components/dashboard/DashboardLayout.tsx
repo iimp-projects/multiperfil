@@ -24,6 +24,8 @@ import {
   User,
   Ticket,
   Mail,
+  ArrowLeftRight,
+  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -35,6 +37,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@nrivera-iimp/ui-kit-iimp";
+import type { Vertical } from "@nrivera-iimp/ui-kit-iimp";
 import { VOUCHER_STATUS } from "@/types/auth";
 import { getFullImageUrl } from "@/lib/s3-utils";
 
@@ -240,10 +243,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { vertical } = useVertical();
+  const { vertical, setVertical } = useVertical();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [isVerticalSwitcherOpen, setIsVerticalSwitcherOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("notifications");
   const [notifications, setNotifications] =
     useState<AppNotification[]>(mockNotifications);
@@ -458,7 +462,7 @@ export default function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed  inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
@@ -548,6 +552,21 @@ export default function DashboardLayout({
                 <span className="text-sm font-semibold">Soporte 2026</span>
               </Link> */}
 
+              {user?.qr && user.qr.length >= 1 && (
+                <button
+                  onClick={() => {
+                    setIsVerticalSwitcherOpen(true);
+                  }}
+                  className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors font-semibold text-sm h-auto bg-transparent border-none cursor-pointer group"
+                >
+                  <ArrowLeftRight
+                    size={20}
+                    className="text-slate-400 group-hover:text-primary transition-colors"
+                  />
+                  Cambiar vertical
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setIsSidebarOpen(false);
@@ -576,12 +595,12 @@ export default function DashboardLayout({
             </button>
 
             {/* Mobile Title */}
-            <div className="lg:hidden ml-1">
+            <div className="lg:hidden ml-1 !hidden">
               <span className="text-slate-900 font-black text-lg tracking-tight capitalize">
                 {(() => {
                   const segments = pathname.split("/").filter(Boolean);
                   if (segments.length === 1 && segments[0] === "dashboard")
-                    return "Dashboard";
+                    return "";
                   const lastSegment = segments[segments.length - 1];
                   const routeMap: Record<string, string> = {
                     vouchers: "Pagos",
@@ -970,6 +989,136 @@ export default function DashboardLayout({
                 </div>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vertical Switcher Modal */}
+      <Dialog
+        open={isVerticalSwitcherOpen}
+        onOpenChange={setIsVerticalSwitcherOpen}
+      >
+        <DialogContent className="max-w-md w-[92vw] sm:w-full rounded-3xl p-0 overflow-hidden border border-slate-100 shadow-xl">
+          <div className="relative p-6 sm:p-8 space-y-6 bg-white">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 shrink-0 border border-slate-100">
+                <ArrowLeftRight size={18} />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-slate-900 tracking-tight">
+                  Cambiar vertical
+                </DialogTitle>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Selecciona el entorno al que deseas acceder
+                </p>
+              </div>
+            </div>
+
+            {/* Vertical cards */}
+            <div className="flex flex-col gap-2.5 max-h-[55vh] overflow-y-auto custom-scrollbar pr-1">
+              {(user?.qr ?? []).map((qrItem) => {
+                // El valor del API puede venir como "PROEXPLO26", "gess", "WMC2026", etc.
+                // Lo normalizamos al slug que entiende el ui-kit.
+                const getVerticalSlug = (raw: string): Vertical => {
+                  const lower = raw.toLowerCase();
+                  if (lower.includes("proexplo")) return "proexplo";
+                  if (lower.includes("gess")) return "gess";
+                  if (lower.includes("wmc")) return "wmc";
+                  if (lower.includes("perumin")) return "perumin";
+                  return "proexplo";
+                };
+
+                const slug = getVerticalSlug(qrItem.vertical);
+                const isActive = vertical === slug;
+
+                const verticalMeta: Record<
+                  Vertical,
+                  { label: string; logo: string }
+                > = {
+                  proexplo: {
+                    label: "Proexplo",
+                    logo: "/logos/favicon-iimp.png",
+                  },
+                  gess: {
+                    label: "GESS",
+                    logo: "/logos/favicon-gess.png",
+                  },
+                  wmc: {
+                    label: "WMC",
+                    logo: "/logos/favicon-wmc.png",
+                  },
+                  perumin: {
+                    label: "Perumin",
+                    logo: "/logos/favicon-perumin.png",
+                  },
+                };
+
+                const meta = verticalMeta[slug];
+
+                // Extraemos el año del string (ej. "PROEXPLO26" -> "26" -> "2026")
+                const yearMatch = qrItem.vertical.match(/\d+/);
+                const year = yearMatch
+                  ? yearMatch[0].length === 2
+                    ? `20${yearMatch[0]}`
+                    : yearMatch[0]
+                  : "";
+                const displayLabel = year
+                  ? `${meta.label} - ${year}`
+                  : meta.label;
+
+                return (
+                  <button
+                    key={slug}
+                    onClick={() => {
+                      setVertical(slug);
+                      setIsVerticalSwitcherOpen(false);
+                      setIsSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl border transition-all duration-200 cursor-pointer h-auto text-left group ${
+                      isActive
+                        ? "border-primary bg-primary/5"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    {/* Logo */}
+                    <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 shrink-0 p-2 overflow-hidden">
+                      <Image
+                        src={meta.logo}
+                        alt={meta.label}
+                        width={30}
+                        height={30}
+                        className="object-cover w-full h-full"
+                        unoptimized
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`font-bold uppercase text-sm ${isActive ? "text-primary" : "text-slate-800"}`}
+                      >
+                        {displayLabel}
+                      </p>
+                      <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">
+                        {qrItem.codigo}
+                      </p>
+                    </div>
+
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                        <Check size={13} className="text-white" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="text-center text-sm text-slate-400 font-medium">
+              El cambio de vertical actualiza el tema y los datos del evento
+            </p>
           </div>
         </DialogContent>
       </Dialog>
