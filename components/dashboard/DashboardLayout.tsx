@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   Map as MapIcon,
   Settings,
-  HelpCircle,
   Bell,
   Menu,
   X,
