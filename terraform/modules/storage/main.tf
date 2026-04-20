@@ -34,17 +34,20 @@ resource "aws_s3_bucket_public_access_block" "files" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "public_read_profiles" {
+resource "aws_s3_bucket_policy" "public_read_files" {
   bucket = aws_s3_bucket.files.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "PublicReadProfiles"
+        Sid       = "PublicReadFiles"
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.files.arn}/profiles/*"
+        Resource  = [
+          "${aws_s3_bucket.files.arn}/profiles/*",
+          "${aws_s3_bucket.files.arn}/vouchers/*"
+        ]
       }
     ]
   })

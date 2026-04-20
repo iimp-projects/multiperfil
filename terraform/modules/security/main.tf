@@ -214,22 +214,22 @@ resource "aws_iam_user_policy" "robot_s3_policy" {
   })
 }
 
-# --- CI/CD GitLab ---
+# --- CI/CD GitHub Actions ---
 
-resource "aws_iam_user" "gitlab_ci" {
-  name = "${var.project_name}-${var.environment}-gitlab-ci-user"
+resource "aws_iam_user" "github_ci" {
+  name = "${var.project_name}-${var.environment}-github-ci-user"
   tags = {
-    Name = "${var.project_name}-gitlab-ci"
+    Name = "${var.project_name}-github-ci"
   }
 }
 
-resource "aws_iam_access_key" "gitlab_ci" {
-  user = aws_iam_user.gitlab_ci.name
+resource "aws_iam_access_key" "github_ci" {
+  user = aws_iam_user.github_ci.name
 }
 
-resource "aws_iam_user_policy" "gitlab_ci_policy" {
-  name = "${var.project_name}-gitlab-ci-policy"
-  user = aws_iam_user.gitlab_ci.name
+resource "aws_iam_user_policy" "github_ci_policy" {
+  name = "${var.project_name}-github-ci-policy"
+  user = aws_iam_user.github_ci.name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -252,7 +252,7 @@ resource "aws_iam_user_policy" "gitlab_ci_policy" {
           "ecr:CompleteLayerUpload",
           "ecr:PutImage"
         ]
-        Resource = "*" # Idealmente restringir al ARN del ECR si se conoce o se pasa por var
+        Resource = "*"
       },
       {
         Effect = "Allow"

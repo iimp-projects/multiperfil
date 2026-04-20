@@ -56,6 +56,47 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
+    type = var.environment == "qa" ? "redirect" : "forward"
+    
+    # Solo para QA: Redirigir a HTTPS
+    dynamic "redirect" {
+      for_each = var.environment == "qa" ? [1] : []
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+
+    # Solo para Prod: Forward al Target Group (CloudFront se comunica por HTTP al ALB)
+    target_group_arn = var.environment == "prod" ? aws_lb_target_group.this[0].arn : null
+  }
+}
+
+# Certificado SSL para el ALB (Solo en QA, ya que en Prod se encarga CloudFront)
+resource "aws_acm_certificate" "alb_cert" {
+  count             = var.enable_alb && var.environment == "qa" ? 1 : 0
+  domain_name       = "qa-multiperfil.sistemasiimp.org.pe"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-alb-cert"
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  count             = var.enable_alb && var.environment == "qa" ? 1 : 0
+  load_balancer_arn = aws_lb.this[0].arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.alb_cert[0].arn
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this[0].arn
   }

@@ -71,6 +71,17 @@ const SectionTitle = ({
 export default function ProfileView() {
   const { user } = useAuthStore();
   const { vertical } = useVertical();
+
+  // Helper to strip HTML and truncate for preview
+  const getCleanBio = (html: string | undefined) => {
+    if (!html) return "Sin biografía profesional.";
+    // Strip HTML tags using regex for SSR compatibility
+    const text = html.replace(/<[^>]*>?/gm, '').trim();
+    // Truncate to a reasonable length for 2 lines (~140 chars)
+    if (text.length <= 140) return text;
+    return text.substring(0, 140) + "...";
+  };
+
   const vouchers = Array.isArray(user?.comprobantes) ? user.comprobantes : [];
 
   // Logic: Find the correct QR for the current vertical (e.g. "PROEXPLO26")
@@ -583,11 +594,9 @@ export default function ProfileView() {
                 </FieldLabel>
                 <Textarea
                   rows={2}
-                  defaultValue={
-                    user?.bio ||
-                    "Especialista en exploraciones mineras con más de 10 años de experiencia."
-                  }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none text-base!"
+                  readOnly
+                  value={getCleanBio(user?.bio)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 font-medium text-slate-600 focus:outline-none transition-all resize-none text-sm! cursor-default shadow-inner-sm"
                 />
               </div>
             </div>

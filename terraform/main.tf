@@ -96,9 +96,13 @@ module "edge" {
   project_name    = var.project_name
   environment     = local.env
   alb_domain_name = module.compute_ecs.alb_dns_name
+  alb_zone_id     = module.compute_ecs.alb_zone_id
+  alb_cert_arn    = module.compute_ecs.alb_cert_arn
+  alb_cert_validation_options = module.compute_ecs.alb_cert_validation_options
 
   providers = {
-    aws = aws.us_east_1
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
   }
 }
 

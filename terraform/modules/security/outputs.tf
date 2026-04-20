@@ -22,12 +22,12 @@ output "backup_role_arn" {
   value = aws_iam_role.backup.arn
 }
 
-output "gitlab_ci_access_key" {
-  value = aws_iam_access_key.gitlab_ci.id
+output "github_ci_access_key" {
+  value = aws_iam_access_key.github_ci.id
 }
 
-output "gitlab_ci_secret_key" {
-  value     = aws_iam_access_key.gitlab_ci.secret
+output "github_ci_secret_key" {
+  value     = aws_iam_access_key.github_ci.secret
   sensitive = true
 }
 

@@ -3,14 +3,14 @@ output "ecr_repository_url" {
   description = "URL del repositorio ECR para el Pipeline de GitLab"
 }
 
-output "gitlab_ci_access_key" {
-  value       = module.security.gitlab_ci_access_key
-  description = "AWS Access Key para configurar en GitLab CI/CD"
+output "github_ci_access_key" {
+  value       = module.security.github_ci_access_key
+  description = "AWS Access Key para configurar en GitHub Actions"
 }
 
-output "gitlab_ci_secret_key" {
-  value       = module.security.gitlab_ci_secret_key
-  description = "AWS Secret Key para configurar en GitLab CI/CD"
+output "github_ci_secret_key" {
+  value       = module.security.github_ci_secret_key
+  description = "AWS Secret Key para configurar en GitHub Actions"
   sensitive   = true
 }
 
