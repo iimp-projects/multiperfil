@@ -94,10 +94,19 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { setAuth, isAuthenticated, _hasHydrated } = useAuthStore();
-  const [hasSelectedVertical, setHasSelectedVertical] = useState(false);
   const [selectedEventName, setSelectedEventName] = useState("");
+  const [hasSelectedVertical, setHasSelectedVertical] = useState(false);
 
   const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
+
+  useEffect(() => {
+    if (!vertical) return;
+
+    // Avoid calling setState synchronously inside the effect body
+    // (eslint react-hooks/set-state-in-effect).
+    const timeoutId = setTimeout(() => setHasSelectedVertical(true), 0);
+    return () => clearTimeout(timeoutId);
+  }, [vertical]);
 
   useEffect(() => {
     const fetchVerticals = async () => {
@@ -239,15 +248,15 @@ export default function LoginForm() {
                       setSelectedEventName(item.originalName);
                       setHasSelectedVertical(true);
 
-                      // Auto-set English for WMC if not already set
-                      if (slug === "wmc") {
-                        const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
-                        const currentLang = match ? match[1].toLowerCase() : "es";
-                        if (currentLang !== "en") {
-                          document.cookie = `googtrans=/es/en; path=/; domain=${window.location.hostname}`;
-                          document.cookie = `googtrans=/es/en; path=/`;
-                          window.location.reload();
-                        }
+                      // Automatic language selection logic
+                      const targetLang = slug === "wmc" ? "en" : "es";
+                      const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+                      const currentLang = match ? match[1].toLowerCase() : "es";
+
+                      if (currentLang !== targetLang) {
+                        document.cookie = `googtrans=/es/${targetLang}; path=/; domain=${window.location.hostname}`;
+                        document.cookie = `googtrans=/es/${targetLang}; path=/`;
+                        window.location.reload();
                       }
                     }}
                     className="flex flex-row items-center justify-center gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 group cursor-pointer"

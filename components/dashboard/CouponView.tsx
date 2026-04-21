@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Ticket,
@@ -18,8 +18,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useVertical, Button } from "@nrivera-iimp/ui-kit-iimp";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-
 
 import { Cupon, User } from "@/types/auth";
 
@@ -241,8 +239,6 @@ function CouponCard({ cupon, user }: Omit<CouponCardProps, "vertical">) {
   );
 }
 
-
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function DashedDivider() {
@@ -255,20 +251,30 @@ function DashedDivider() {
   );
 }
 
-
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function CouponView() {
   const { user } = useAuthStore();
   const { vertical } = useVertical();
 
-  const yearSuffix = useMemo(() => new Date().getFullYear().toString().slice(-2), []);
+  const yearSuffix = useMemo(
+    () => new Date().getFullYear().toString().slice(-2),
+    [],
+  );
 
-  const currentLang = useMemo(() => {
-    if (typeof document === "undefined") return "es";
+  const [currentLang, setCurrentLang] = useState("es");
+
+  useEffect(() => {
     const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
-    return match ? match[1].toLowerCase() : "es";
+    if (!match) return;
+
+    const nextLang = match[1].toLowerCase();
+    if (nextLang === "es") return;
+
+    // Avoid calling setState synchronously inside the effect body
+    // (eslint react-hooks/set-state-in-effect).
+    const timeoutId = setTimeout(() => setCurrentLang(nextLang), 0);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -305,7 +311,8 @@ export default function CouponView() {
               Términos y Condiciones
             </h4>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              El uso de cupones aplica ciertos TyC. Descarga el documento para más información.
+              El uso de cupones aplica ciertos TyC. Descarga el documento para
+              más información.
             </p>
           </div>
         </div>
@@ -315,8 +322,11 @@ export default function CouponView() {
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-6 py-3 bg-white border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm group h-auto no-underline"
         >
-          <FileText size={16} className="group-hover:scale-110 transition-transform" />
-          Descargar TyC
+          <FileText
+            size={16}
+            className="group-hover:scale-110 transition-transform"
+          />
+          Leer las condiciones
         </a>
       </motion.div>
 
@@ -325,13 +335,15 @@ export default function CouponView() {
         {Array.isArray(user?.cupon) &&
         user.cupon.filter(
           (c) =>
-            c.vertical.toUpperCase() === `${vertical.toUpperCase()}${yearSuffix}` ||
+            c.vertical.toUpperCase() ===
+              `${vertical.toUpperCase()}${yearSuffix}` ||
             c.vertical.toUpperCase().startsWith(vertical.toUpperCase()),
         ).length > 0 ? (
           user.cupon
             .filter(
               (c) =>
-                c.vertical.toUpperCase() === `${vertical.toUpperCase()}${yearSuffix}` ||
+                c.vertical.toUpperCase() ===
+                  `${vertical.toUpperCase()}${yearSuffix}` ||
                 c.vertical.toUpperCase().startsWith(vertical.toUpperCase()),
             )
             .map((c, idx) => (
@@ -345,12 +357,16 @@ export default function CouponView() {
                 {/* ── LEFT: Coupon Card ── */}
                 <div className="flex flex-col h-full">
                   <CouponCard cupon={c} user={user} />
-                  
+
                   {/* Quick Tips under each coupon */}
                   <div className="flex items-start gap-3 mt-4 bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
-                    <Info size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                    <Info
+                      size={16}
+                      className="text-amber-500 shrink-0 mt-0.5"
+                    />
                     <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
-                      El establecimiento validará y registrará el uso. El canje es único por tipo de establecimiento.
+                      El establecimiento validará y registrará el uso. El canje
+                      es único por tipo de establecimiento.
                     </p>
                   </div>
                 </div>
@@ -367,8 +383,12 @@ export default function CouponView() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${c.status === "A" ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
-                      <span className={`text-[10px] font-black tracking-widest ${c.status === "A" ? "text-emerald-600" : "text-red-600"}`}>
+                      <div
+                        className={`w-2 h-2 rounded-full ${c.status === "A" ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
+                      />
+                      <span
+                        className={`text-[10px] font-black tracking-widest ${c.status === "A" ? "text-emerald-600" : "text-red-600"}`}
+                      >
                         {c.status === "A" ? "ACTIVO" : "INACTIVO"}
                       </span>
                     </div>
@@ -380,7 +400,7 @@ export default function CouponView() {
                         <div className="space-y-3 relative">
                           {/* Timeline Line */}
                           <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100" />
-                          
+
                           {c.obs.map((observation, oIdx) => (
                             <motion.div
                               key={oIdx}
@@ -393,14 +413,16 @@ export default function CouponView() {
                               <div className="absolute left-0 top-3 w-5 h-5 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center group-hover:border-primary group-hover:scale-110 transition-all z-10">
                                 <div className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-primary transition-colors" />
                               </div>
-                              
+
                               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 group-hover:border-primary/20 group-hover:bg-white group-hover:shadow-md group-hover:shadow-slate-200/50 transition-all">
                                 <p className="text-sm text-slate-600 font-semibold leading-relaxed break-words">
                                   {observation}
                                 </p>
                                 <div className="flex items-center gap-1.5 mt-2 opacity-40">
                                   <Clock size={10} />
-                                  <span className="text-[10px] font-bold">REGISTRO COMPLETADO</span>
+                                  <span className="text-[10px] font-bold">
+                                    REGISTRO COMPLETADO
+                                  </span>
                                 </div>
                               </div>
                             </motion.div>
@@ -416,7 +438,8 @@ export default function CouponView() {
                           Sin registros de canje aún
                         </p>
                         <p className="text-slate-300 text-[10px] mt-1 font-medium max-w-[180px]">
-                          Tu actividad aparecerá aquí una vez que uses el cupón en un establecimiento.
+                          Tu actividad aparecerá aquí una vez que uses el cupón
+                          en un establecimiento.
                         </p>
                       </div>
                     )}
