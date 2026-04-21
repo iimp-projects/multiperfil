@@ -88,6 +88,8 @@ module "compute_ecs" {
   container_environment = local.app_environment
   enable_alb            = true
   assign_public_ip      = false
+  main_domain           = var.main_domain
+  subdomain_prefix      = var.subdomain_prefix
 }
 
 # Modulo de Capa Edge (Route53 + CloudFront + SSL)
@@ -99,6 +101,8 @@ module "edge" {
   alb_zone_id     = module.compute_ecs.alb_zone_id
   alb_cert_arn    = module.compute_ecs.alb_cert_arn
   alb_cert_validation_options = module.compute_ecs.alb_cert_validation_options
+  main_domain           = var.main_domain
+  subdomain_prefix      = var.subdomain_prefix
 
   providers = {
     aws           = aws

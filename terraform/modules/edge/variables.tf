@@ -10,3 +10,5 @@ variable "alb_cert_validation_options" {
   type = any
   default = [] 
 }
+variable "main_domain" { type = string }
+variable "subdomain_prefix" { type = string }

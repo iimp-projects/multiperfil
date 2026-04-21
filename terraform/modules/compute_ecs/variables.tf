@@ -63,3 +63,5 @@ variable "container_environment" {
   type        = list(map(string))
   default     = []
 }
+variable "main_domain" { type = string }
+variable "subdomain_prefix" { type = string }
