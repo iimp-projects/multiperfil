@@ -45,12 +45,9 @@ variable "app_version" {
   default = "V1"
 }
 
-variable "api_base_path" {
-  type    = string
-}
-
 variable "api_domain" {
   type    = string
+  default = "sistemasiimp.org.pe"
 }
 
 variable "next_public_api_key" {
