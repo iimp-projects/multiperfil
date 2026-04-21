@@ -221,7 +221,7 @@ export default function LoginForm() {
                       unoptimized
                     />
                   </div>
-                  <span className="font-semibold text-sm text-slate-700 group-hover:text-primary uppercase">
+                  <span className="flex-1 text-left font-semibold text-sm text-slate-700 group-hover:text-primary uppercase">
                     {item.label} - {currentYear}
                   </span>
                 </button>

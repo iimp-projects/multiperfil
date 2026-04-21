@@ -22,7 +22,7 @@ const layout = (
   content: string,
   { vertical, currentYear, logoUrl }: BaseTemplateData,
 ) => {
-  const primaryColor = `#f1f5f9`; /*getStyles(vertical)*/
+  const primaryColor = getStyles(vertical);
   const verticalName = vertical.toUpperCase();
 
   return `
@@ -90,7 +90,7 @@ export const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              <img src="cid:logo" alt="${verticalName} Logo" class="logo">
+              <img src="${logoUrl}" alt="${verticalName} Logo" class="logo">
             </div>
             <div class="content">
               <h1 class="title">Recuperación de Contraseña</h1>
