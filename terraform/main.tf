@@ -67,7 +67,8 @@ locals {
     { name = "SMTP_PORT", value = var.smtp_port },
     { name = "S3_BUCKET_NAME", value = module.storage.bucket_name },
     { name = "AWS_REGION", value = "sa-east-1" },
-    { name = "DATABASE_URL", value = local.env == "prod" ? "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017,${module.mongodb.secondary_private_ip}:27017,${module.mongodb.arbiter_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" : "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" }
+    { name = "DATABASE_URL", value = local.env == "prod" ? "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017,${module.mongodb.secondary_private_ip}:27017,${module.mongodb.arbiter_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" : "mongodb://${var.db_user}:${var.db_pass}@${module.mongodb.primary_private_ip}:27017/multiperfil?replicaSet=rs0&authSource=multiperfil&connectTimeoutMS=10000&socketTimeoutMS=10000" },
+    { name = "DEPLOY_TIMESTAMP", value = timestamp() }
   ]
 }
 

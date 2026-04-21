@@ -108,11 +108,17 @@ jobs:
           )
 
           for v in "${required[@]}"; do
-            if [[ -z "${!v:-}" || "${!v}" == "null" ]]; then
-              echo "::error title=Missing workflow config::$v is empty. Configure it via GitHub Secrets/Variables."
+            if [ -z "${!v:-}" ]; then
+              echo "::error::Missing required environment variable: $v"
               exit 1
             fi
           done
+
+      - name: Verify SMTP Secrets (Presence only)
+        run: |
+          echo "Checking SMTP secrets detection..."
+          if [ -n "${{ secrets.PROD_TF_VAR_SMTP_USER || secrets.SMTP_USER || secrets.PROD_SMTP_USER }}" ]; then echo "✅ SMTP_USER: Found"; else echo "❌ SMTP_USER: Missing"; fi
+          if [ -n "${{ secrets.PROD_TF_VAR_SMTP_PASS || secrets.SMTP_PASS || secrets.PROD_SMTP_PASS }}" ]; then echo "✅ SMTP_PASS: Found"; else echo "❌ SMTP_PASS: Missing"; fi
 
       - name: Login to Amazon ECR
         id: login-ecr
