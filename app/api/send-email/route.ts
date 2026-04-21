@@ -46,9 +46,9 @@ export async function POST(req: Request) {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-      connectionTimeout: 5000, // 5 seconds
-      greetingTimeout: 5000,   // 5 seconds
-      socketTimeout: 10000,    // 10 seconds
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,   // 10 seconds
+      socketTimeout: 20000,    // 20 seconds
       debug: true,
       logger: true,
     } as SMTPOptions);
@@ -76,10 +76,10 @@ export async function POST(req: Request) {
       console.log("[SMTP] Connection verified successfully.");
 
       // Send email with timeout race
-      const info: SentMessageInfo = await Promise.race([
+      const info = (await Promise.race([
         transporter.sendMail(mailOptions),
         timeoutPromise
-      ]);
+      ])) as SentMessageInfo;
 
       console.log(`[SMTP] Email sent successfully to ${email}. MessageId: ${info.messageId}`);
       return NextResponse.json({ 
@@ -88,39 +88,23 @@ export async function POST(req: Request) {
         messageId: info.messageId 
       });
     } catch (smtpError: unknown) {
-      console.error("[SMTP] Error during verification or sending:", smtpError);
-      const smtpMessage =
-        smtpError instanceof Error
-          ? smtpError.message
-          : typeof smtpError === "object" &&
-              smtpError !== null &&
-              "message" in smtpError &&
-              typeof (smtpError as { message: unknown }).message === "string"
-            ? (smtpError as { message: string }).message
-            : "Unknown SMTP error";
-
-      const maybeCode =
-        typeof smtpError === "object" && smtpError !== null && "code" in smtpError
-          ? (smtpError as { code?: unknown }).code
-          : undefined;
-      const smtpCode =
-        typeof maybeCode === "string" || typeof maybeCode === "number" ? maybeCode : undefined;
+      const error = smtpError as { message?: string; code?: string };
+      console.error("[SMTP] Error during verification or sending:", error);
       return NextResponse.json(
         { 
           success: false, 
           message: "Error enviando el correo", 
-          error: smtpMessage,
-          code: smtpCode 
+          error: error.message || "Unknown SMTP error",
+          code: error.code 
         },
         { status: 500 }
       );
     }
   } catch (error: unknown) {
-    console.error("Error sending email:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred";
+    console.error("Error processing email request:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { success: false, message: "Failed to send email", error: errorMessage },
+      { success: false, message: "Failed to process email request", error: errorMessage },
       { status: 500 },
     );
   }
