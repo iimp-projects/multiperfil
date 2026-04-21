@@ -96,3 +96,15 @@ variable "smtp_port" {
   type    = string
   default = "587"
 }
+# --- Dominios ---
+variable "main_domain" {
+  description = "Dominio principal (ej. sistemasiimp.org.pe)"
+  type        = string
+  default     = "sistemasiimp.org.pe"
+}
+
+variable "subdomain_prefix" {
+  description = "Prefijo para el subdominio (ej. multiperfil)"
+  type        = string
+  default     = "multiperfil"
+}

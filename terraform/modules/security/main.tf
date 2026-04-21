@@ -237,39 +237,39 @@ resource "aws_iam_user_policy" "github_ci_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ecr:GetAuthorizationToken"
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:HeadObject"
+        ]
+        Resource = [
+          "arn:aws:s3:::multiperfil-terraform-state",
+          "arn:aws:s3:::multiperfil-terraform-state/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:*",
+          "ecs:*",
+          "ec2:*",
+          "rds:*",
+          "route53:*",
+          "cloudfront:*",
+          "acm:*",
+          "elasticloadbalancing:*",
+          "application-autoscaling:*",
+          "logs:*"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
         Action = [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
+          "iam:*"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecs:UpdateService",
-          "ecs:DescribeServices",
-          "ecs:DescribeTaskDefinition",
-          "ecs:RegisterTaskDefinition"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:PassRole"
-        ]
-        Resource = [aws_iam_role.ecs_task_execution_role.arn]
       }
     ]
   })

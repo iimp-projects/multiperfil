@@ -8,7 +8,7 @@ terraform {
 
 # DNS Zone (Existente)
 data "aws_route53_zone" "selected" {
-  name         = "sistemasiimp.org.pe."
+  name         = "${var.main_domain}."
   private_zone = false
 }
 
@@ -16,7 +16,7 @@ data "aws_route53_zone" "selected" {
 resource "aws_acm_certificate" "this" {
   provider          = aws.us_east_1
   count             = var.environment == "prod" ? 1 : 0
-  domain_name       = "multiperfil.sistemasiimp.org.pe"
+  domain_name       = "${var.subdomain_prefix}.${var.main_domain}"
   validation_method = "DNS"
 
   lifecycle {
@@ -134,7 +134,7 @@ resource "aws_cloudfront_distribution" "this" {
   is_ipv6_enabled = true
   comment         = "Distribucion para ${var.project_name} (${var.environment})"
   web_acl_id      = aws_wafv2_web_acl.this[0].arn
-  aliases         = ["multiperfil.sistemasiimp.org.pe"]
+  aliases         = ["${var.subdomain_prefix}.${var.main_domain}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -174,7 +174,7 @@ resource "aws_cloudfront_distribution" "this" {
 # Record A en Route53 (Alias a CloudFront en Prod, Alias a ALB en QA)
 resource "aws_route53_record" "cdn" {
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.environment == "prod" ? "multiperfil.sistemasiimp.org.pe" : "qa-multiperfil.sistemasiimp.org.pe"
+  name    = var.environment == "prod" ? "${var.subdomain_prefix}.${var.main_domain}" : "qa-${var.subdomain_prefix}.${var.main_domain}"
   type    = "A"
 
   alias {

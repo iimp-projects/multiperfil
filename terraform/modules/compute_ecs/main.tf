@@ -76,7 +76,7 @@ resource "aws_lb_listener" "http" {
 # Certificado SSL para el ALB (Solo en QA, ya que en Prod se encarga CloudFront)
 resource "aws_acm_certificate" "alb_cert" {
   count             = var.enable_alb && var.environment == "qa" ? 1 : 0
-  domain_name       = "qa-multiperfil.sistemasiimp.org.pe"
+  domain_name       = "qa-${var.subdomain_prefix}.${var.main_domain}"
   validation_method = "DNS"
 
   lifecycle {
