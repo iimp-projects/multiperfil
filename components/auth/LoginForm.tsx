@@ -206,8 +206,20 @@ export default function LoginForm() {
                   type="button"
                   key={item.slug}
                   onClick={() => {
-                    setVertical(item.slug);
+                    const slug = item.slug;
+                    setVertical(slug);
                     setHasSelectedVertical(true);
+
+                    // Auto-set English for WMC if not already set
+                    if (slug === "wmc") {
+                      const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+                      const currentLang = match ? match[1].toLowerCase() : "es";
+                      if (currentLang !== "en") {
+                        document.cookie = `googtrans=/es/en; path=/; domain=${window.location.hostname}`;
+                        document.cookie = `googtrans=/es/en; path=/`;
+                        window.location.reload();
+                      }
+                    }
                   }}
                   className="flex flex-row items-center justify-center gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 group cursor-pointer"
                 >
@@ -287,8 +299,15 @@ export default function LoginForm() {
 
         <div className="relative w-full lg:w-[55%] flex flex-col p-8 lg:p-16 bg-white z-30 lg:z-10 rounded-t-[3rem] lg:rounded-none -mt-12 lg:mt-0">
           {/* Badge Top Right */}
-          <div className="absolute top-8 right-10 hidden sm:flex flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-1 px-3 py-1 rounded-sm bg-slate-50 border border-slate-100 overflow-visible">
+          <div className="absolute top-8 right-10 flex flex-row items-center justify-between gap-3 ">
+            <button
+              onClick={() => setHasSelectedVertical(false)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/30 hover:bg-slate-50 text-slate-500 hover:text-primary transition-all text-[10px] font-bold uppercase tracking-wider shadow-sm cursor-pointer"
+            >
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              Cambiar Evento
+            </button>
+            <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-100 overflow-visible">
               <PulseWaves color="bg-green-500" />
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-0">
                 SISTEMA-IIMP-{process.env.NEXT_PUBLIC_APP_VERSION || "V4"}
@@ -301,7 +320,7 @@ export default function LoginForm() {
 
           <div className="max-w-md w-full mx-auto flex-1 flex flex-col justify-center space-y-10 mt-6">
             {/* Centered Logo */}
-            <div className="relative w-40 h-16 mx-auto mb-2">
+            <div className="relative w-40 h-16 mx-auto mb-2 mt-10">
               <Image
                 src={getLogo()}
                 alt="Logo"

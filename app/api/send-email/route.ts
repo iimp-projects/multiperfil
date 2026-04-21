@@ -13,6 +13,19 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if credentials are missing
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error("SMTP Error: Missing SMTP_USER or SMTP_PASS environment variables");
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: "Email configuration error", 
+          error: "Missing SMTP credentials in environment variables. Please set SMTP_USER and SMTP_PASS." 
+        },
+        { status: 500 },
+      );
+    }
+
     // Configure transporter with SMTP settings from environment variables
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp-relay.sendinblue.com",

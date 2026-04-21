@@ -11,6 +11,8 @@ import {
   Sparkles,
   Download,
   Printer,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -264,6 +266,12 @@ export default function CouponView() {
 
   const yearSuffix = useMemo(() => new Date().getFullYear().toString().slice(-2), []);
 
+  const currentLang = useMemo(() => {
+    if (typeof document === "undefined") return "es";
+    const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+    return match ? match[1].toLowerCase() : "es";
+  }, []);
+
   return (
     <div className="space-y-10">
       {/* ── Header ── */}
@@ -280,6 +288,37 @@ export default function CouponView() {
             Usa tu código en cualquier establecimiento afiliado al evento.
           </p>
         </div>
+      </motion.div>
+
+      {/* ── T&C Alert ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-primary/5 border border-primary/20 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-primary shadow-sm border border-primary/10">
+            <Info size={24} />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+              Términos y Condiciones
+            </h4>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              El uso de cupones aplica ciertos TyC. Descarga el documento para más información.
+            </p>
+          </div>
+        </div>
+        <a
+          href={`/pdf/${vertical.toLowerCase()}-${currentLang}.pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-6 py-3 bg-white border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm group h-auto no-underline"
+        >
+          <FileText size={16} className="group-hover:scale-110 transition-transform" />
+          Descargar TyC
+        </a>
       </motion.div>
 
       {/* ── Content List ── */}

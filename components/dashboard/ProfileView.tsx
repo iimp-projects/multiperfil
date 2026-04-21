@@ -7,6 +7,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { toPng } from "html-to-image";
 import { useReactToPrint } from "react-to-print";
+import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
 import {
   Download,
@@ -186,13 +187,12 @@ export default function ProfileView() {
               {qrValue ? (
                 <div className="p-4 sm:p-6 bg-slate-50 rounded-[2rem] sm:rounded-[2.5rem] border-2 border-dashed border-slate-200 group-hover:border-primary/30 transition-colors duration-500 print:border-slate-300">
                   <div className="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-inner">
-                    <Image
-                      src={`https://secure2.iimp.org:8443/QRGeneratorApp/qrgenerator?text=${encodeURIComponent(qrValue || "")}`}
-                      alt="QR Code"
-                      width={180}
-                      height={180}
+                    <QRCodeSVG
+                      value={qrValue}
+                      size={180}
+                      level="H"
+                      includeMargin={false}
                       className="w-32 h-32 sm:w-44 sm:h-44 object-contain"
-                      unoptimized
                     />
                   </div>
                 </div>
