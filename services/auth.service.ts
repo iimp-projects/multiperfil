@@ -108,4 +108,22 @@ export const authService = {
       };
     }
   },
+  getEventList: async (): Promise<{ Eventos: { Evento: string }[] }> => {
+    try {
+      const response = await fetch("/api/proxy/eventlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event list:", error);
+      return { Eventos: [] };
+    }
+  },
 };

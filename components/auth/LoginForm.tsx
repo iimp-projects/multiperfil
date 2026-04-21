@@ -95,14 +95,41 @@ export default function LoginForm() {
   const router = useRouter();
   const { setAuth, isAuthenticated, _hasHydrated } = useAuthStore();
   const [hasSelectedVertical, setHasSelectedVertical] = useState(false);
+  const [selectedEventName, setSelectedEventName] = useState("");
 
-  const VERTICALS: Array<{ slug: Vertical; label: string; logo: string }> = [
-    { slug: "proexplo", label: "Proexplo", logo: "/logos/favicon-iimp.png" },
-    { slug: "gess", label: "GESS", logo: "/logos/favicon-gess.png" },
-    { slug: "wmc", label: "WMC", logo: "/logos/favicon-wmc.png" },
-    { slug: "perumin", label: "Perumin", logo: "/logos/favicon-perumin.png" },
-  ];
-  const currentYear = new Date().getFullYear();
+  const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
+
+  useEffect(() => {
+    const fetchVerticals = async () => {
+      const data = await authService.getEventList();
+      if (data && data.Eventos) {
+        const mapped = data.Eventos.map((evt) => {
+          const name = evt.Evento.toUpperCase();
+          let slug: Vertical = "proexplo";
+          const label = evt.Evento;
+          let logo = "/logos/favicon-iimp.png";
+
+          if (name.includes("PROEXPLO")) {
+            slug = "proexplo";
+            logo = "/logos/favicon-iimp.png";
+          } else if (name.includes("WMC")) {
+            slug = "wmc";
+            logo = "/logos/favicon-wmc.png";
+          } else if (name.includes("GESS")) {
+            slug = "gess";
+            logo = "/logos/favicon-gess.png";
+          } else if (name.includes("PERUMIN")) {
+            slug = "perumin";
+            logo = "/logos/favicon-perumin.png";
+          }
+
+          return { slug, label, logo, originalName: evt.Evento };
+        });
+        setDynamicVerticals(mapped);
+      }
+    };
+    fetchVerticals();
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -155,7 +182,7 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
 
-    const resolvedEvent = getDynamicEventCode(vertical);
+    const resolvedEvent = selectedEventName || getDynamicEventCode(vertical);
 
     const request = {
       event: resolvedEvent,
@@ -201,43 +228,51 @@ export default function LoginForm() {
               Elige el entorno al que deseas acceder
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {VERTICALS.map((item) => (
-                <button
-                  type="button"
-                  key={item.slug}
-                  onClick={() => {
-                    const slug = item.slug;
-                    setVertical(slug);
-                    setHasSelectedVertical(true);
+              {dynamicVerticals.length > 0 ? (
+                dynamicVerticals.map((item, idx) => (
+                  <button
+                    type="button"
+                    key={`${item.originalName}-${idx}`}
+                    onClick={() => {
+                      const slug = item.slug;
+                      setVertical(slug);
+                      setSelectedEventName(item.originalName);
+                      setHasSelectedVertical(true);
 
-                    // Auto-set English for WMC if not already set
-                    if (slug === "wmc") {
-                      const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
-                      const currentLang = match ? match[1].toLowerCase() : "es";
-                      if (currentLang !== "en") {
-                        document.cookie = `googtrans=/es/en; path=/; domain=${window.location.hostname}`;
-                        document.cookie = `googtrans=/es/en; path=/`;
-                        window.location.reload();
+                      // Auto-set English for WMC if not already set
+                      if (slug === "wmc") {
+                        const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+                        const currentLang = match ? match[1].toLowerCase() : "es";
+                        if (currentLang !== "en") {
+                          document.cookie = `googtrans=/es/en; path=/; domain=${window.location.hostname}`;
+                          document.cookie = `googtrans=/es/en; path=/`;
+                          window.location.reload();
+                        }
                       }
-                    }
-                  }}
-                  className="flex flex-row items-center justify-center gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 group cursor-pointer"
-                >
-                  <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-sm p-2 group-hover:scale-110 transition-transform">
-                    <Image
-                      src={item.logo}
-                      alt={item.label}
-                      width={36}
-                      height={36}
-                      className="object-contain w-full h-full"
-                      unoptimized
-                    />
-                  </div>
-                  <span className="flex-1 text-left font-semibold text-sm text-slate-700 group-hover:text-primary uppercase">
-                    {item.label} - {currentYear}
-                  </span>
-                </button>
-              ))}
+                    }}
+                    className="flex flex-row items-center justify-center gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 group cursor-pointer"
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center shadow-sm p-2 group-hover:scale-110 transition-transform">
+                      <Image
+                        src={item.logo}
+                        alt={item.label}
+                        width={36}
+                        height={36}
+                        className="object-contain w-full h-full"
+                        unoptimized
+                      />
+                    </div>
+                    <span className="flex-1 text-left font-semibold text-sm text-slate-700 group-hover:text-primary uppercase">
+                      {item.label}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <div className="col-span-2 py-8 text-center">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                  <p className="text-slate-400 text-sm">Cargando eventos...</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
