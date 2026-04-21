@@ -1,10 +1,21 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions, type SentMessageInfo } from "nodemailer";
 import { Options as SMTPOptions } from "nodemailer/lib/smtp-transport";
+
+type SendEmailBody = {
+  to?: string;
+  subject?: string;
+  html?: string;
+  attachments?: unknown;
+};
 
 export async function POST(req: Request) {
   try {
-    const { to, subject, html, attachments, verticalName } = await req.json();
+    const body: SendEmailBody = await req.json();
+    const { to, subject, html } = body;
+    const attachments: SendMailOptions["attachments"] = Array.isArray(body.attachments)
+      ? (body.attachments as SendMailOptions["attachments"])
+      : [];
 
     if (!to || !subject || !html) {
       return NextResponse.json(
@@ -47,7 +58,7 @@ export async function POST(req: Request) {
       to,
       subject,
       html,
-      attachments: attachments || [],
+      attachments,
     };
 
     const email = to;
@@ -65,7 +76,7 @@ export async function POST(req: Request) {
       console.log("[SMTP] Connection verified successfully.");
 
       // Send email with timeout race
-      const info: any = await Promise.race([
+      const info: SentMessageInfo = await Promise.race([
         transporter.sendMail(mailOptions),
         timeoutPromise
       ]);
@@ -76,14 +87,30 @@ export async function POST(req: Request) {
         message: "Email sent successfully",
         messageId: info.messageId 
       });
-    } catch (smtpError: any) {
+    } catch (smtpError: unknown) {
       console.error("[SMTP] Error during verification or sending:", smtpError);
+      const smtpMessage =
+        smtpError instanceof Error
+          ? smtpError.message
+          : typeof smtpError === "object" &&
+              smtpError !== null &&
+              "message" in smtpError &&
+              typeof (smtpError as { message: unknown }).message === "string"
+            ? (smtpError as { message: string }).message
+            : "Unknown SMTP error";
+
+      const maybeCode =
+        typeof smtpError === "object" && smtpError !== null && "code" in smtpError
+          ? (smtpError as { code?: unknown }).code
+          : undefined;
+      const smtpCode =
+        typeof maybeCode === "string" || typeof maybeCode === "number" ? maybeCode : undefined;
       return NextResponse.json(
         { 
           success: false, 
           message: "Error enviando el correo", 
-          error: smtpError.message,
-          code: smtpError.code 
+          error: smtpMessage,
+          code: smtpCode 
         },
         { status: 500 }
       );
