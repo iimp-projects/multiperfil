@@ -116,20 +116,20 @@ resource "aws_instance" "nat" {
   subnet_id                   = aws_subnet.public[0].id
   vpc_security_group_ids      = [aws_security_group.nat_instance[0].id]
   source_dest_check           = false
+  user_data_replace_on_change = true
   associate_public_ip_address = true
 
   user_data = <<-EOF
               #!/bin/bash
-              # Habilitar forwarding de IP
-              echo 1 > /proc/sys/net/ipv4/ip_forward
+              # Habilitar forwarding de IP permanentemente
+              echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+              sysctl -p
               
-              # Configurar NAT
+              # Configurar NAT MASQUERADE en la interfaz principal
               /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-              /sbin/iptables -A FORWARD -i eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-              /sbin/iptables -A FORWARD -i eth0 -j ACCEPT
               
-              # Asegurar que las reglas persistan (Amazon Linux 2)
-              service iptables save || echo "iptables service not found, rules are active in memory"
+              # Guardar reglas para que sobrevivan a reinicios
+              /sbin/iptables-save > /etc/sysconfig/iptables
               EOF
 
   tags = {

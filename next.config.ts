@@ -40,8 +40,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/proxy/eventlist",
-        // Specific proxy for the dynamic event list (Always using the prod-like path as shared resource)
-        destination: "https://secure2.iimp.org:8443/KBServiciosIIMPJavaEnvironment/rest/eventlist",
+        // Specific proxy for the dynamic event list using environment variables
+        destination: `${process.env.NEXT_PUBLIC_API_DOMAIN || "https://secure2.iimp.org:8443"}${process.env.NEXT_PUBLIC_API_BASE_PATH || "/KBServiciosIIMPJavaEnvironment/rest"}/eventlist`,
       },
       {
         source: "/api/proxy/:path*",
