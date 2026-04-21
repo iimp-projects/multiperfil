@@ -25,7 +25,6 @@ import {
   Settings,
   Clock,
   Lock,
-  ShieldCheck,
   ExternalLink,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -635,6 +634,7 @@ export default function ProfileView() {
             rel="noopener noreferrer"
             className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-300 group cursor-pointer w-full"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"
               alt="AWS"
