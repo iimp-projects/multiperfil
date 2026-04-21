@@ -4,7 +4,7 @@ import { Options as SMTPOptions } from "nodemailer/lib/smtp-transport";
 
 export async function POST(req: Request) {
   try {
-    const { to, subject, html, attachments } = await req.json();
+    const { to, subject, html, attachments, verticalName } = await req.json();
 
     if (!to || !subject || !html) {
       return NextResponse.json(
@@ -50,14 +50,44 @@ export async function POST(req: Request) {
       attachments: attachments || [],
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: %s", info.messageId);
+    const email = to;
+    console.log(`[SMTP] Attempting to send email to ${email} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
+    
+    // Create a timeout promise to prevent hanging forever
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Internal SMTP Timeout")), 25000)
+    );
 
-    return NextResponse.json({
-      success: true,
-      message: "Email sent successfully",
-      messageId: info.messageId,
-    });
+    try {
+      // Verify connection configuration
+      console.log("[SMTP] Verifying connection...");
+      await transporter.verify();
+      console.log("[SMTP] Connection verified successfully.");
+
+      // Send email with timeout race
+      const info: any = await Promise.race([
+        transporter.sendMail(mailOptions),
+        timeoutPromise
+      ]);
+
+      console.log(`[SMTP] Email sent successfully to ${email}. MessageId: ${info.messageId}`);
+      return NextResponse.json({ 
+        success: true, 
+        message: "Email sent successfully",
+        messageId: info.messageId 
+      });
+    } catch (smtpError: any) {
+      console.error("[SMTP] Error during verification or sending:", smtpError);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: "Error enviando el correo", 
+          error: smtpError.message,
+          code: smtpError.code 
+        },
+        { status: 500 }
+      );
+    }
   } catch (error: unknown) {
     console.error("Error sending email:", error);
     const errorMessage =

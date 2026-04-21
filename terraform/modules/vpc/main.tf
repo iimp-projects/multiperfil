@@ -120,8 +120,16 @@ resource "aws_instance" "nat" {
 
   user_data = <<-EOF
               #!/bin/bash
+              # Habilitar forwarding de IP
               echo 1 > /proc/sys/net/ipv4/ip_forward
+              
+              # Configurar NAT
               /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+              /sbin/iptables -A FORWARD -i eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+              /sbin/iptables -A FORWARD -i eth0 -j ACCEPT
+              
+              # Asegurar que las reglas persistan (Amazon Linux 2)
+              service iptables save || echo "iptables service not found, rules are active in memory"
               EOF
 
   tags = {
