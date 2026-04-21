@@ -12,7 +12,6 @@ import {
   Download,
   Printer,
   FileText,
-  ExternalLink,
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { useAuthStore } from "@/store/useAuthStore";
