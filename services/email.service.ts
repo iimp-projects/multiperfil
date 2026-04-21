@@ -9,6 +9,7 @@ interface EmailParams {
     filename: string;
     content: string; // Base64 content
     encoding?: string;
+    cid?: string;
   }[];
 }
 

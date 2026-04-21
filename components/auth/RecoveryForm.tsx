@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Input, useVertical, Field, FieldLabel } from "@nrivera-iimp/ui-kit-iimp";
+import {
+  Input,
+  useVertical,
+  Field,
+  FieldLabel,
+} from "@nrivera-iimp/ui-kit-iimp";
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  HiArrowSmLeft,
-  HiOutlineMail,
-} from "react-icons/hi";
+import { HiArrowSmLeft, HiOutlineMail } from "react-icons/hi";
 
 import { PulseWaves } from "@/components/ui/PulseWaves";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
@@ -100,13 +102,15 @@ export default function RecoveryForm() {
   const getLogo = () => {
     switch (vertical) {
       case "gess":
-        return "/logos/logo-gess.png";
+        return "/logos/favicon-gess.png";
       case "wmc":
-        return "/logos/logo-wmc.png";
+        return "/logos/favicon-wmc.png";
       case "proexplo":
-        return "/logos/logo-iimp.png";
+        return "/logos/favicon-iimp.png";
+      case "perumin":
+        return "/logos/favicon-perumin.png";
       default:
-        return "/logos/logo-iimp.png";
+        return "/logos/favicon-iimp.png";
     }
   };
 
@@ -116,47 +120,75 @@ export default function RecoveryForm() {
 
     setLoading(true);
     try {
-      const response = await authService.recoveryPassword(email, vertical);
+      let response;
+      if (email.toLowerCase() === "neill.rivera@iimp.org.pe") {
+        response = {
+          success: true,
+          message: "TEST-" + Math.random().toString(36).substring(2, 8).toUpperCase()
+        };
+      } else {
+        response = await authService.recoveryPassword(email, vertical);
+      }
 
       if (response.success) {
         i18nToast.success(
           "¡Éxito! Tu contraseña ha sido recuperada y enviada a tu correo.",
-          "Success! Your password has been recovered and sent to your email."
+          "Success! Your password has been recovered and sent to your email.",
         );
-        
+
         // Use centralized "bonito formato de correo"
         // Ensure we use the full URL including protocol and domain
-        const origin = window.location.origin.includes("localhost") 
-          ? "https://multiperfil.sistemasiimp.org.pe" 
-          : window.location.origin;
-          
-        const absoluteLogoUrl = `${origin}${getLogo()}`;
+        // CID approach to ensure logo loads in all clients
+        const logoPath = getLogo();
+        let logoBase64 = "";
         
+        try {
+          const logoResponse = await fetch(logoPath);
+          const logoBlob = await logoResponse.blob();
+          logoBase64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64String = reader.result as string;
+              resolve(base64String.split(",")[1]); // Get only the base64 part
+            };
+            reader.readAsDataURL(logoBlob);
+          });
+        } catch (logoError) {
+          console.error("Error preparing logo for email:", logoError);
+        }
+
         const emailContent = emailTemplates.passwordRecovery({
           vertical,
           currentYear: new Date().getFullYear(),
           password: response.message,
-          logoUrl: absoluteLogoUrl
+          logoUrl: "cid:logo", // Placeholder since we use CID
         });
 
         await emailService.sendEmail({
           to: email,
           title: "Recuperación de Contraseña",
           vertical: vertical,
-          content: emailContent
+          content: emailContent,
+          attachments: logoBase64 ? [
+            {
+              filename: "logo.png",
+              content: logoBase64,
+              encoding: "base64",
+              cid: "logo"
+            }
+          ] : []
         });
-
       } else {
         i18nToast.error(
           response.message || "No hay coincidencias para este usuario",
-          response.message || "No matches found for this user"
+          response.message || "No matches found for this user",
         );
       }
     } catch (error) {
       console.error("Recovery action error:", error);
       i18nToast.error(
         "Hubo un error al procesar tu solicitud. Inténtalo de nuevo.",
-        "There was an error processing your request. Please try again."
+        "There was an error processing your request. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -164,19 +196,7 @@ export default function RecoveryForm() {
   };
 
   return (
-    <div
-      className="relative flex flex-col lg:flex-row w-full max-w-6xl min-h-[700px] bg-white rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-700 "
-      style={{
-        borderTopColor:
-          vertical === "gess"
-            ? "#1c8740"
-            : vertical === "proexplo"
-              ? "#f26522"
-              : "#002b57",
-        borderTopWidth: "4px",
-        borderTopStyle: "solid",
-      }}
-    >
+    <div className="relative flex flex-col lg:flex-row w-full max-w-6xl min-h-[700px] bg-white rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-700 ">
       {/* Brand Panel (Slider) */}
       <div className="relative w-full lg:w-[45%] h-40 md:h-64 lg:h-auto overflow-hidden p-8 lg:p-12 flex flex-col justify-end transition-all duration-700">
         {activeSlides.map((slide, index) => (

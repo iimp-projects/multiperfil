@@ -231,17 +231,7 @@ export default function LoginForm() {
         </div>
       )}
 
-      <div
-        className="relative flex flex-col lg:flex-row w-full max-w-6xl min-h-[700px] bg-white rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-700"
-        style={{
-          borderTopColor:
-            vertical === "gess"
-              ? "#1c8740"
-              : vertical === "proexplo"
-                ? "#f26522"
-                : "#002b57",
-        }}
-      >
+      <div className="relative flex flex-col lg:flex-row w-full max-w-6xl min-h-[700px] bg-white rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in-95 duration-700">
         {/* Brand Panel (Slider) */}
         <div className="relative w-full lg:w-[45%] h-40 md:h-64 lg:h-auto overflow-hidden p-8 lg:p-12 flex flex-col justify-end transition-all duration-700">
           {activeSlides.map((slide, index) => (

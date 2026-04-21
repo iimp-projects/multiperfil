@@ -10,18 +10,19 @@ export interface PasswordRecoveryData extends BaseTemplateData {
 
 const getStyles = (vertical: string) => {
   const colors = {
-    proexplo: "#f26522",
+    proexplo: "#ea6c15",
     gess: "#1c8740",
-    wmc: "#002b57",
+    wmc: "#00b7db",
+    perumin: "#b97822",
   };
-  return colors[vertical as keyof typeof colors] || colors.wmc;
+  return colors[vertical as keyof typeof colors] || colors.perumin;
 };
 
 const layout = (
   content: string,
   { vertical, currentYear, logoUrl }: BaseTemplateData,
 ) => {
-  const primaryColor = getStyles(vertical);
+  const primaryColor = `#f1f5f9`; /*getStyles(vertical)*/
   const verticalName = vertical.toUpperCase();
 
   return `
@@ -43,20 +44,27 @@ const layout = (
 };
 
 export const emailTemplates = {
-  passwordRecovery: ({ vertical, currentYear, password, logoUrl }: { 
-    vertical: string; 
-    currentYear: number; 
+  passwordRecovery: ({
+    vertical,
+    currentYear,
+    password,
+    logoUrl,
+  }: {
+    vertical: string;
+    currentYear: number;
     password: string;
     logoUrl: string;
   }) => {
     const colors = {
       gess: "#1c8740",
-      proexplo: "#f26522",
-      wmc: "#002b57",
-      default: "#002b57"
+      proexplo: "#ea6c15",
+      wmc: "#00b7db",
+      perumin: "#b97822",
+      default: "#b97822",
     };
-    
-    const brandColor = colors[vertical as keyof typeof colors] || colors.default;
+
+    const brandColor =
+      colors[vertical as keyof typeof colors] || colors.default;
     const verticalName = vertical.toUpperCase();
 
     return `
@@ -67,7 +75,7 @@ export const emailTemplates = {
           <style>
             body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #334155; margin: 0; padding: 0; background-color: #f8fafc; }
             .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-            .header { background-color: ${brandColor}; padding: 40px 20px; text-align: center; }
+            .header { background-color: #f1f5f9; padding: 20px; text-align: center; }
             .logo { max-width: 180px; height: auto; }
             .content { padding: 40px; text-align: center; }
             .title { color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 16px; }
@@ -77,13 +85,12 @@ export const emailTemplates = {
             .password-value { color: ${brandColor}; font-size: 32px; font-weight: 800; letter-spacing: 0.05em; margin: 0; }
             .footer { background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; }
             .footer-text { color: #94a3b8; font-size: 12px; margin: 0; }
-            .button { display: inline-block; padding: 14px 32px; background-color: ${brandColor}; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; margin-top: 16px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <img src="${logoUrl}" alt="${verticalName} Logo" class="logo">
+              <img src="cid:logo" alt="${verticalName} Logo" class="logo">
             </div>
             <div class="content">
               <h1 class="title">Recuperación de Contraseña</h1>
@@ -95,8 +102,6 @@ export const emailTemplates = {
               </div>
               
               <p class="description" style="font-size: 14px;">Te recomendamos cambiar tu contraseña una vez hayas ingresado al sistema por seguridad.</p>
-              
-              <a href="https://multiperfil.sistemasiimp.org.pe" class="button">INGRESAR AL SISTEMA</a>
             </div>
             <div class="footer">
               <p class="footer-text">© ${currentYear} Instituto de Ingenieros de Minas del Perú - IIMP</p>
