@@ -15,7 +15,7 @@ import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { authService } from "@/services/auth.service";
 import { emailService } from "@/services/email.service";
 import { emailTemplates } from "@/services/emailTemplates";
-import { toast } from "sonner";
+import { i18nToast } from "@/lib/translate";
 
 const ALL_SLIDES = {
   gess: [
@@ -119,13 +119,24 @@ export default function RecoveryForm() {
       const response = await authService.recoveryPassword(email, vertical);
 
       if (response.success) {
-        toast.success("¡Éxito! Tu contraseña ha sido recuperada y enviada a tu correo.");
+        i18nToast.success(
+          "¡Éxito! Tu contraseña ha sido recuperada y enviada a tu correo.",
+          "Success! Your password has been recovered and sent to your email."
+        );
         
         // Use centralized "bonito formato de correo"
+        // Ensure we use the full URL including protocol and domain
+        const origin = window.location.origin.includes("localhost") 
+          ? "https://multiperfil.sistemasiimp.org.pe" 
+          : window.location.origin;
+          
+        const absoluteLogoUrl = `${origin}${getLogo()}`;
+        
         const emailContent = emailTemplates.passwordRecovery({
           vertical,
           currentYear: new Date().getFullYear(),
-          password: response.message
+          password: response.message,
+          logoUrl: absoluteLogoUrl
         });
 
         await emailService.sendEmail({
@@ -136,11 +147,17 @@ export default function RecoveryForm() {
         });
 
       } else {
-        toast.error("No hay coincidencias para este usuario");
+        i18nToast.error(
+          response.message || "No hay coincidencias para este usuario",
+          response.message || "No matches found for this user"
+        );
       }
     } catch (error) {
       console.error("Recovery action error:", error);
-      toast.error("Hubo un error al procesar tu solicitud. Inténtalo de nuevo.");
+      i18nToast.error(
+        "Hubo un error al procesar tu solicitud. Inténtalo de nuevo.",
+        "There was an error processing your request. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -156,6 +173,8 @@ export default function RecoveryForm() {
             : vertical === "proexplo"
               ? "#f26522"
               : "#002b57",
+        borderTopWidth: "4px",
+        borderTopStyle: "solid",
       }}
     >
       {/* Brand Panel (Slider) */}
@@ -195,12 +214,10 @@ export default function RecoveryForm() {
             </div>
           </div>
         ))}
-
-
       </div>
 
       <div className="relative w-full lg:w-[55%] flex flex-col p-8 lg:p-16 bg-white z-30 lg:z-10 rounded-t-[3rem] lg:rounded-none -mt-12 lg:mt-0">
-        <div className="absolute top-8 right-10 hidden  sm:flex flex-row items-center justify-between gap-3">
+        <div className="absolute top-8 right-10 hidden sm:flex flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-1 px-3 py-1 rounded-sm bg-slate-50 border border-slate-100 overflow-visible">
             <PulseWaves color="bg-green-500" />
             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest ml-0">
@@ -250,6 +267,7 @@ export default function RecoveryForm() {
                 </div>
                 <Input
                   type="email"
+                  autoComplete="email"
                   placeholder="ej. usuario@hotmail.com"
                   className="text-base! w-full bg-white border border-slate-200 hover:border-slate-300 text-slate-900 h-14 rounded-xl pl-12 pr-4 focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all placeholder:text-slate-300 font-normal shadow-sm z-10"
                   required

@@ -1,6 +1,7 @@
 export interface BaseTemplateData {
   vertical: string;
   currentYear: number;
+  logoUrl?: string;
 }
 
 export interface PasswordRecoveryData extends BaseTemplateData {
@@ -18,7 +19,7 @@ const getStyles = (vertical: string) => {
 
 const layout = (
   content: string,
-  { vertical, currentYear }: BaseTemplateData,
+  { vertical, currentYear, logoUrl }: BaseTemplateData,
 ) => {
   const primaryColor = getStyles(vertical);
   const verticalName = vertical.toUpperCase();
@@ -26,7 +27,7 @@ const layout = (
   return `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background-color: white;">
       <div style="background-color: ${primaryColor}; padding: 40px 20px; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -1px;">SISTEMA INSTITUCIONAL IIMP</h1>
+        ${logoUrl ? `<img src="${logoUrl}" alt="${verticalName}" style="max-height: 60px; margin-bottom: 15px;" />` : `<h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -1px;">SISTEMA INSTITUCIONAL IIMP</h1>`}
         <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 14px;">${verticalName} ${currentYear}</p>
       </div>
       
@@ -42,20 +43,69 @@ const layout = (
 };
 
 export const emailTemplates = {
-  passwordRecovery: (data: PasswordRecoveryData) => {
-    const content = `
-      <p style="font-size: 16px; color: #475569; line-height: 1.6;">Hola,</p>
-      <p style="font-size: 16px; color: #475569; line-height: 1.6;">Hemos recibido una solicitud para recuperar tu contraseña de acceso al portal institucional del IIMP.</p>
-      
-      <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0; border: 1px dashed #cbd5e1;">
-        <p style="margin: 0; font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">Tu contraseña actual es:</p>
-        <p style="margin: 10px 0 0 0; font-size: 28px; color: #0f172a; font-weight: 900; font-family: monospace; letter-spacing: 2px;">${data.password}</p>
-      </div>
-      
-      <p style="font-size: 14px; color: #64748b; line-height: 1.6;">Por razones de seguridad, te recomendamos cambiar tu contraseña una vez hayas ingresado al sistema.</p>
-      
+  passwordRecovery: ({ vertical, currentYear, password, logoUrl }: { 
+    vertical: string; 
+    currentYear: number; 
+    password: string;
+    logoUrl: string;
+  }) => {
+    const colors = {
+      gess: "#1c8740",
+      proexplo: "#f26522",
+      wmc: "#002b57",
+      default: "#002b57"
+    };
+    
+    const brandColor = colors[vertical as keyof typeof colors] || colors.default;
+    const verticalName = vertical.toUpperCase();
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #334155; margin: 0; padding: 0; background-color: #f8fafc; }
+            .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+            .header { background-color: ${brandColor}; padding: 40px 20px; text-align: center; }
+            .logo { max-width: 180px; height: auto; }
+            .content { padding: 40px; text-align: center; }
+            .title { color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 16px; }
+            .description { color: #64748b; font-size: 16px; margin-bottom: 32px; }
+            .password-box { background-color: #f1f5f9; border: 2px dashed ${brandColor}40; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+            .password-label { color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+            .password-value { color: ${brandColor}; font-size: 32px; font-weight: 800; letter-spacing: 0.05em; margin: 0; }
+            .footer { background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; }
+            .footer-text { color: #94a3b8; font-size: 12px; margin: 0; }
+            .button { display: inline-block; padding: 14px 32px; background-color: ${brandColor}; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; margin-top: 16px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <img src="${logoUrl}" alt="${verticalName} Logo" class="logo">
+            </div>
+            <div class="content">
+              <h1 class="title">Recuperación de Contraseña</h1>
+              <p class="description">Has solicitado recuperar tu acceso al sistema <strong>Multiperfil IIMP</strong> para el evento <strong>${verticalName}</strong>.</p>
+              
+              <div class="password-box">
+                <div class="password-label">Tu contraseña actual es</div>
+                <p class="password-value">${password}</p>
+              </div>
+              
+              <p class="description" style="font-size: 14px;">Te recomendamos cambiar tu contraseña una vez hayas ingresado al sistema por seguridad.</p>
+              
+              <a href="https://multiperfil.sistemasiimp.org.pe" class="button">INGRESAR AL SISTEMA</a>
+            </div>
+            <div class="footer">
+              <p class="footer-text">© ${currentYear} Instituto de Ingenieros de Minas del Perú - IIMP</p>
+              <p class="footer-text" style="margin-top: 8px;">Este es un mensaje automático, por favor no respondas a este correo.</p>
+            </div>
+          </div>
+        </body>
+      </html>
     `;
-    return layout(content, data);
   },
 
   welcome: (data: BaseTemplateData & { name: string }) => {

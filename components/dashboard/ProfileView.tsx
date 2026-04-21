@@ -26,7 +26,12 @@ import {
   Clock,
 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useVertical, Input, FieldLabel, Textarea } from "@nrivera-iimp/ui-kit-iimp";
+import {
+  useVertical,
+  Input,
+  FieldLabel,
+  Textarea,
+} from "@nrivera-iimp/ui-kit-iimp";
 import {
   VOUCHER_STATUS_CONFIG,
   VoucherStatus,
@@ -44,7 +49,7 @@ const Card = React.forwardRef<
     id={id}
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white rounded-3xl shadow-sm border border-slate-100 p-6 ${className}`}
+    className={`bg-white rounded-3xl shadow-sm !border !border-slate-100 p-6 ${className}`}
   >
     {children}
   </motion.div>
@@ -76,7 +81,7 @@ export default function ProfileView() {
   const getCleanBio = (html: string | undefined) => {
     if (!html) return "Sin biografía profesional.";
     // Strip HTML tags using regex for SSR compatibility
-    const text = html.replace(/<[^>]*>?/gm, '').trim();
+    const text = html.replace(/<[^>]*>?/gm, "").trim();
     // Truncate to a reasonable length for 2 lines (~140 chars)
     if (text.length <= 140) return text;
     return text.substring(0, 140) + "...";
@@ -87,11 +92,14 @@ export default function ProfileView() {
   // Logic: Find the correct QR for the current vertical (e.g. "PROEXPLO26")
   const suffix = new Date().getFullYear().toString().slice(-2);
   const currentVerticalKey = `${vertical.toUpperCase()}${suffix}`;
-  
+
   const qrArray = Array.isArray(user?.qr) ? user.qr : [];
-  const qrEntry = qrArray.find((q) => q.vertical.toUpperCase() === currentVerticalKey) || 
-                   qrArray.find((q) => q.vertical.toUpperCase().startsWith(vertical.toUpperCase()));
-  
+  const qrEntry =
+    qrArray.find((q) => q.vertical.toUpperCase() === currentVerticalKey) ||
+    qrArray.find((q) =>
+      q.vertical.toUpperCase().startsWith(vertical.toUpperCase()),
+    );
+
   const qrValue = qrEntry?.codigo;
 
   const printRef = useRef<HTMLDivElement>(null);
@@ -161,7 +169,7 @@ export default function ProfileView() {
             </button>
             <button
               onClick={() => handlePrint()}
-              className="p-2 bg-slate-50 text-slate-400 hover:text-primary hover:bg-white hover:shadow-md transition-all rounded-xl cursor-pointer h-auto border border-slate-200"
+              className="!hidden p-2 bg-slate-50 text-slate-400 hover:text-primary hover:bg-white hover:shadow-md transition-all rounded-xl cursor-pointer h-auto border border-slate-200"
             >
               <Printer size={18} />
             </button>
@@ -225,9 +233,7 @@ export default function ProfileView() {
 
         {/* Profile Card */}
         <Card className="relative">
-          <button
-            className="absolute top-6 right-6 p-2 text-slate-400 hover:text-primary transition-colors h-auto bg-transparent border-none cursor-pointer"
-          >
+          <button className="!hidden absolute top-6 right-6 p-2 text-slate-400 hover:text-primary transition-colors h-auto bg-transparent border-none cursor-pointer">
             <Share2 size={20} />
           </button>
 
@@ -235,7 +241,10 @@ export default function ProfileView() {
             <div className="relative mb-6">
               <div className="w-28 h-28 rounded-full border-4 border-white shadow-xl ring-2 ring-primary/10 overflow-hidden bg-slate-100 relative flex items-center justify-center">
                 <Image
-                  src={getFullImageUrl(user?.picture) || `https://ui-avatars.com/api/?name=${user?.nombres}+${user?.apellidoPaterno}&background=random&size=200`}
+                  src={
+                    getFullImageUrl(user?.picture) ||
+                    `https://ui-avatars.com/api/?name=${user?.nombres}+${user?.apellidoPaterno}&background=random&size=200`
+                  }
                   alt="Avatar"
                   fill
                   style={{ objectFit: "cover" }}
@@ -292,7 +301,7 @@ export default function ProfileView() {
               className="w-full"
               target="_blank"
             >
-              <button className="w-full h-12 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl shadow-xl shadow-primary/20 transition-all transform hover:-translate-y-1 active:scale-[0.98] border-none flex items-center justify-center gap-2 uppercase tracking-widest text-sm mt-5 cursor-pointer">
+              <button className="!hidden w-full h-12 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl shadow-xl shadow-primary/20 transition-all transform hover:-translate-y-1 active:scale-[0.98] border-none flex items-center justify-center gap-2 uppercase tracking-widest text-sm mt-5 cursor-pointer">
                 Ver Perfil Público
               </button>
             </Link>
@@ -510,6 +519,7 @@ export default function ProfileView() {
                   />
                   <Input
                     type="text"
+                    readOnly
                     defaultValue={`${user?.nombres || ""} ${user?.apellidoPaterno || ""}`}
                     className="w-full pl-10 pr-4 h-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   />
@@ -526,6 +536,7 @@ export default function ProfileView() {
                     size={18}
                   />
                   <Input
+                    readOnly
                     type="text"
                     defaultValue={user?.cargo || "Participante"}
                     className="w-full pl-10 pr-4 h-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -543,6 +554,7 @@ export default function ProfileView() {
                     size={18}
                   />
                   <Input
+                    readOnly
                     type="email"
                     defaultValue={user?.email || "contacto@ejemplo.com"}
                     className="w-full pl-10 pr-4 h-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -562,6 +574,7 @@ export default function ProfileView() {
                     size={18}
                   />
                   <Input
+                    readOnly
                     type="tel"
                     defaultValue={
                       user?.telefono || user?.celular || "+51 987 654 321"
@@ -581,6 +594,7 @@ export default function ProfileView() {
                     size={18}
                   />
                   <Input
+                    readOnly
                     type="text"
                     defaultValue="Lima, Perú"
                     className="w-full pl-10 pr-4 h-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"

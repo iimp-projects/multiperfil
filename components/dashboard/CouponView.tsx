@@ -122,7 +122,7 @@ function CouponCard({ cupon, user }: Omit<CouponCardProps, "vertical">) {
     <div className="space-y-4">
       <div
         ref={cardRef}
-        className="relative bg-white rounded-4xl shadow-xl shadow-slate-200/80 border border-slate-100 overflow-hidden"
+        className="relative bg-white rounded-4xl shadow-xl shadow-slate-200/80 !border !border-slate-100 overflow-hidden"
       >
         <div
           className="absolute top-3 right-3 z-20 flex gap-1.5 exclude-from-download print:hidden"

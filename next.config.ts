@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
       {
         source: "/api/proxy/:path*",
         // Proxy to External API
-        destination: `${process.env.NEXT_PUBLIC_API_DOMAIN || 'https://secure2.iimp.org:8443'}${process.env.NEXT_PUBLIC_API_BASE_PATH || '/rest'}/:path*`, 
+        destination: `${process.env.NEXT_PUBLIC_API_DOMAIN || "https://secure2.iimp.org:8443"}${process.env.NEXT_PUBLIC_API_BASE_PATH || "/rest"}/:path*`,
       },
     ];
   },

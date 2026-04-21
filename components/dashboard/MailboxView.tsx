@@ -146,7 +146,7 @@ export default function MailboxView() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-160px)] bg-white rounded-3xl !border !border-slate-100 shadow-xl overflow-hidden">
       {/* Search Header */}
       <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">

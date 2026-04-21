@@ -30,7 +30,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getBucketName, getFullImageUrl } from "@/lib/s3-utils";
 import { userService } from "@/services/user.service";
 import { SaveDataRequest } from "@/types/auth";
-import { toast } from "sonner";
+import { i18nToast } from "@/lib/translate";
 import {
   Button,
   Input,
@@ -300,6 +300,7 @@ export default function ProfileEditView() {
       }),
     ],
     content: user?.bio || "",
+    editable: true,
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -376,25 +377,33 @@ export default function ProfileEditView() {
 
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
-
   const handleSubmit = async (newPictureKey?: string) => {
     // Reset identifier logic: use user.siecode strictly if available from session
     const userIdentifier = user?.siecode || user?.nu_documento;
 
     if (!userIdentifier) {
-      toast.error("No se pudo identificar al participante para guardar los cambios");
+      i18nToast.error(
+        "No se pudo identificar al participante para guardar los cambios",
+        "Could not identify the participant to save changes"
+      );
       setIsSubmitting(false);
       return;
     }
 
     const hasErrors = Object.values(errors).some((error) => error !== "");
     if (hasErrors) {
-      toast.error("Por favor corrija los errores en el formulario antes de guardar");
+      i18nToast.error(
+        "Por favor corrija los errores en el formulario antes de guardar",
+        "Please correct the errors in the form before saving"
+      );
       return;
     }
 
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Guardando cambios...");
+    const loadingToast = i18nToast.loading(
+      "Guardando cambios...",
+      "Saving changes..."
+    );
     try {
       const dynamicEvent = getDynamicEventCode(vertical);
 
@@ -448,14 +457,24 @@ export default function ProfileEditView() {
           setProfilePhoto(getFullImageUrl(newPictureKey));
         }
 
-        toast.success("Perfil actualizado correctamente", { id: loadingToast });
+        i18nToast.success(
+          "Perfil actualizado correctamente",
+          "Profile updated successfully",
+          { id: loadingToast }
+        );
       } else {
-        toast.error(response.message || "Error al actualizar el perfil", {
-          id: loadingToast,
-        });
+        i18nToast.error(
+          response.message || "Error al actualizar el perfil",
+          "Error updating profile",
+          { id: loadingToast }
+        );
       }
     } catch {
-      toast.error("Error de conexión con el servidor", { id: loadingToast });
+      i18nToast.error(
+        "Error de conexión con el servidor",
+        "Server connection error",
+        { id: loadingToast }
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -468,7 +487,10 @@ export default function ProfileEditView() {
     if (!file) return;
 
     setIsUploadingPhoto(true);
-    const uploadToast = toast.loading("Subiendo foto...");
+    const uploadToast = i18nToast.loading(
+      "Subiendo foto...",
+      "Uploading photo..."
+    );
 
     try {
       const bucketName = getBucketName();
@@ -504,7 +526,11 @@ export default function ProfileEditView() {
 
       setProfilePhoto(publicUrl);
       setS3Key(key);
-      toast.success("Foto subida correctamente", { id: uploadToast });
+      i18nToast.success(
+        "Foto subida correctamente",
+        "Photo uploaded successfully",
+        { id: uploadToast }
+      );
 
       // Automatically save to backend
       await handleSubmit(key);
@@ -512,7 +538,7 @@ export default function ProfileEditView() {
       console.error("Upload Error:", error);
       const message =
         error instanceof Error ? error.message : "Error al subir la foto";
-      toast.error(message, { id: uploadToast });
+      i18nToast.error(message, message, { id: uploadToast });
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -526,7 +552,7 @@ export default function ProfileEditView() {
           subtitle="Actualice su información profesional"
         />
 
-        <Card className="!shadow-none !border-0 !shadow-sm bg-white !border border-slate-100 p-6 md:p-10">
+        <Card className="bg-white !border !border-slate-100 p-6 md:p-10 shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 ">
             {/* Left: Photos & Files */}
             <div className="lg:col-span-4 space-y-8">
@@ -599,7 +625,7 @@ export default function ProfileEditView() {
                   <FieldLabel className="text-[10px] uppercase tracking-[0.15em] font-black text-slate-400 mb-2 block ml-1 break-words">
                     Nombre Completo
                   </FieldLabel>
-                  <div className="relative">
+                  <div className="relative pointer-events-none">
                     <User
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
                       size={18}
@@ -608,7 +634,9 @@ export default function ProfileEditView() {
                       name="nombreCompleto"
                       value={formData.nombreCompleto}
                       onChange={handleInputChange}
-                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! ${
+                      readOnly
+                      disabled
+                      className={`pl-12 h-12 bg-slate-100/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! opacity-60 grayscale-[0.2] cursor-not-allowed ${
                         errors.nombreCompleto ? "border-red-500 ring-1 ring-red-500/10" : ""
                       }`}
                     />
@@ -624,7 +652,7 @@ export default function ProfileEditView() {
                   <FieldLabel className="text-[10px] uppercase tracking-[0.15em] font-black text-slate-400 mb-2 block ml-1 break-words">
                     Número de Teléfono
                   </FieldLabel>
-                  <div className="relative">
+                  <div className="relative pointer-events-none">
                     <Phone
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
                       size={18}
@@ -633,7 +661,9 @@ export default function ProfileEditView() {
                       name="numeroTelefono"
                       value={formData.numeroTelefono}
                       onChange={handleInputChange}
-                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!! ${
+                      readOnly
+                      disabled
+                      className={`pl-12 h-12 bg-slate-100/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal!! opacity-60 grayscale-[0.2] cursor-not-allowed ${
                         errors.numeroTelefono ? "border-red-500 ring-1 ring-red-500/10" : ""
                       }`}
                     />
@@ -674,7 +704,7 @@ export default function ProfileEditView() {
                   <FieldLabel className="text-[10px] uppercase tracking-[0.15em] font-black text-slate-400 mb-2 block ml-1 break-words">
                     Correo Electrónico
                   </FieldLabel>
-                  <div className="relative">
+                  <div className="relative pointer-events-none">
                     <Mail
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
                       size={18}
@@ -683,7 +713,9 @@ export default function ProfileEditView() {
                       name="correoElectronico"
                       value={formData.correoElectronico}
                       onChange={handleInputChange}
-                      className={`pl-12 h-12 bg-slate-50/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! ${
+                      readOnly
+                      disabled
+                      className={`pl-12 h-12 bg-slate-100/50 border-slate-200 rounded-2xl focus:bg-white text-base! font-normal! opacity-60 grayscale-[0.2] cursor-not-allowed ${
                         errors.correoElectronico ? "border-red-500 ring-1 ring-red-500/10" : ""
                       }`}
                     />
@@ -699,7 +731,7 @@ export default function ProfileEditView() {
                   <FieldLabel className="text-[10px] uppercase tracking-[0.15em] font-black text-slate-400 mb-2 block ml-1">
                     Bio Profesional
                   </FieldLabel>
-                  <div className="relative bg-slate-50/50 border border-slate-200 rounded-2xl overflow-hidden focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary transition-all">
+                  <div className="relative bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary shadow-sm hover:border-slate-300">
                     <MenuBar editor={editor} />
                     <div className="p-0">
                       <EditorContent editor={editor} />

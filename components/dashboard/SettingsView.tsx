@@ -28,7 +28,7 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { userService } from "@/services/user.service";
 import { authService } from "@/services/auth.service";
-import { toast } from "sonner";
+import { i18nToast } from "@/lib/translate";
 import { getDynamicEventCode } from "@/lib/utils/event";
 import { SaveDataRequest, ResetPasswordRequest } from "@/types/auth";
 import { Save, Loader2 } from "lucide-react";
@@ -111,15 +111,11 @@ export default function SettingsView() {
   const [activeSection, setActiveSection] = useState<
     "preferences" | "privacy" | "history" | "more"
   >(() => {
-    if (
-      tabParam === "privacy" ||
-      tabParam === "preferences" ||
-      tabParam === "history" ||
-      tabParam === "more"
-    ) {
+    const validTabs = ["preferences", "privacy", "history", "more"];
+    if (tabParam && validTabs.includes(tabParam)) {
       return tabParam as "preferences" | "privacy" | "history" | "more";
     }
-    return "preferences";
+    return "more"; // Default to Seguridad
   });
 
   const [historyPage, setHistoryPage] = useState(1);
@@ -172,9 +168,13 @@ export default function SettingsView() {
   const handleSaveSettings = async () => {
     if (!user) return;
     const userIdentifier = user.siecode || user.nu_documento;
-    
+
     if (!userIdentifier) {
-      toast.error("No se pudo identificar al usuario para guardar la configuración");
+      i18nToast.error(
+        "No se pudo identificar al usuario para guardar la configuracion",
+        "Could not identify the user to save settings",
+      );
+      setIsSaving(false);
       return;
     }
 
@@ -185,7 +185,11 @@ export default function SettingsView() {
       const payload: SaveDataRequest = {
         event: dynamicEvent,
         siecode: userIdentifier,
-        nombreCompleto: [user.nombres, user.apellidoPaterno, user.apellidoMaterno]
+        nombreCompleto: [
+          user.nombres,
+          user.apellidoPaterno,
+          user.apellidoMaterno,
+        ]
           .filter(Boolean)
           .join(" "),
         numeroTelefono: user.telefono || user.celular || "",
@@ -202,6 +206,7 @@ export default function SettingsView() {
       };
 
       const response = await userService.saveData(payload);
+
       if (response.success) {
         updateUser({
           notificacion01: settings.preferences.notifications.email,
@@ -209,12 +214,16 @@ export default function SettingsView() {
           visPerfil: settings.privacy.profileVisibility === "public",
           visWhatsapp: settings.privacy.whatsappVisible,
         });
-        toast.success("Configuración guardada");
+        i18nToast.success("Configuración guardada", "Settings saved");
       } else {
-        toast.error(response.message || "Error al guardar");
+        i18nToast.error(
+          response.message || "Error al guardar",
+          response.message || "Error saving settings",
+        );
       }
-    } catch {
-      toast.error("Error de conexión");
+    } catch (error) {
+      console.error("Save settings error:", error);
+      i18nToast.error("Error de conexión", "Connection error");
     } finally {
       setIsSaving(false);
     }
@@ -223,11 +232,12 @@ export default function SettingsView() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
     const userIdentifier = user.siecode || user.nu_documento;
     if (!userIdentifier) return;
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("Las contraseñas no coinciden");
+      i18nToast.error("Las contraseñas no coinciden", "Passwords do not match");
       return;
     }
 
@@ -245,17 +255,24 @@ export default function SettingsView() {
 
       const response = await authService.resetPassword(payload);
       if (response.success) {
-        toast.success("Contraseña actualizada correctamente");
+        i18nToast.success(
+          "Contraseña actualizada correctamente",
+          "Password updated successfully",
+        );
         setPasswordForm({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
         });
       } else {
-        toast.error(response.message || "Error al cambiar la contraseña");
+        i18nToast.error(
+          response.message || "Error al cambiar la contraseña",
+          response.message || "Error changing password",
+        );
       }
-    } catch {
-      toast.error("Error de conexión");
+    } catch (error) {
+      console.error("Change password error:", error);
+      i18nToast.error("Error de conexión", "Connection error");
     } finally {
       setIsResetting(false);
     }
@@ -271,24 +288,28 @@ export default function SettingsView() {
             onClick={() => setActiveSection("preferences")}
             icon={<Bell size={18} />}
             label="Preferencias"
+            className="!hidden"
           />
           <SectionNavTab
             active={activeSection === "privacy"}
             onClick={() => setActiveSection("privacy")}
             icon={<ShieldCheck size={18} />}
             label="Privacidad"
+            className="!hidden"
           />
           <SectionNavTab
             active={activeSection === "history"}
             onClick={() => setActiveSection("history")}
             icon={<History size={18} />}
             label="Historial"
+            className="!hidden"
           />
           <SectionNavTab
             active={activeSection === "more"}
             onClick={() => setActiveSection("more")}
             icon={<KeyRound size={18} />}
             label="Seguridad"
+            defaultActive
           />
         </div>
       </div>
@@ -302,7 +323,7 @@ export default function SettingsView() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="rounded-3xl shadow-sm bg-white border border-slate-100 p-6 md:p-10 relative overflow-hidden overscroll-contain"
+            className="rounded-3xl shadow-sm bg-white !border !border-slate-100 p-6 md:p-10 relative overflow-hidden overscroll-contain"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
             <div className="relative z-10 space-y-8">
@@ -366,14 +387,22 @@ export default function SettingsView() {
                     <SettingCard title="Visibilidad del Perfil">
                       <div className="flex bg-slate-50 p-1 rounded-2xl w-fit">
                         <TabButton
-                          active={settings.privacy.profileVisibility === "public"}
-                          onClick={() => updatePrivacy("profileVisibility", "public")}
+                          active={
+                            settings.privacy.profileVisibility === "public"
+                          }
+                          onClick={() =>
+                            updatePrivacy("profileVisibility", "public")
+                          }
                           label="Público"
                           icon={<Eye size={16} />}
                         />
                         <TabButton
-                          active={settings.privacy.profileVisibility === "private"}
-                          onClick={() => updatePrivacy("profileVisibility", "private")}
+                          active={
+                            settings.privacy.profileVisibility === "private"
+                          }
+                          onClick={() =>
+                            updatePrivacy("profileVisibility", "private")
+                          }
                           label="Privado"
                           icon={<EyeOff size={16} />}
                         />
@@ -419,12 +448,13 @@ export default function SettingsView() {
                       Historial de Actividad
                     </h2>
                     <p className="text-slate-500 font-medium mt-1">
-                      Revisa los accesos recientes a tu cuenta para tu seguridad.
+                      Revisa los accesos recientes a tu cuenta para tu
+                      seguridad.
                     </p>
                   </div>
 
                   {/* Desktop Table View */}
-                  <div className="hidden md:block overflow-hidden rounded-3xl border border-slate-100 shadow-sm">
+                  <div className="hidden md:block overflow-hidden rounded-3xl !border !border-slate-100 shadow-sm">
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="bg-slate-50/50">
@@ -477,7 +507,7 @@ export default function SettingsView() {
                     {paginatedHistory.map((session) => (
                       <div
                         key={session.id}
-                        className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm space-y-4"
+                        className="p-5 rounded-2xl !border !border-slate-100 bg-white shadow-sm space-y-4"
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex flex-col">
@@ -517,7 +547,9 @@ export default function SettingsView() {
                   {totalHistoryPages > 1 && (
                     <div className="flex items-center justify-between gap-4 mt-4">
                       <button
-                        onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setHistoryPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={historyPage === 1}
                         className="p-2 border border-slate-200 rounded-lg bg-white text-slate-600 disabled:opacity-50 hover:bg-slate-50 cursor-pointer"
                       >
@@ -527,7 +559,11 @@ export default function SettingsView() {
                         Página {historyPage} de {totalHistoryPages}
                       </span>
                       <button
-                        onClick={() => setHistoryPage((p) => Math.min(totalHistoryPages, p + 1))}
+                        onClick={() =>
+                          setHistoryPage((p) =>
+                            Math.min(totalHistoryPages, p + 1),
+                          )
+                        }
                         disabled={historyPage === totalHistoryPages}
                         className="p-2 border border-slate-200 rounded-lg bg-white text-slate-600 disabled:opacity-50 hover:bg-slate-50 cursor-pointer"
                       >
@@ -546,7 +582,8 @@ export default function SettingsView() {
                           ¿Ves algo sospechoso?
                         </h4>
                         <p className="text-xs text-amber-700 mt-0.5 font-medium leading-relaxed break-words">
-                          Si no reconoces algún inicio de sesión, te recomendamos cambiar tu contraseña inmediatamente.
+                          Si no reconoces algún inicio de sesión, te
+                          recomendamos cambiar tu contraseña inmediatamente.
                         </p>
                       </div>
                     </div>
@@ -574,10 +611,14 @@ export default function SettingsView() {
                   <SettingCard title="Cambio de contraseña">
                     <div className="max-w-md space-y-6">
                       <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                        Asegúrate de que tu nueva contraseña sea fuerte y no la uses en otros sitios.
+                        Asegúrate de que tu nueva contraseña sea fuerte y no la
+                        uses en otros sitios.
                       </p>
 
-                      <form onSubmit={handlePasswordReset} className="space-y-6">
+                      <form
+                        onSubmit={handlePasswordReset}
+                        className="space-y-6"
+                      >
                         <FieldComponent className="space-y-2 group">
                           <div className="flex items-center gap-2 px-1">
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
@@ -693,22 +734,27 @@ function SectionNavTab({
   onClick,
   icon,
   label,
+  className,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  className?: string;
+  defaultActive?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl transition-all duration-300 font-bold text-sm h-auto border-none cursor-pointer shrink-0 ${
+      className={`flex items-center gap-2.5 px-6 py-3 rounded-2xl transition-all duration-300 font-bold text-sm h-auto border-none cursor-pointer shrink-0 ${className} ${
         active
           ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20 active:scale-95"
           : "bg-transparent text-slate-500 hover:text-slate-900 hover:bg-white/80 active:scale-95"
       }`}
     >
-      <span className={active ? "text-white" : "text-slate-400 shrink-0"}>{icon}</span>
+      <span className={active ? "text-white" : "text-slate-400 shrink-0"}>
+        {icon}
+      </span>
       <span className="whitespace-nowrap">{label}</span>
     </button>
   );
@@ -745,14 +791,16 @@ function SettingToggle({
             }
       }
       transition={{ duration: 2, repeat: highlighted ? Infinity : 0 }}
-      className="flex items-center justify-between p-6 rounded-3xl border border-slate-100 bg-white transition-all hover:shadow-sm"
+      className="flex items-center justify-between p-6 rounded-3xl !border !border-slate-100 bg-white transition-all hover:shadow-sm"
     >
       <div className="flex gap-4 items-start sm:items-center min-w-0">
         <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0">
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="font-bold text-slate-900 break-words line-clamp-1">{title}</h4>
+          <h4 className="font-bold text-slate-900 break-words line-clamp-1">
+            {title}
+          </h4>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 leading-relaxed break-words">
             {description}
           </p>
@@ -784,7 +832,7 @@ function SettingCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="p-8 rounded-[2.5rem] border border-slate-100 bg-slate-50/30 space-y-4">
+    <div className="p-8 rounded-[2.5rem] !border !border-slate-100 bg-slate-50/30 space-y-4">
       <h3 className="font-bold text-slate-800 text-lg">{title}</h3>
       {children}
     </div>

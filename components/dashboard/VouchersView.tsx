@@ -19,6 +19,7 @@ import {
 } from "@/types/auth";
 import clsx from "clsx";
 import {
+  Card,
   Input,
   Select,
   SelectContent,
@@ -27,7 +28,7 @@ import {
   SelectValue,
 } from "@nrivera-iimp/ui-kit-iimp";
 import { getFullImageUrl } from "@/lib/s3-utils";
-import { toast } from "sonner";
+import { i18nToast } from "@/lib/translate";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -39,7 +40,10 @@ export default function VouchersView() {
 
   const handleDownloadPdf = (impreso?: string) => {
     if (!impreso) {
-      toast.error("El archivo PDF no está disponible para este comprobante.");
+      i18nToast.error(
+        "El archivo PDF no está disponible para este comprobante.",
+        "The PDF file is not available for this voucher."
+      );
       return;
     }
 
@@ -48,7 +52,10 @@ export default function VouchersView() {
     const fullUrl = getFullImageUrl(pdfPath);
 
     if (fullUrl) {
-      toast.info("Iniciando descarga del comprobante...");
+      i18nToast.info(
+      "Iniciando descarga del comprobante...",
+      "Starting voucher download..."
+    );
       window.open(fullUrl, "_blank");
     }
   };
@@ -132,7 +139,9 @@ export default function VouchersView() {
               }}
             >
               <SelectTrigger className="w-full h-12 md:w-48 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
-                <SelectValue placeholder="Todos los estados" />
+                <div className="notranslate" translate="no">
+                  <SelectValue placeholder="Todos los estados" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="TODOS">Todos los estados</SelectItem>
@@ -149,7 +158,7 @@ export default function VouchersView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden overscroll-contain">
+      <Card className="bg-white rounded-3xl shadow-sm !border !border-slate-100 overflow-hidden overscroll-contain p-0">
         {paginatedVouchers.length > 0 ? (
           <div className="divide-y divide-slate-100">
             {paginatedVouchers.map((item, i) => (
@@ -321,7 +330,7 @@ export default function VouchersView() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
