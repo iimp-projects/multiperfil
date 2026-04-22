@@ -139,7 +139,7 @@ function CouponCard({ cupon, user }: Omit<CouponCardProps, "vertical">) {
             variant="ghost"
             onClick={handlePrint}
             title="Imprimir"
-            className="p-2 rounded-xl bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-primary transition-all shadow-sm cursor-pointer h-auto"
+            className="!hidden p-2 rounded-xl bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-primary transition-all shadow-sm cursor-pointer h-auto"
           >
             <Printer size={16} />
           </Button>

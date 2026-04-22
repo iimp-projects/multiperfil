@@ -329,8 +329,10 @@ export default function ProfileEditView() {
   const { vertical } = useVertical();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  const hasSyncedRef = React.useRef(false);
+
   React.useEffect(() => {
-    if (user) {
+    if (user && !hasSyncedRef.current) {
       setFormData({
         nombreCompleto: [
           user.nombres,
@@ -348,6 +350,7 @@ export default function ProfileEditView() {
       if (editor && user.bio) {
         editor.commands.setContent(user.bio);
       }
+      hasSyncedRef.current = true;
     }
   }, [user, editor]);
 

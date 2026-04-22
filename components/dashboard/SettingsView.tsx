@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -71,8 +71,10 @@ export default function SettingsView() {
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
+  const hasSyncedRef = useRef(false);
+
   useEffect(() => {
-    if (user) {
+    if (user && !hasSyncedRef.current) {
       setSettings((prev) => ({
         ...prev,
         preferences: {
@@ -87,6 +89,7 @@ export default function SettingsView() {
           whatsappVisible: user.visWhatsapp ?? true,
         },
       }));
+      hasSyncedRef.current = true;
     }
   }, [user]);
 
