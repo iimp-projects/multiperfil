@@ -12,6 +12,7 @@ import {
   Bell,
   Menu,
   X,
+  ChevronLeft,
   ChevronRight,
   Receipt,
   Users,
@@ -451,7 +452,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="fixed inset-0 bg-slate-50 flex overflow-hidden">
+    <div className="min-h-[100dvh] bg-slate-50 flex">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {isSidebarOpen && (
@@ -467,7 +468,7 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 lg:sticky lg:inset-y-auto lg:top-0 lg:h-[100dvh] lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="h-full flex flex-col">
           {/* Logo - Fixed top part */}
@@ -565,10 +566,26 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto overflow-x-hidden custom-scrollbar overscroll-contain scroll-touch">
+      <div className="flex-1 flex flex-col min-w-0 min-h-[100dvh] overflow-x-hidden">
         {/* Header */}
         <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between z-30">
           <div className="flex items-center gap-4 lg:gap-0">
+            {pathname !== "/dashboard" && (
+              <button
+                className="p-2 -ml-2 text-slate-500 lg:hidden cursor-pointer h-auto bg-transparent border-none"
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.history.length > 1) {
+                    router.back();
+                    return;
+                  }
+                  router.push("/dashboard");
+                }}
+                aria-label="Volver"
+                title="Volver"
+              >
+                <ChevronLeft size={24} className="block lg:hidden" />
+              </button>
+            )}
             <button
               className="p-2 -ml-2 text-slate-500 lg:hidden cursor-pointer h-auto bg-transparent border-none"
               onClick={() => setIsSidebarOpen(true)}

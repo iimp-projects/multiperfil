@@ -1,10 +1,11 @@
 import { toast, ExternalToast } from 'sonner';
+import type { Lang } from "@/lib/lang";
 
 /**
  * Gets the current active language from the `googtrans` cookie.
  * Fallbacks to 'es' if not found.
  */
-const getCurrentLang = (): 'es' | 'en' => {
+export const getCurrentLang = (): Lang => {
   if (typeof document === 'undefined') return 'es';
   const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
   if (match) {

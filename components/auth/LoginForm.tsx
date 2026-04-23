@@ -29,8 +29,34 @@ import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
-import { i18nToast } from "@/lib/translate";
+import { getCurrentLang, i18nToast } from "@/lib/translate";
+import type { Lang } from "@/lib/lang";
 import { getDynamicEventCode } from "@/lib/utils/event";
+
+const LOGIN_I18N = {
+  es: {
+    docTypeLabel: "TIPO DE DOCUMENTO",
+    docTypePlaceholder: "Tipo de Documento",
+    docNumLabel: "NRO DE DOCUMENTO",
+    passwordLabel: "PASSWORD",
+    docTypes: {
+      "1": "DNI",
+      "4": "Carnet de extranjeria",
+      "7": "Pasaporte",
+    } as Record<string, string>,
+  },
+  en: {
+    docTypeLabel: "DOCUMENT TYPE",
+    docTypePlaceholder: "Document type",
+    docNumLabel: "DOCUMENT NUMBER",
+    passwordLabel: "PASSWORD",
+    docTypes: {
+      "1": "National ID / ID Card",
+      "4": "Foreigner ID",
+      "7": "Passport",
+    } as Record<string, string>,
+  },
+} as const;
 
 const ALL_SLIDES = {
   gess: [
@@ -87,7 +113,11 @@ const ALL_SLIDES = {
   ],
 };
 
-export default function LoginForm() {
+export default function LoginForm({
+  initialLang,
+}: {
+  initialLang?: Lang;
+}) {
   const [loading, setLoading] = useState(false);
   const { vertical, setVertical } = useVertical();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -96,6 +126,18 @@ export default function LoginForm() {
   const { setAuth, isAuthenticated, _hasHydrated } = useAuthStore();
   const [selectedEventName, setSelectedEventName] = useState("");
   const [hasSelectedVertical, setHasSelectedVertical] = useState(false);
+
+  const [lang, setLang] = useState<Lang>(() => initialLang ?? "es");
+  const t = LOGIN_I18N[lang];
+
+  useEffect(() => {
+    // Avoid reading cookies during render to prevent hydration mismatches.
+    const id = window.setTimeout(() => {
+      const current = getCurrentLang();
+      setLang((prev) => (prev === current ? prev : current));
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
 
@@ -393,7 +435,7 @@ export default function LoginForm() {
                   <div className="flex items-center gap-2 px-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#c9c9c9]" />
                     <FieldLabel className="text-slate-500 text-xs font-bold tracking-widest uppercase opacity-80">
-                      TIPO DE DOCUMENTO
+                      <span translate="no">{t.docTypeLabel}</span>
                     </FieldLabel>
                   </div>
                   <div className="relative group/input">
@@ -405,13 +447,19 @@ export default function LoginForm() {
                     >
                       <SelectTrigger className="text-base! w-full bg-white border border-slate-200 hover:border-slate-300 text-slate-900 h-14 rounded-xl pl-4 pr-10 focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-normal shadow-sm z-10 appearance-none bg-none cursor-pointer">
                         <div className="notranslate" translate="no">
-                          <SelectValue placeholder="Tipo de Documento" />
+                          <SelectValue placeholder={t.docTypePlaceholder} />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">DNI</SelectItem>
-                        <SelectItem value="4">CARNET DE EXTRANJERIA</SelectItem>
-                        <SelectItem value="7">PASAPORTE</SelectItem>
+                        <SelectItem value="1">
+                          <span translate="no">{t.docTypes["1"]}</span>
+                        </SelectItem>
+                        <SelectItem value="4">
+                          <span translate="no">{t.docTypes["4"]}</span>
+                        </SelectItem>
+                        <SelectItem value="7">
+                          <span translate="no">{t.docTypes["7"]}</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -421,7 +469,7 @@ export default function LoginForm() {
                   <div className="flex items-center gap-2 px-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#c9c9c9]" />
                     <FieldLabel className="text-slate-500 text-xs font-bold tracking-widest uppercase opacity-80">
-                      NRO DE DOCUMENTO
+                      <span translate="no">{t.docNumLabel}</span>
                     </FieldLabel>
                   </div>
                   <div className="relative group/input">
@@ -449,7 +497,7 @@ export default function LoginForm() {
                   <div className="flex items-center gap-2 px-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#c9c9c9]" />
                     <FieldLabel className="text-slate-500 text-xs font-bold tracking-widest uppercase opacity-80">
-                      PASSWORD
+                      <span translate="no">{t.passwordLabel}</span>
                     </FieldLabel>
                   </div>
                   <div className="relative group/input">
