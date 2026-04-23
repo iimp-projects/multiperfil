@@ -113,12 +113,14 @@ const ALL_SLIDES = {
   ],
 };
 
+const SESSION_EVENT_SELECTION_KEY = "iimp-session-event-selection";
+
 export default function LoginForm({
   initialLang,
 }: {
   initialLang?: Lang;
 }) {
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
   const { vertical, setVertical } = useVertical();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -126,41 +128,17 @@ export default function LoginForm({
   const { setAuth, isAuthenticated, _hasHydrated } = useAuthStore();
   const [selectedEventName, setSelectedEventName] = useState("");
   const [hasSelectedVertical, setHasSelectedVertical] = useState(false);
-
   const [lang, setLang] = useState<Lang>(() => initialLang ?? "es");
   const t = LOGIN_I18N[lang];
+  const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
 
   useEffect(() => {
-    // Avoid reading cookies during render to prevent hydration mismatches.
     const id = window.setTimeout(() => {
       const current = getCurrentLang();
       setLang((prev) => (prev === current ? prev : current));
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
-
-  const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
-
-  useEffect(() => {
-    // Keep the event selector open by default on first visit.
-    // Only auto-skip it when the user explicitly preselects a vertical
-    // via URL (?theme=...) or has one persisted in localStorage.
-    const urlParams = new URLSearchParams(window.location.search);
-    const themeParam = urlParams.get("theme")?.toLowerCase();
-    const saved = localStorage.getItem("iimp-vertical")?.toLowerCase();
-
-    const preselected = themeParam || saved;
-    if (!preselected) return;
-
-    const allowed: Vertical[] = ["proexplo", "gess", "wmc", "perumin"];
-    if (allowed.includes(preselected as Vertical)) {
-      const timeoutId = window.setTimeout(() => {
-        setVertical(preselected as Vertical);
-        setHasSelectedVertical(true);
-      }, 0);
-      return () => window.clearTimeout(timeoutId);
-    }
-  }, [setVertical]);
 
   useEffect(() => {
     const fetchVerticals = async () => {
@@ -191,8 +169,51 @@ export default function LoginForm({
         setDynamicVerticals(mapped);
       }
     };
-    fetchVerticals();
+fetchVerticals();
   }, []);
+
+useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get("theme")?.toLowerCase();
+    if (themeParam) {
+      const allowed: Vertical[] = ["proexplo", "gess", "wmc", "perumin"];
+      if (allowed.includes(themeParam as Vertical)) {
+        const timeoutId = window.setTimeout(() => {
+          setVertical(themeParam as Vertical);
+          setHasSelectedVertical(true);
+        }, 0);
+        return () => window.clearTimeout(timeoutId);
+      }
+    }
+
+    const raw = sessionStorage.getItem(SESSION_EVENT_SELECTION_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as { vertical?: Vertical; eventName?: string };
+      sessionStorage.removeItem(SESSION_EVENT_SELECTION_KEY);
+      if (!parsed?.vertical) return;
+      const allowed: Vertical[] = ["proexplo", "gess", "wmc", "perumin"];
+      if (!allowed.includes(parsed.vertical as Vertical)) return;
+      const timeoutId = window.setTimeout(() => {
+        setVertical(parsed.vertical as Vertical);
+        if (parsed.eventName) setSelectedEventName(parsed.eventName);
+        setHasSelectedVertical(true);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    } catch {
+      try { sessionStorage.removeItem(SESSION_EVENT_SELECTION_KEY); } catch {}
+    }
+  }, [setVertical]);
+
+  const selectEvent = (slug: Vertical, eventName: string) => {
+    setVertical(slug);
+    setSelectedEventName(eventName);
+    setHasSelectedVertical(true);
+  };
+
+  const openEventSelector = () => {
+    setHasSelectedVertical(false);
+  };
 
   // Form state
   const [formData, setFormData] = useState({
@@ -296,22 +317,29 @@ export default function LoginForm({
                   <button
                     type="button"
                     key={`${item.originalName}-${idx}`}
-                    onClick={() => {
+onClick={() => {
                       const slug = item.slug;
-                      setVertical(slug);
-                      setSelectedEventName(item.originalName);
-                      setHasSelectedVertical(true);
-
-                      // Automatic language selection logic
-                      const targetLang = slug === "wmc" ? "en" : "es";
-                      const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+                      const needsEnglish = slug === "wmc";
+                      const match = document.cookie.match(
+                        /googtrans=\/(?:auto|es)\/(\w+)/
+                      );
                       const currentLang = match ? match[1].toLowerCase() : "es";
+                      const needsReload = needsEnglish && currentLang !== "en";
 
-                      if (currentLang !== targetLang) {
-                        document.cookie = `googtrans=/es/${targetLang}; path=/; domain=${window.location.hostname}`;
-                        document.cookie = `googtrans=/es/${targetLang}; path=/`;
+                      if (needsReload) {
+                        try {
+                          sessionStorage.setItem(
+                            SESSION_EVENT_SELECTION_KEY,
+                            JSON.stringify({ vertical: slug, eventName: item.originalName })
+                          );
+                        } catch {}
+                        document.cookie = `googtrans=/es/en; path=/; domain=${window.location.hostname}`;
+                        document.cookie = `googtrans=/es/en; path=/`;
                         window.location.reload();
+                        return;
                       }
+
+                      selectEvent(slug, item.originalName);
                     }}
                     className="flex flex-row items-center justify-center gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-primary/5 hover:border-primary/20 transition-all duration-200 group cursor-pointer"
                   >
@@ -399,7 +427,7 @@ export default function LoginForm({
           {/* Badge Top Right */}
           <div className="absolute top-8 right-10 flex flex-row items-center justify-between gap-3 ">
             <button
-              onClick={() => setHasSelectedVertical(false)}
+              onClick={openEventSelector}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 hover:border-primary/30 hover:bg-slate-50 text-slate-500 hover:text-primary transition-all text-[10px] font-bold uppercase tracking-wider shadow-sm cursor-pointer"
             >
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
