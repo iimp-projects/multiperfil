@@ -142,13 +142,25 @@ export default function LoginForm({
   const [dynamicVerticals, setDynamicVerticals] = useState<Array<{ slug: Vertical; label: string; logo: string; originalName: string }>>([]);
 
   useEffect(() => {
-    if (!vertical) return;
+    // Keep the event selector open by default on first visit.
+    // Only auto-skip it when the user explicitly preselects a vertical
+    // via URL (?theme=...) or has one persisted in localStorage.
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get("theme")?.toLowerCase();
+    const saved = localStorage.getItem("iimp-vertical")?.toLowerCase();
 
-    // Avoid calling setState synchronously inside the effect body
-    // (eslint react-hooks/set-state-in-effect).
-    const timeoutId = setTimeout(() => setHasSelectedVertical(true), 0);
-    return () => clearTimeout(timeoutId);
-  }, [vertical]);
+    const preselected = themeParam || saved;
+    if (!preselected) return;
+
+    const allowed: Vertical[] = ["proexplo", "gess", "wmc", "perumin"];
+    if (allowed.includes(preselected as Vertical)) {
+      const timeoutId = window.setTimeout(() => {
+        setVertical(preselected as Vertical);
+        setHasSelectedVertical(true);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [setVertical]);
 
   useEffect(() => {
     const fetchVerticals = async () => {
