@@ -282,6 +282,12 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 };
 
 export default function ProfileEditView() {
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    // Mount-only: used to avoid hydration mismatches for client-only behavior.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
   const { user, updateUser } = useAuthStore();
   const [profilePhoto, setProfilePhoto] = useState<string | null>(
     getFullImageUrl(user?.picture) || null,
@@ -737,7 +743,7 @@ export default function ProfileEditView() {
                   <div className="relative bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary shadow-sm hover:border-slate-300">
                     <MenuBar editor={editor} />
                     <div className="p-0">
-                      <EditorContent editor={editor} />
+                      {mounted && <EditorContent editor={editor} />}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 mt-2 ml-1">

@@ -9,6 +9,7 @@ import { toPng } from "html-to-image";
 import { useReactToPrint } from "react-to-print";
 import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
+import { downloadOrShareImage } from "@/lib/downloadOrShareImage";
 import {
   Download,
   Printer,
@@ -144,10 +145,11 @@ export default function ProfileView() {
           );
         },
       });
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `pase-evento-${user?.nu_documento || "qr"}.png`;
-      downloadLink.href = dataUrl;
-      downloadLink.click();
+
+      await downloadOrShareImage(
+        dataUrl,
+        `pase-evento-${user?.nu_documento || "qr"}.png`,
+      );
     } catch (error) {
       console.error("Error generating image:", error);
     }
@@ -444,6 +446,7 @@ export default function ProfileView() {
                           : "/slider/gess/GESS-2026.jpg",
                     glow: "shadow-slate-500/20",
                     iconBg: "text-slate-400",
+                    disabled: true,
                   },
                 ].map((item, i) => (
                   <motion.div

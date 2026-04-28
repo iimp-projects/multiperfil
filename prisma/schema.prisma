@@ -29,3 +29,69 @@ model UserSessionLock {
   activeSessionId String
   updatedAt       DateTime @updatedAt
 }
+
+model AdminUser {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  email          String   @unique
+  passwordHash   String
+  name           String
+  role           String   @default("admin")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PortalMessage {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  event        String
+  senderName   String
+  senderRole   String
+  subject      String
+  content      String
+  preview      String
+  createdAt    DateTime @default(now())
+  recipients   String[] // Array de userKeys o vacío para todos
+  readBy       String[] // Array de userKeys que ya leyeron
+}
+
+model PortalAlert {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  event        String
+  type         String   // NotificationType (standard, expandable, etc)
+  variant      String?  // NotificationVariant (success, info, etc)
+  category     String   // NotificationCategory (eventos, sistema, etc)
+  title        String
+  description  String?
+  longDescription String?
+  actionText   String?
+  actionUrl    String?
+  target       String?  // _blank or _self
+  imageUrl     String?
+  htmlContent  String?
+  createdAt    DateTime @default(now())
+  recipients   String[] // Array de userKeys
+  readBy       String[] // Array de userKeys
+}
+
+model PortalStreaming {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  event        String
+  title        String
+  description  String?
+  vimeoId      String?
+  url          String?
+  status       String   @default("active") // active, scheduled, inactive
+  startsAt     DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  recipients   String[] // Array de userKeys o vacío para todos
+}
+
+model RecipientGroup {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String?
+  event        String
+  userKeys     String[] // Array de siecodes
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

@@ -1,5 +1,10 @@
 import axios from "axios";
-import { ApiResponse, LoginRequest, User, RecoveryResponse } from "../types/auth";
+import {
+  ApiResponse,
+  LoginRequest,
+  User,
+  RecoveryResponse,
+} from "../types/auth";
 import api from "./api";
 import { getDynamicEventCode } from "@/lib/utils/event";
 import { ResetPasswordRequest } from "@/types/auth";
@@ -110,7 +115,7 @@ export const authService = {
   },
   getEventList: async (): Promise<{ Eventos: { Evento: string }[] }> => {
     try {
-      const response = await fetch("/api/proxy/eventlist", {
+      const response = await fetch("/api/auth/eventlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

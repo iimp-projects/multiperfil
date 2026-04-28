@@ -20,8 +20,6 @@ import {
   Radio,
   Sun,
   Moon,
-  Lightbulb,
-  BarChart,
   User,
   Ticket,
   Mail,
@@ -39,6 +37,7 @@ import {
 } from "@nrivera-iimp/ui-kit-iimp";
 import { VOUCHER_STATUS } from "@/types/auth";
 import { getFullImageUrl } from "@/lib/s3-utils";
+import { getDynamicEventCode } from "@/lib/utils/event";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -49,6 +48,10 @@ interface SidebarItemProps {
   target?: string;
   rel?: string;
 }
+
+type SidebarNavItem = SidebarItemProps & {
+  hidden?: boolean;
+};
 
 const SidebarItem = ({
   icon,
@@ -116,6 +119,7 @@ export interface AppNotification {
   date: string;
   isRead: boolean;
   actionUrl?: string;
+  target?: string;
   logoUrl?: string;
   icon?: React.ReactNode;
   imageUrl?: string;
@@ -131,111 +135,9 @@ export interface DashboardEvent {
   participants: string[];
 }
 
-const mockNotifications: AppNotification[] = [
-  {
-    id: "notif-1",
-    type: "standard",
-    category: "sistema",
-    title: "Tu IA se ha vuelto más inteligente",
-    description:
-      "La velocidad de aprendizaje adaptativo aumentó un 27%. Nueva función: previsión de tendencias impulsada por IA",
-    date: "hace 1h",
-    isRead: false,
-    icon: <Lightbulb size={18} className="text-amber-500" />,
-  },
-  {
-    id: "notif-2",
-    type: "standard",
-    category: "sistema",
-    title: "Análisis de datos completado",
-    description:
-      "Tu IA ha procesado más de 10,000 registros e identificado tendencias clave.",
-    date: "hace 3h",
-    isRead: false,
-    icon: <BarChart size={18} className="text-blue-500" />,
-  },
-  {
-    id: "notif-3",
-    type: "accordion",
-    category: "sistema",
-    title: "Mantenimiento del sistema",
-    description:
-      "Se aplicarán ajustes de rendimiento y actualizaciones de seguridad.",
-    longDescription:
-      "El mantenimiento comenzará a las 2:00 AM UTC. Se espera que dure aproximadamente 30 minutos.",
-    date: "hace 5h",
-    isRead: true,
-    icon: <Settings size={18} className="text-slate-500" />,
-  },
-  {
-    id: "notif-4",
-    type: "image_only",
-    category: "eventos",
-    actionText: "Ver evento",
-    title: "Evento especial",
-    imageUrl:
-      "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=800&auto=format&fit=crop",
-    date: "Ayer",
-    isRead: false,
-  },
-  {
-    id: "notif-5",
-    type: "modal",
-    category: "ventas",
-    title: "Reporte Mensual Disponible",
-    description:
-      "Haz clic para ver el resumen detallado de ventas de este mes.",
-    htmlContent: `
-      <div class="space-y-4">
-        <h4 class="text-lg font-bold">Resumen Detallado</h4>
-        <p>Este mes hemos tenido un crecimiento del <strong>15%</strong> en comparación con el mes anterior.</p>
-        <ul class="list-disc pl-5 space-y-2">
-          <li>Ventas totales: $45,000</li>
-          <li>Nuevos clientes: 120</li>
-          <li>Países alcanzados: 12</li>
-        </ul>
-        <p>Puedes descargar el PDF completo desde el panel de administración.</p>
-      </div>
-    `,
-    date: "Ayer",
-    isRead: false,
-    icon: <Receipt size={18} className="text-emerald-500" />,
-  },
-];
+const mockEvents: DashboardEvent[] = [];
 
-const mockEvents: DashboardEvent[] = [
-  {
-    id: "event-1",
-    title: "Design Review with Timeless",
-    time: "10:00 - 11:00 AM",
-    location: "Mumbai, Maharashtra",
-    variant: "success",
-    participants: [
-      "https://i.pravatar.cc/150?u=1",
-      "https://i.pravatar.cc/150?u=2",
-      "https://i.pravatar.cc/150?u=3",
-    ],
-  },
-  {
-    id: "event-2",
-    title: "Conference Meeting",
-    time: "4:30 - 5:00 PM",
-    location: "Mumbai, Maharashtra",
-    variant: "primary",
-    participants: [
-      "https://i.pravatar.cc/150?u=4",
-      "https://i.pravatar.cc/150?u=5",
-    ],
-  },
-  {
-    id: "event-3",
-    title: "Frappe + Timeless Standup",
-    time: "4:30 - 5:00 PM",
-    location: "Mumbai, Maharashtra",
-    variant: "error",
-    participants: ["https://i.pravatar.cc/150?u=6"],
-  },
-];
+import { usePortalStore } from "@/store/portal/usePortalStore";
 
 export default function DashboardLayout({
   children,
@@ -247,16 +149,88 @@ export default function DashboardLayout({
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("notifications");
-  const [notifications, setNotifications] =
-    useState<AppNotification[]>(mockNotifications);
+
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const {
+    notifications,
+    messages,
+    fetchNotifications,
+    fetchMessages,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = usePortalStore();
+
+  const prevIds = useRef<Set<string>>(new Set());
+  const isFirstLoad = useRef(true);
+
   const [modalNotification, setModalNotification] =
     useState<AppNotification | null>(null);
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
+    if (user?.siecode) {
+      markNotificationAsRead(id, user.siecode);
+    }
   };
+
+  useEffect(() => {
+    if (!user?.siecode) return;
+
+    const eventCode = getDynamicEventCode(vertical);
+
+    const refreshData = () => {
+      fetchNotifications(eventCode, user.siecode);
+      fetchMessages(eventCode, user.siecode);
+    };
+
+    // Initial fetch
+    refreshData();
+
+    // Polling every 30 seconds
+    const intervalId = setInterval(refreshData, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchNotifications, fetchMessages, user, vertical]);
+
+  // Sound logic for new notifications/messages
+  useEffect(() => {
+    const currentIds = new Set([
+      ...notifications.map((n) => n.id),
+      ...messages.map((m) => m.id),
+    ]);
+
+    // On first load, we just populate the ref without playing sound
+    if (isFirstLoad.current) {
+      if (notifications.length > 0 || messages.length > 0) {
+        prevIds.current = currentIds;
+        isFirstLoad.current = false;
+      }
+      return;
+    }
+
+    // Check if there are any IDs in the current fetch that weren't there before
+    const hasNewItems = Array.from(currentIds).some(
+      (id) => !prevIds.current.has(id),
+    );
+
+    if (hasNewItems) {
+      // We only play sound if the new set has more items than before
+      // or at least one brand new ID
+      const audio = new Audio(
+        "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
+      );
+      audio
+        .play()
+        .catch((err) =>
+          console.log("Audio play blocked by browser policy:", err),
+        );
+    }
+
+    // Update the ref for next comparison
+    prevIds.current = currentIds;
+  }, [notifications, messages]);
 
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -269,10 +243,6 @@ export default function DashboardLayout({
   const isDark = theme === "dark";
   const pathname = usePathname();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
   const kickedRef = useRef(false);
 
   const endSession = useCallback(
@@ -379,7 +349,7 @@ export default function DashboardLayout({
     }
   }, [vertical]);
 
-  const navItems = [
+  const navItems: SidebarNavItem[] = [
     {
       icon: <LayoutDashboard size={20} />,
       label: "Panel Principal",
@@ -399,13 +369,11 @@ export default function DashboardLayout({
       icon: <Mail size={20} />,
       label: "Mi buzón",
       href: "/dashboard/mailbox",
-      hidden: true,
     },
     {
       icon: <MapIcon size={20} />,
       label: "Mapa del evento",
       ...mapLink,
-      hidden: true,
     },
     {
       icon: <Radio size={20} className="text-red-500" />,
@@ -419,11 +387,10 @@ export default function DashboardLayout({
         </div>
       ),
       href: "/dashboard/streaming",
-      hidden: true,
     },
   ];
 
-  const networkingItems = [
+  const networkingItems: SidebarNavItem[] = [
     {
       icon: <User size={20} />,
       label: "Mi perfil",
@@ -433,21 +400,21 @@ export default function DashboardLayout({
       icon: <Users size={20} />,
       label: "Networking",
       href: "/dashboard/networking",
-      hidden: true,
     },
   ];
 
-  const secondaryItems = [
+  const secondaryItems: SidebarNavItem[] = [
     {
       icon: <ClipboardList size={20} />,
       label: "Encuesta de satisfacción",
       href: "/dashboard/survey",
-      hidden: true,
+      active: false,
     },
     {
       icon: <Settings size={20} />,
       label: "Configuración",
       href: "/dashboard/settings",
+      active: false,
     },
   ];
 
@@ -574,7 +541,10 @@ export default function DashboardLayout({
               <button
                 className="p-2 -ml-2 text-slate-500 lg:hidden cursor-pointer h-auto bg-transparent border-none"
                 onClick={() => {
-                  if (typeof window !== "undefined" && window.history.length > 1) {
+                  if (
+                    typeof window !== "undefined" &&
+                    window.history.length > 1
+                  ) {
                     router.back();
                     return;
                   }
@@ -689,18 +659,28 @@ export default function DashboardLayout({
             </div>
 
             <button
-              onClick={() => setIsNotificationsOpen(true)}
-              className="!hidden cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors h-auto bg-transparent border-none"
+              onClick={() => {
+                setIsNotificationsOpen(true);
+                if (user?.siecode) {
+                  const eventCode = getDynamicEventCode(vertical);
+                  markAllNotificationsAsRead(eventCode, user.siecode);
+                }
+              }}
+              className=" cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors h-auto bg-transparent border-none"
             >
               <Bell size={20} />
-              <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
+              {notifications.some((n) => !n.isRead) && (
+                <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
+              )}
             </button>
             <Link
               href="/dashboard/mailbox"
-              className="!hidden cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+              className=" cursor-pointer relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
             >
               <Mail size={20} />
-              <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
+              {messages.some((m) => !m.isRead) && (
+                <span className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full border-2 border-white animate-pulse-refined" />
+              )}
             </Link>
 
             <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block" />
@@ -895,9 +875,21 @@ export default function DashboardLayout({
                         <h4 className="font-bold text-slate-900 text-sm mb-1 leading-tight">
                           {notif.title}
                         </h4>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium">
+                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium mb-2">
                           {notif.description}
                         </p>
+                        {notif.actionUrl && notif.actionText && (
+                          <div className="mt-2">
+                            <Link
+                              href={notif.actionUrl}
+                              target={notif.target || "_self"}
+                              className="inline-flex items-center text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {notif.actionText} →
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>

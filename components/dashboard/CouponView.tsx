@@ -16,6 +16,7 @@ import {
 import { toPng } from "html-to-image";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useVertical, Button } from "@nrivera-iimp/ui-kit-iimp";
+import { downloadOrShareImage } from "@/lib/downloadOrShareImage";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -102,10 +103,7 @@ function CouponCard({ cupon, user }: Omit<CouponCardProps, "vertical">) {
   const handleDownload = async () => {
     const dataUrl = await captureCard();
     if (!dataUrl) return;
-    const link = document.createElement("a");
-    link.download = `cupon-${cupon.codigo}.png`;
-    link.href = dataUrl;
-    link.click();
+    await downloadOrShareImage(dataUrl, `cupon-${cupon.codigo}.png`);
   };
 
   const handleCopy = () => {

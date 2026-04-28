@@ -1,0 +1,75 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { 
+      event, 
+      title, 
+      description, 
+      vimeoId, 
+      url, 
+      status, 
+      startsAt, 
+      expiresAt, 
+      recipients 
+    } = body;
+
+    if (!event || !title) {
+      return NextResponse.json(
+        { success: false, message: "Campos obligatorios faltantes (event, title)." },
+        { status: 400 }
+      );
+    }
+
+    const streaming = await prisma.portalStreaming.create({
+      data: {
+        event,
+        title,
+        description,
+        vimeoId,
+        url,
+        status: status || "active",
+        startsAt: startsAt ? new Date(startsAt) : null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        recipients: recipients || []
+      }
+    });
+
+    return NextResponse.json({ success: true, data: streaming });
+  } catch (error) {
+    console.error("[ADMIN_STREAMING_POST]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al crear el contenido de streaming." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+    const event = url.searchParams.get("event");
+
+    if (!event) {
+      return NextResponse.json(
+        { success: false, message: "Evento requerido." },
+        { status: 400 }
+      );
+    }
+
+    const streamingList = await prisma.portalStreaming.findMany({
+      where: { event },
+      orderBy: { createdAt: "desc" }
+    });
+
+    return NextResponse.json({ success: true, data: streamingList });
+  } catch (error) {
+    console.error("[ADMIN_STREAMING_GET]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al obtener los streamings." },
+      { status: 500 }
+    );
+  }
+}

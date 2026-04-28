@@ -606,6 +606,9 @@ export default function SettingsView() {
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                       Seguridad de la Cuenta
                     </h2>
+                    <small>
+                      <i>{user?.siecode}</i>
+                    </small>
                     <p className="text-slate-500 font-medium mt-1">
                       Gestiona tu contraseña y protege tu información.
                     </p>
