@@ -446,7 +446,6 @@ export default function ProfileView() {
                           : "/slider/gess/GESS-2026.jpg",
                     glow: "shadow-slate-500/20",
                     iconBg: "text-slate-400",
-                    disabled: true,
                   },
                 ].map((item, i) => (
                   <motion.div

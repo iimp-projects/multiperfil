@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,9 +13,16 @@ import {
   LogOut,
   ChevronRight,
   Shield,
+  Menu,
+  X,
+  RefreshCw,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { toast } from "sonner";
+import { authService } from "@/services/auth.service";
+import { useVertical, Vertical } from "@nrivera-iimp/ui-kit-iimp";
+import { EventSelectorOverlay, type EventOption } from "./EventSelectorOverlay";
 
 const NAV_ITEMS = [
   { href: "/acceso/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -30,7 +37,37 @@ const NAV_ITEMS = [
 export default function AccesoShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { admin, selectedEvent, isAuthenticated, _hasHydrated, logoutAdmin } = useAdminAuthStore();
+  const { setVertical } = useVertical();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showEventSelector, setShowEventSelector] = useState(false);
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const { admin, selectedEvent, isAuthenticated, _hasHydrated, logoutAdmin, setSelectedEvent } = useAdminAuthStore();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await authService.getEventList();
+        if (data?.Eventos) {
+          const mapped: EventOption[] = data.Eventos.map((evt) => {
+            const name = evt.Evento.toUpperCase();
+            let slug: Vertical = "proexplo";
+            let logo = "/logos/favicon-iimp.png";
+
+            if (name.includes("PROEXPLO")) { slug = "proexplo"; logo = "/logos/favicon-iimp.png"; }
+            else if (name.includes("WMC")) { slug = "wmc"; logo = "/logos/favicon-wmc.png"; }
+            else if (name.includes("GESS")) { slug = "gess"; logo = "/logos/favicon-gess.png"; }
+            else if (name.includes("PERUMIN")) { slug = "perumin"; logo = "/logos/favicon-perumin.png"; }
+
+            return { slug, label: evt.Evento, logo, originalName: evt.Evento };
+          });
+          setEvents(mapped);
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+    if (isAuthenticated) fetchEvents();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!_hasHydrated) return;
@@ -45,6 +82,17 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
     logoutAdmin();
     toast.success("Sesión cerrada correctamente.");
     router.push("/acceso/login");
+  };
+
+  const handleEventChange = (option: EventOption) => {
+    setSelectedEvent(option.originalName, option.slug);
+    setVertical(option.slug);
+    setShowEventSelector(false);
+    toast.success(`Cambiado a evento: ${option.label}`);
+    // Optional: redirect to dashboard to refresh all data
+    if (pathname !== "/acceso/dashboard") {
+      router.push("/acceso/dashboard");
+    }
   };
 
   // Show plain layout for login / recovery pages
@@ -63,19 +111,43 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden relative">
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-100 flex flex-col shadow-sm">
+      <aside 
+        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:shadow-none ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         {/* Logo area */}
         <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
+                <Shield className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none">Admin IIMP</h1>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Gestión V2</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none">Admin IIMP</h1>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Gestión V2</p>
-            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
           {selectedEvent && (
             <div className="mt-4 px-3 py-2 bg-primary/5 border border-primary/10 rounded-xl">
@@ -94,6 +166,7 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/20"
@@ -120,6 +193,13 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
             </div>
           </div>
           <button
+            onClick={() => setShowEventSelector(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-500 hover:bg-primary/5 hover:text-primary transition-colors border-none bg-transparent cursor-pointer mb-1"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Cambiar evento
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-500 hover:bg-red-50 hover:text-red-500 transition-colors border-none bg-transparent cursor-pointer"
           >
@@ -131,8 +211,16 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-100 flex items-center px-8 justify-between shadow-sm z-10">
-          <div className="font-semibold text-slate-700">Panel Administrativo</div>
+        <header className="h-16 bg-white border-b border-slate-100 flex items-center px-4 lg:px-8 justify-between shadow-sm z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="font-semibold text-slate-700">Panel Administrativo</div>
+          </div>
           <div className="flex items-center gap-3">
             {selectedEvent && (
               <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full uppercase tracking-wider">
@@ -144,10 +232,19 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-4 lg:p-8">
           {children}
         </div>
       </main>
+
+      {showEventSelector && (
+        <EventSelectorOverlay 
+          events={events} 
+          onSelect={handleEventChange} 
+          showClose 
+          onClose={() => setShowEventSelector(false)} 
+        />
+      )}
     </div>
   );
 }

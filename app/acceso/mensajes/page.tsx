@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   Mail, 
   Send, 
@@ -21,8 +22,17 @@ type PortalMessageItem = {
   id: string;
   subject: string;
   preview: string;
+  content: string;
   createdAt: string;
   recipients: string[];
+  targetGroup?: string | null;
+  senderName?: string;
+  senderRole?: string;
+};
+
+type PortalGroupItem = {
+  id: string;
+  name: string;
 };
 
 export default function MensajesAdminPage() {
@@ -32,13 +42,21 @@ export default function MensajesAdminPage() {
   const [messages, setMessages] = useState<PortalMessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCompose, setShowCompose] = useState(false);
+  const [dismissAutoCompose, setDismissAutoCompose] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [selectedMessage, setSelectedMessage] = useState<PortalMessageItem | null>(null);
+  const [groups, setGroups] = useState<PortalGroupItem[]>([]);
+  
+  const searchParams = useSearchParams();
+  const autoComposeParam = searchParams.get("compose") === "true";
+  const isComposing = showCompose || (autoComposeParam && !dismissAutoCompose);
+  
   // Form State
   const [formData, setFormData] = useState({
     subject: "",
     content: "",
-    targetAll: true
+    targetMode: "all" as "all" | "specific" | "group",
+    targetGroup: ""
   });
 
   const fetchMessages = useCallback(async () => {
@@ -57,17 +75,32 @@ export default function MensajesAdminPage() {
     }
   }, [selectedEvent]);
 
+  const fetchGroups = useCallback(async () => {
+    if (!selectedEvent) return;
+    try {
+      const res = await fetch(`/api/admin/portal/groups?event=${selectedEvent}`);
+      const data = await res.json();
+      if (data.success) {
+        setGroups(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    }
+  }, [selectedEvent]);
+
   useEffect(() => {
-    // Data fetching updates state; this is the intended integration point.
+    // These functions update React state based on network responses.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMessages();
-  }, [fetchMessages]);
+    fetchGroups();
+  }, [fetchMessages, fetchGroups]);
 
   useEffect(() => {
     if (selectedUsers.length > 0) {
       // This is a UI convenience derived from external selection.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFormData(prev => ({ ...prev, targetAll: false }));
+      setFormData(prev => ({ ...prev, targetMode: "specific" }));
+      setShowCompose(true);
     }
   }, [selectedUsers]);
 
@@ -83,11 +116,14 @@ export default function MensajesAdminPage() {
     setIsSubmitting(true);
     try {
       const payload = {
-        ...formData,
+        subject: formData.subject,
+        content: formData.content,
         event: selectedEvent,
         senderName: admin.name,
         senderRole: admin.role,
-        recipients: formData.targetAll ? [] : selectedUsers.map(u => u.id)
+        targetMode: formData.targetMode,
+        targetGroup: formData.targetMode === "group" ? formData.targetGroup : null,
+        recipients: formData.targetMode === "specific" ? selectedUsers.map(u => u.id) : []
       };
 
       const res = await fetch("/api/admin/portal/messages", {
@@ -99,13 +135,15 @@ export default function MensajesAdminPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Mensaje enviado correctamente.");
+        setDismissAutoCompose(true);
         setShowCompose(false);
         setFormData({
           subject: "",
           content: "",
-          targetAll: true
+          targetMode: "all",
+          targetGroup: ""
         });
-        if (!formData.targetAll) clearUsers();
+        if (formData.targetMode === "specific") clearUsers();
         fetchMessages();
       } else {
         toast.error(data.message || "Error al enviar el mensaje.");
@@ -125,9 +163,12 @@ export default function MensajesAdminPage() {
           <h1 className="text-2xl font-bold text-slate-800">Centro de Mensajes</h1>
           <p className="text-slate-500 text-sm mt-1">Envía comunicados y mensajes institucionales a {selectedEvent}.</p>
         </div>
-        {!showCompose && (
+        {!isComposing && (
           <button
-            onClick={() => setShowCompose(true)}
+            onClick={() => {
+              setDismissAutoCompose(false);
+              setShowCompose(true);
+            }}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -137,7 +178,7 @@ export default function MensajesAdminPage() {
       </div>
 
       <div className="flex-1 flex gap-6 overflow-hidden">
-        {showCompose ? (
+        {isComposing ? (
           <div className="flex-1 bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -147,7 +188,10 @@ export default function MensajesAdminPage() {
                 <h2 className="text-lg font-bold text-slate-800">Redactar Comunicado</h2>
               </div>
               <button 
-                onClick={() => setShowCompose(false)}
+                onClick={() => {
+                  setDismissAutoCompose(true);
+                  setShowCompose(false);
+                }}
                 className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
               >
                 <X className="w-6 h-6" />
@@ -170,25 +214,33 @@ export default function MensajesAdminPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Destinatarios</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <button 
                         type="button"
-                        onClick={() => setFormData({...formData, targetAll: true})}
-                        className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all border ${
-                          formData.targetAll ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 border-slate-200'
+                        onClick={() => setFormData({...formData, targetMode: "all"})}
+                        className={`flex-1 min-w-[80px] py-3 rounded-xl text-xs font-bold transition-all border ${
+                          formData.targetMode === "all" ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 border-slate-200'
                         }`}
                       >
                         Todos
                       </button>
                       <button 
                         type="button"
+                        onClick={() => setFormData({...formData, targetMode: "group"})}
+                        className={`flex-1 min-w-[80px] py-3 rounded-xl text-xs font-bold transition-all border ${
+                          formData.targetMode === "group" ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 border-slate-200'
+                        }`}
+                      >
+                        Grupos
+                      </button>
+                      <button 
+                        type="button"
                         onClick={() => {
-                          setFormData({...formData, targetAll: false});
+                          setFormData({...formData, targetMode: "specific"});
                           if (selectedUsers.length === 0) toast.info("Ve al módulo de Usuarios para seleccionar destinatarios específicos.");
                         }}
-                        className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all border ${
-                          !formData.targetAll ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 border-slate-200'
+                        className={`flex-1 min-w-[80px] py-3 rounded-xl text-xs font-bold transition-all border ${
+                          formData.targetMode === "specific" ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-slate-50 text-slate-500 border-slate-200'
                         }`}
                       >
                         {selectedUsers.length > 0 ? `${selectedUsers.length} Seleccionados` : "Específicos"}
@@ -196,16 +248,32 @@ export default function MensajesAdminPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Remitente</label>
-                    <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                        {admin?.name?.charAt(0)}
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      {formData.targetMode === "group" ? "Seleccionar Grupo" : "Remitente"}
+                    </label>
+                    {formData.targetMode === "group" ? (
+                      <select
+                        value={formData.targetGroup}
+                        onChange={(e) => setFormData({...formData, targetGroup: e.target.value})}
+                        required
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="">Selecciona un grupo...</option>
+                        {groups.map(g => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                          {admin?.name?.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-700 truncate">{admin?.name}</p>
+                          <p className="text-[10px] text-slate-400 uppercase">{admin?.role}</p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-700 truncate">{admin?.name}</p>
-                        <p className="text-[10px] text-slate-400 uppercase">{admin?.role}</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -222,7 +290,10 @@ export default function MensajesAdminPage() {
             <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex gap-4">
               <button
                 type="button"
-                onClick={() => setShowCompose(false)}
+                onClick={() => {
+                  setDismissAutoCompose(true);
+                  setShowCompose(false);
+                }}
                 className="px-8 py-4 bg-white border border-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-slate-50 transition-all border-none cursor-pointer"
               >
                 Cancelar
@@ -268,17 +339,29 @@ export default function MensajesAdminPage() {
                   messages.map((msg) => (
                     <div 
                       key={msg.id} 
-                      className="p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
+                      onClick={() => {
+                        setSelectedMessage(msg);
+                        setShowCompose(false);
+                      }}
+                      className={`p-4 hover:bg-slate-50 transition-colors cursor-pointer group border-l-4 ${
+                        selectedMessage?.id === msg.id ? "border-primary bg-primary/5" : "border-transparent"
+                      }`}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           {format(new Date(msg.createdAt), "dd MMM", { locale: es })}
                         </span>
-                        <span className="text-[10px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded uppercase">
-                          {msg.recipients?.length > 0 ? "Específico" : "Global"}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          msg.targetGroup ? "bg-amber-50 text-amber-600" :
+                          msg.recipients?.length > 0 ? "bg-blue-50 text-blue-600" : 
+                          "bg-primary/5 text-primary"
+                        }`}>
+                          {msg.targetGroup ? "Grupo" : msg.recipients?.length > 0 ? "Específico" : "Global"}
                         </span>
                       </div>
-                      <h3 className="font-bold text-slate-800 text-sm truncate group-hover:text-primary transition-colors">{msg.subject}</h3>
+                      <h3 className={`font-bold text-sm truncate transition-colors ${
+                        selectedMessage?.id === msg.id ? "text-primary" : "text-slate-800 group-hover:text-primary"
+                      }`}>{msg.subject}</h3>
                       <p className="text-slate-500 text-[11px] line-clamp-1 mt-1">{msg.preview}</p>
                     </div>
                   ))
@@ -286,22 +369,75 @@ export default function MensajesAdminPage() {
               </div>
             </div>
 
-            {/* Empty state for main area */}
-            <div className="flex-1 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center p-12">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                <Mail className="w-10 h-10 text-slate-300" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-800 mb-2">Bandeja de Salida</h2>
-              <p className="text-slate-500 text-sm max-w-xs mx-auto mb-8">
-                Selecciona un mensaje del historial para ver sus detalles o redacta uno nuevo.
-              </p>
-              <button
-                onClick={() => setShowCompose(true)}
-                className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
-              >
-                Comenzar a escribir
-                <ArrowRight className="w-4 h-4" />
-              </button>
+            {/* Message Detail or Empty State */}
+            <div className="flex-1 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col overflow-hidden">
+              {selectedMessage ? (
+                <div className="h-full flex flex-col animate-in fade-in duration-300">
+                  <div className="p-8 border-b border-slate-50 bg-slate-50/30">
+                    <div className="flex justify-between items-start mb-4">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        {format(new Date(selectedMessage.createdAt), "PPPP", { locale: es })}
+                      </span>
+                      <button 
+                        onClick={() => setSelectedMessage(null)}
+                        className="p-2 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-900 leading-tight mb-4">
+                      {selectedMessage.subject}
+                    </h2>
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                          {selectedMessage.senderName?.charAt(0) || "A"}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-700">{selectedMessage.senderName || "Admin"}</p>
+                          <p className="text-[10px] text-slate-400 uppercase font-medium">{selectedMessage.senderRole || "Administrador"}</p>
+                        </div>
+                      </div>
+                      <div className="h-8 w-px bg-slate-200" />
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-0.5">Destinatarios</p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          selectedMessage.targetGroup ? "bg-amber-50 text-amber-600" :
+                          selectedMessage.recipients?.length > 0 ? "bg-blue-50 text-blue-600" : 
+                          "bg-primary/5 text-primary"
+                        }`}>
+                          {selectedMessage.targetGroup ? "Grupo Seleccionado" : 
+                           selectedMessage.recipients?.length > 0 ? `${selectedMessage.recipients.length} Usuarios` : 
+                           "Global (Todos)"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                    <div 
+                      className="prose prose-slate max-w-none text-slate-600 text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: selectedMessage.content }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-center p-12">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                    <Mail className="w-10 h-10 text-slate-300" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-800 mb-2">Bandeja de Salida</h2>
+                  <p className="text-slate-500 text-sm max-w-xs mx-auto mb-8">
+                    Selecciona un mensaje del historial para ver sus detalles o redacta uno nuevo.
+                  </p>
+                  <button
+                    onClick={() => setShowCompose(true)}
+                    className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
+                  >
+                    Comenzar a escribir
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}

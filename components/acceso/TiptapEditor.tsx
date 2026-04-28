@@ -8,6 +8,7 @@ import Underline from "@tiptap/extension-underline";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import TextAlign from "@tiptap/extension-text-align";
+import Image from "@tiptap/extension-image";
 import { 
   Bold, 
   Italic, 
@@ -18,8 +19,11 @@ import {
   AlignCenter, 
   AlignRight, 
   Undo, 
-  Redo 
+  Redo,
+  Image as ImageIcon,
+  Loader2
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface TiptapEditorProps {
   content: string;
@@ -28,6 +32,8 @@ interface TiptapEditorProps {
 
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const [mounted, setMounted] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
   useEffect(() => {
     // Mount-only: avoids SSR/hydration mismatch for editor.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -43,6 +49,11 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
+      Image.configure({
+        HTMLAttributes: {
+          class: 'rounded-xl max-w-full h-auto shadow-lg my-4',
+        },
+      }),
     ],
     content,
     immediatelyRender: false,
@@ -50,6 +61,40 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       onChange(editor.getHTML());
     },
   });
+
+  const addImage = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          editor?.chain().focus().setImage({ src: data.url }).run();
+          toast.success("Imagen subida con éxito");
+        } else {
+          toast.error(data.message || "Error al subir imagen");
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        toast.error("Error al conectar con el servidor");
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    input.click();
+  };
 
   if (!mounted || !editor) return null;
 
@@ -118,6 +163,18 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           className={`p-2 rounded-lg transition-colors ${editor.isActive({ textAlign: "right" }) ? "bg-primary text-white" : "hover:bg-slate-200 text-slate-600"}`}
         >
           <AlignRight className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-6 bg-slate-200 mx-1" />
+
+        <button
+          type="button"
+          onClick={addImage}
+          disabled={isUploading}
+          className="p-2 rounded-lg hover:bg-slate-200 text-slate-600 transition-colors disabled:opacity-50"
+          title="Insertar imagen"
+        >
+          {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
         </button>
 
         <div className="flex-1" />

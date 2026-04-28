@@ -17,6 +17,7 @@ interface AdminAuthState {
   _hasHydrated: boolean;
   
   setAdminAuth: (admin: AdminUser, event: string, vertical: Vertical) => void;
+  setSelectedEvent: (event: string, vertical: Vertical) => void;
   logoutAdmin: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -32,6 +33,9 @@ export const useAdminAuthStore = create<AdminAuthState>()(
 
       setAdminAuth: (admin, event, vertical) =>
         set({ admin, selectedEvent: event, selectedVertical: vertical, isAuthenticated: true }),
+        
+      setSelectedEvent: (event, vertical) =>
+        set({ selectedEvent: event, selectedVertical: vertical }),
         
       logoutAdmin: () =>
         set({ admin: null, selectedEvent: null, selectedVertical: null, isAuthenticated: false }),

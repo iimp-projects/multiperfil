@@ -38,6 +38,7 @@ import {
 import { VOUCHER_STATUS } from "@/types/auth";
 import { getFullImageUrl } from "@/lib/s3-utils";
 import { getDynamicEventCode } from "@/lib/utils/event";
+import { Capacitor } from "@capacitor/core";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -126,18 +127,8 @@ export interface AppNotification {
   htmlContent?: string;
 }
 
-export interface DashboardEvent {
-  id: string;
-  title: string;
-  time: string;
-  location: string;
-  variant: "primary" | "success" | "warning" | "error";
-  participants: string[];
-}
-
-const mockEvents: DashboardEvent[] = [];
-
 import { usePortalStore } from "@/store/portal/usePortalStore";
+import clsx from "clsx";
 
 export default function DashboardLayout({
   children,
@@ -161,6 +152,7 @@ export default function DashboardLayout({
     fetchMessages,
     markNotificationAsRead,
     markAllNotificationsAsRead,
+    deleteNotification,
   } = usePortalStore();
 
   const prevIds = useRef<Set<string>>(new Set());
@@ -168,11 +160,43 @@ export default function DashboardLayout({
 
   const [modalNotification, setModalNotification] =
     useState<AppNotification | null>(null);
+  const [expandedNotifications, setExpandedNotifications] = useState<
+    Set<string>
+  >(new Set());
+
+  const toggleExpand = (id: string) => {
+    setExpandedNotifications((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const markAsRead = (id: string) => {
     if (user?.siecode) {
       markNotificationAsRead(id, user.siecode);
     }
+  };
+
+  const removeNotification = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (user?.siecode) {
+      deleteNotification(id, user.siecode);
+    }
+  };
+
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const notificationsByTab = {
+    notifications: notifications.filter((n) => new Date(n.date) >= oneDayAgo),
+    events: notifications.filter((n) => {
+      const d = new Date(n.date);
+      return d >= oneWeekAgo && d < oneDayAgo;
+    }),
+    documents: notifications.filter((n) => new Date(n.date) < oneWeekAgo),
   };
 
   useEffect(() => {
@@ -194,6 +218,14 @@ export default function DashboardLayout({
     return () => clearInterval(intervalId);
   }, [fetchNotifications, fetchMessages, user, vertical]);
 
+  // Initial arming of the notification system
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      isFirstLoad.current = false;
+    }, 2000); // 2 seconds delay to allow initial fetches to settle
+    return () => clearTimeout(timer);
+  }, []);
+
   // Sound logic for new notifications/messages
   useEffect(() => {
     const currentIds = new Set([
@@ -201,12 +233,9 @@ export default function DashboardLayout({
       ...messages.map((m) => m.id),
     ]);
 
-    // On first load, we just populate the ref without playing sound
+    // On first load or while system is warming up, we just populate the ref without playing sound
     if (isFirstLoad.current) {
-      if (notifications.length > 0 || messages.length > 0) {
-        prevIds.current = currentIds;
-        isFirstLoad.current = false;
-      }
+      prevIds.current = currentIds;
       return;
     }
 
@@ -216,11 +245,25 @@ export default function DashboardLayout({
     );
 
     if (hasNewItems) {
-      // We only play sound if the new set has more items than before
-      // or at least one brand new ID
-      const audio = new Audio(
-        "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
-      );
+      // Determine sound based on platform
+      const platform = Capacitor.getPlatform();
+      let soundPath = "/mp3/noti_android.mp3"; // Default for Android/Other
+
+      if (platform === "ios") {
+        soundPath = "/mp3/noti_iphone.mp3";
+      } else if (platform === "web") {
+        // Fallback detection for mobile browsers
+        const ua = navigator.userAgent.toLowerCase();
+        if (
+          ua.includes("iphone") ||
+          ua.includes("ipad") ||
+          ua.includes("ipod")
+        ) {
+          soundPath = "/mp3/noti_iphone.mp3";
+        }
+      }
+
+      const audio = new Audio(soundPath);
       audio
         .play()
         .catch((err) =>
@@ -408,13 +451,11 @@ export default function DashboardLayout({
       icon: <ClipboardList size={20} />,
       label: "Encuesta de satisfacción",
       href: "/dashboard/survey",
-      active: false,
     },
     {
       icon: <Settings size={20} />,
       label: "Configuración",
       href: "/dashboard/settings",
-      active: false,
     },
   ];
 
@@ -719,7 +760,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-10 mx-auto w-full max-w-7xl">
+        <main className="flex-1 p-4 sm:p-6 lg:p-10 mx-auto w-full l">
           {/* Premium Streaming Alert */}
           <div className="!hidden">
             <AnimatePresence>
@@ -820,43 +861,92 @@ export default function DashboardLayout({
           {/* Time Tabs */}
           <div className="bg-slate-50 p-1 rounded-2xl flex">
             {[
-              { id: "notifications", label: "Hoy" },
-              { id: "events", label: "Esta semana" },
-              { id: "documents", label: "Anteriores" },
+              {
+                id: "notifications",
+                label: "Hoy",
+                count: notificationsByTab.notifications.length,
+              },
+              {
+                id: "events",
+                label: "Esta semana",
+                count: notificationsByTab.events.length,
+              },
+              {
+                id: "documents",
+                label: "Anteriores",
+                count: notificationsByTab.documents.length,
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as NotificationTab)}
-                className={`flex-1 py-1.5 text-sm font-bold rounded-xl transition-all h-auto border-none cursor-pointer ${
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-all h-auto border-none cursor-pointer flex items-center justify-center gap-2 ${
                   activeTab === tab.id
                     ? "bg-white text-slate-900 shadow-sm hover:bg-white"
                     : "bg-transparent text-slate-400 hover:text-slate-600"
                 }`}
               >
                 {tab.label}
+                {tab.count > 0 && (
+                  <span
+                    className={clsx(
+                      "px-1.5 py-0.5 rounded-md text-[9px] font-black",
+                      activeTab === tab.id
+                        ? "bg-primary text-white"
+                        : "bg-slate-200 text-slate-500",
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
 
           {/* List Content */}
           <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain scroll-touch">
-            {activeTab === "notifications" && (
-              <div className="space-y-4">
-                {notifications.map((notif) => (
+            <div className="space-y-4">
+              {notificationsByTab[activeTab as keyof typeof notificationsByTab]
+                .length === 0 ? (
+                <div className="py-20 flex flex-col items-center justify-center text-slate-400 opacity-60">
+                  <Bell className="w-12 h-12 mb-4 stroke-1" />
+                  <p className="text-sm font-bold uppercase tracking-widest">
+                    Sin novedades
+                  </p>
+                </div>
+              ) : (
+                notificationsByTab[
+                  activeTab as keyof typeof notificationsByTab
+                ].map((notif) => (
                   <motion.div
                     key={notif.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer group relative ${
                       notif.isRead
                         ? "bg-white border-slate-100 opacity-70"
                         : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
                     }`}
                     onClick={() => {
                       markAsRead(notif.id);
-                      if (notif.type === "modal") setModalNotification(notif);
+                      if (notif.type === "modal") {
+                        setModalNotification(notif);
+                      } else if (
+                        notif.type === "expandable" ||
+                        notif.type === "accordion"
+                      ) {
+                        toggleExpand(notif.id);
+                      }
                     }}
                   >
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => removeNotification(notif.id, e)}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-white/50 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all z-10 border-none cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+
                     <div className="flex gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 shrink-0 group-hover:scale-110 transition-transform">
                         {notif.icon || (
@@ -869,7 +959,10 @@ export default function DashboardLayout({
                             {notif.category}
                           </span>
                           <span className="text-[10px] font-medium text-slate-400">
-                            {notif.date}
+                            {new Date(notif.date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </span>
                         </div>
                         <h4 className="font-bold text-slate-900 text-sm mb-1 leading-tight">
@@ -878,6 +971,7 @@ export default function DashboardLayout({
                         <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium mb-2">
                           {notif.description}
                         </p>
+
                         {notif.actionUrl && notif.actionText && (
                           <div className="mt-2">
                             <Link
@@ -890,48 +984,31 @@ export default function DashboardLayout({
                             </Link>
                           </div>
                         )}
+
+                        <AnimatePresence>
+                          {expandedNotifications.has(notif.id) &&
+                            notif.longDescription && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="mt-4 pt-4 border-t border-slate-100 overflow-hidden"
+                              >
+                                <div
+                                  className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed"
+                                  dangerouslySetInnerHTML={{
+                                    __html: notif.longDescription,
+                                  }}
+                                />
+                              </motion.div>
+                            )}
+                        </AnimatePresence>
                       </div>
                     </div>
                   </motion.div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === "events" && (
-              <div className="space-y-6">
-                {mockEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="relative pl-6 border-l-2 border-slate-100"
-                  >
-                    <div
-                      className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-white shadow-sm ${
-                        event.variant === "success"
-                          ? "bg-emerald-500"
-                          : event.variant === "warning"
-                            ? "bg-amber-500"
-                            : event.variant === "error"
-                              ? "bg-red-500"
-                              : "bg-primary"
-                      }`}
-                    />
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="font-bold text-slate-900">
-                        {event.title}
-                      </h4>
-                      <div className="flex items-center gap-4 mt-2">
-                        <span className="text-xs text-slate-400 font-medium">
-                          {event.time}
-                        </span>
-                        <span className="text-xs text-slate-400 font-medium">
-                          {event.location}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       </aside>
@@ -961,9 +1038,10 @@ export default function DashboardLayout({
                 </div>
 
                 <div
-                  className="text-slate-600 leading-relaxed font-medium text-lg"
+                  className="text-slate-600 leading-relaxed font-medium text-lg prose prose-slate max-w-none"
                   dangerouslySetInnerHTML={{
                     __html:
+                      modalNotification.longDescription ||
                       modalNotification.htmlContent ||
                       modalNotification.description ||
                       "",

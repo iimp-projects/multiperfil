@@ -25,18 +25,18 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" }
     });
 
-    const formattedMessages = messages.map(msg => ({
+    const formattedMessages = messages.map((msg) => ({
       id: msg.id,
       sender: msg.senderName,
       senderRole: msg.senderRole,
       subject: msg.subject,
       preview: msg.preview,
       content: msg.content,
-      date: msg.createdAt.toISOString().split('T')[0],
-      time: msg.createdAt.toISOString().split('T')[1].substring(0, 5),
+      date: msg.createdAt.toISOString().split("T")[0],
+      time: msg.createdAt.toISOString().split("T")[1].substring(0, 5),
       isRead: userKey ? msg.readBy.includes(userKey) : false,
-      isArchived: false,
-      isDeleted: false
+      isArchived: userKey ? msg.archivedBy.includes(userKey) : false,
+      isDeleted: userKey ? msg.deletedBy.includes(userKey) : false,
     }));
 
     return NextResponse.json({

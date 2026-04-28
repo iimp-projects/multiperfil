@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
           { recipients: { isEmpty: true } }, // Globales (recipients vacío)
           ...(userKey ? [{ recipients: { has: userKey } }] : []), // Específicas
         ],
+        NOT: userKey ? { deletedBy: { has: userKey } } : undefined
       },
       orderBy: { createdAt: "desc" }
     });

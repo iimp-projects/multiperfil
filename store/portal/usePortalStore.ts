@@ -26,8 +26,12 @@ interface PortalState {
   fetchMessages: (event?: string, userKey?: string) => Promise<void>;
   markNotificationAsRead: (id: string, userKey: string) => Promise<void>;
   markAllNotificationsAsRead: (event: string, userKey: string) => Promise<void>;
+  deleteNotification: (id: string, userKey: string) => Promise<void>;
   markMessageAsRead: (id: string, userKey: string) => Promise<void>;
   markAllMessagesAsRead: (event: string, userKey: string) => Promise<void>;
+  toggleArchiveMessage: (id: string, userKey: string, undo?: boolean) => Promise<void>;
+  deleteMessage: (id: string, userKey: string) => Promise<void>;
+  deletePermanentMessage: (id: string, userKey: string) => Promise<void>;
 }
 
 export const usePortalStore = create<PortalState>((set) => ({
@@ -105,6 +109,21 @@ export const usePortalStore = create<PortalState>((set) => ({
     }
   },
 
+  deleteNotification: async (id, userKey) => {
+    set((state) => ({
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
+    try {
+      await fetch("/api/portal/alerts/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alertId: id, userKey }),
+      });
+    } catch (error) {
+      console.error("Error deleting notification", error);
+    }
+  },
+
   markMessageAsRead: async (id, userKey) => {
     set((state) => ({
       messages: state.messages.map((m) =>
@@ -134,6 +153,55 @@ export const usePortalStore = create<PortalState>((set) => ({
       });
     } catch (error) {
       console.error("Error marking all messages as read", error);
+    }
+  },
+  
+  toggleArchiveMessage: async (id, userKey, undo = false) => {
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === id ? { ...m, isArchived: !undo } : m
+      ),
+    }));
+    try {
+      await fetch("/api/portal/messages/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: id, userKey, undo }),
+      });
+    } catch (error) {
+      console.error("Error toggling archive", error);
+    }
+  },
+
+  deleteMessage: async (id, userKey) => {
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === id ? { ...m, isDeleted: true } : m
+      ),
+    }));
+    try {
+      await fetch("/api/portal/messages/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: id, userKey }),
+      });
+    } catch (error) {
+      console.error("Error deleting message", error);
+    }
+  },
+
+  deletePermanentMessage: async (id, userKey) => {
+    set((state) => ({
+      messages: state.messages.filter((m) => m.id !== id),
+    }));
+    try {
+      await fetch("/api/portal/messages/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId: id, userKey, permanent: true }),
+      });
+    } catch (error) {
+      console.error("Error permanent deleting message", error);
     }
   },
 }));

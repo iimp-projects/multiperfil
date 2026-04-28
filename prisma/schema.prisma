@@ -51,6 +51,8 @@ model PortalMessage {
   createdAt    DateTime @default(now())
   recipients   String[] // Array de userKeys o vacío para todos
   readBy       String[] // Array de userKeys que ya leyeron
+  archivedBy   String[] @default([]) // Array de userKeys que lo archivaron
+  deletedBy    String[] @default([]) // Array de userKeys que lo eliminaron
 }
 
 model PortalAlert {
@@ -70,6 +72,8 @@ model PortalAlert {
   createdAt    DateTime @default(now())
   recipients   String[] // Array de userKeys
   readBy       String[] // Array de userKeys
+  archivedBy   String[] @default([]) // Array de userKeys que lo archivaron
+  deletedBy    String[] @default([]) // Array de userKeys que lo eliminaron
 }
 
 model PortalStreaming {

@@ -29,7 +29,12 @@ interface NewAdminForm {
   role: string;
 }
 
-const EMPTY_FORM: NewAdminForm = { name: "", email: "", password: "", role: "admin" };
+const EMPTY_FORM: NewAdminForm = {
+  name: "",
+  email: "",
+  password: "",
+  role: "admin",
+};
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function AdministradoresPage() {
@@ -89,15 +94,21 @@ export default function AdministradoresPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Administradores</h1>
-          <p className="text-slate-400 text-sm mt-1">Gestiona quién tiene acceso al panel de administración.</p>
+          <p className="text-slate-400 text-sm mt-1">
+            Gestiona quién tiene acceso al panel de administración.
+          </p>
         </div>
         <button
-          onClick={() => { setShowForm(true); setError(null); setSuccessMsg(null); }}
+          onClick={() => {
+            setShowForm(true);
+            setError(null);
+            setSuccessMsg(null);
+          }}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -123,11 +134,18 @@ export default function AdministradoresPage() {
           >
             <X className="w-5 h-5" />
           </button>
-          <h2 className="text-lg font-bold text-slate-800 mb-5">Nuevo Administrador</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h2 className="text-lg font-bold text-slate-800 mb-5">
+            Nuevo Administrador
+          </h2>
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          >
             {/* Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Nombre completo</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                Nombre completo
+              </label>
               <div className="relative">
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -142,7 +160,9 @@ export default function AdministradoresPage() {
             </div>
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Correo electrónico</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                Correo electrónico
+              </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -157,13 +177,17 @@ export default function AdministradoresPage() {
             </div>
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Contraseña</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                Contraseña
+              </label>
               <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="password"
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
                   required
                   minLength={8}
                   placeholder="Mínimo 8 caracteres"
@@ -173,7 +197,9 @@ export default function AdministradoresPage() {
             </div>
             {/* Role */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Rol</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                Rol
+              </label>
               <div className="relative">
                 <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <select
@@ -200,7 +226,11 @@ export default function AdministradoresPage() {
                 disabled={saving}
                 className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-all border-none cursor-pointer"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {saving ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
                 {saving ? "Guardando..." : "Crear Administrador"}
               </button>
               <button
@@ -233,34 +263,49 @@ export default function AdministradoresPage() {
         ) : admins.length === 0 ? (
           <div className="py-16 text-center text-slate-400">
             <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm font-medium">No hay administradores registrados.</p>
-            <p className="text-xs mt-1 text-slate-300">Crea el primero con el botón de arriba.</p>
+            <p className="text-sm font-medium">
+              No hay administradores registrados.
+            </p>
+            <p className="text-xs mt-1 text-slate-300">
+              Crea el primero con el botón de arriba.
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-slate-50">
             {admins.map((admin) => (
-              <div key={admin.id} className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+              <div
+                key={admin.id}
+                className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group"
+              >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-sm shrink-0">
                     {admin.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-slate-800">{admin.name}</p>
+                    <p className="font-semibold text-sm text-slate-800">
+                      {admin.name}
+                    </p>
                     <p className="text-xs text-slate-400">{admin.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    admin.role === "superadmin"
-                      ? "bg-amber-50 text-amber-600"
-                      : admin.role === "viewer"
-                      ? "bg-slate-100 text-slate-500"
-                      : "bg-primary/10 text-primary"
-                  }`}>
+                  <span
+                    className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      admin.role === "superadmin"
+                        ? "bg-amber-50 text-amber-600"
+                        : admin.role === "viewer"
+                          ? "bg-slate-100 text-slate-500"
+                          : "bg-primary/10 text-primary"
+                    }`}
+                  >
                     {admin.role}
                   </span>
                   <span className="text-xs text-slate-300">
-                    {new Date(admin.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" })}
+                    {new Date(admin.createdAt).toLocaleDateString("es-PE", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </span>
                   <button
                     className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"

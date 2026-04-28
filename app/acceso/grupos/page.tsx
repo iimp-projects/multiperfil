@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   Users as UsersIcon, 
   Plus, 
   X, 
   User as UserIcon,
-  MoreVertical,
   Layers,
   Save,
-  CheckCircle2
+  Loader2,
+  CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { useUsersAdminStore } from "@/store/acceso/useUsersAdminStore";
@@ -30,7 +32,20 @@ export default function GruposAdminPage() {
   const [groups, setGroups] = useState<RecipientGroupItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [dismissAutoCreate, setDismissAutoCreate] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<RecipientGroupItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  
+  const searchParams = useSearchParams();
+  const autoCreateParam = searchParams.get("create") === "true";
+  const shouldAutoOpenCreate = autoCreateParam && selectedUsers.length > 0 && !dismissAutoCreate;
+  
+  useEffect(() => {
+    if (autoCreateParam && selectedUsers.length === 0) {
+      toast.info("Primero selecciona usuarios en el módulo de Búsqueda.");
+    }
+  }, [autoCreateParam, selectedUsers.length]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -97,6 +112,28 @@ export default function GruposAdminPage() {
       toast.error("Error de red.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteGroup = async (groupId: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este grupo?")) return;
+    
+    setIsDeleting(groupId);
+    try {
+      const res = await fetch(`/api/admin/portal/groups?id=${groupId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Grupo eliminado.");
+        fetchGroups();
+      } else {
+        toast.error(data.message || "Error al eliminar.");
+      }
+    } catch {
+      toast.error("Error de red.");
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -173,9 +210,16 @@ export default function GruposAdminPage() {
                 <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-primary/5 transition-colors">
                   <UsersIcon className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
                 </div>
-                <button className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
-                  <MoreVertical className="w-4 h-4" />
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => handleDeleteGroup(group.id)}
+                    disabled={isDeleting === group.id}
+                    className="p-2 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors border-none bg-transparent cursor-pointer"
+                    title="Eliminar grupo"
+                  >
+                    {isDeleting === group.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
               <h3 className="font-bold text-slate-800 text-lg mb-1">{group.name}</h3>
               <p className="text-slate-500 text-xs line-clamp-2 mb-6 h-8">{group.description || "Sin descripción."}</p>
@@ -193,7 +237,10 @@ export default function GruposAdminPage() {
                     {group.userKeys.length} Miembros
                   </span>
                 </div>
-                <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline bg-transparent border-none cursor-pointer">
+                <button 
+                  onClick={() => setSelectedGroup(group)}
+                  className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline bg-transparent border-none cursor-pointer"
+                >
                   Ver Detalles
                 </button>
               </div>
@@ -203,13 +250,16 @@ export default function GruposAdminPage() {
       </div>
 
       {/* Create Group Modal */}
-      {showCreateModal && (
+      {(showCreateModal || shouldAutoOpenCreate) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-in slide-in-from-bottom-8 duration-500 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <h2 className="text-lg font-bold text-slate-800">Crear Nuevo Grupo</h2>
               <button 
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setDismissAutoCreate(true);
+                  setShowCreateModal(false);
+                }}
                 className="p-2 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
               >
                 <X className="w-6 h-6" />
@@ -251,7 +301,10 @@ export default function GruposAdminPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => {
+                    setDismissAutoCreate(true);
+                    setShowCreateModal(false);
+                  }}
                   className="flex-1 py-4 bg-white border border-slate-200 text-slate-500 font-bold rounded-2xl hover:bg-slate-50 transition-all border-none cursor-pointer"
                 >
                   Cancelar
@@ -266,6 +319,57 @@ export default function GruposAdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Details Modal */}
+      {selectedGroup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-300 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">{selectedGroup.name}</h2>
+                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-0.5">Detalles del Grupo</p>
+              </div>
+              <button 
+                onClick={() => setSelectedGroup(null)}
+                className="p-2 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Descripción</label>
+                <p className="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
+                  {selectedGroup.description || "Sin descripción proporcionada."}
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex justify-between items-center">
+                  Miembros ({selectedGroup.userKeys.length})
+                </label>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  {selectedGroup.userKeys.map((key, idx) => (
+                    <div key={`${key}-${idx}`} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <UserIcon className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 tracking-tight">{key}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button
+                onClick={() => setSelectedGroup(null)}
+                className="w-full py-4 bg-white border border-slate-200 text-slate-800 font-bold rounded-2xl hover:bg-slate-100 transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

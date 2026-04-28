@@ -22,7 +22,13 @@ export default function MailboxView() {
     null,
   );
 
-  const { messages, markMessageAsRead } = usePortalStore();
+  const {
+    messages,
+    markMessageAsRead,
+    toggleArchiveMessage,
+    deleteMessage,
+    deletePermanentMessage,
+  } = usePortalStore();
   const user = useAuthStore((state) => state.user);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,6 +67,15 @@ export default function MailboxView() {
     }
   });
 
+  const counts = useMemo(
+    () => ({
+      all: messages.filter((m) => !m.isArchived && !m.isDeleted).length,
+      archived: messages.filter((m) => m.isArchived && !m.isDeleted).length,
+      deleted: messages.filter((m) => m.isDeleted).length,
+    }),
+    [messages],
+  );
+
   const handleSelectMessage = (message: PortalMessage) => {
     setSelectedMessage(message);
     setViewingDetail(true);
@@ -70,19 +85,23 @@ export default function MailboxView() {
     }
   };
 
-  const handleToggleArchive = (_id: string) => {
-    void _id;
-    // In a real app, you would call an API here.
-    // For now we just update local state if we want, but since it's global store,
-    // we need to add an action to toggle archive in the store. Let's assume it's read-only for now or we add it to the store.
-    // I will just skip the local toggle for now as requested to "clean the fake data".
+  const handleToggleArchive = (id: string) => {
+    if (!user?.siecode) return;
+    const undo = activeTab === "archived";
+    toggleArchiveMessage(id, user.siecode, undo);
     setSelectedMessage(null);
     setViewingDetail(false);
   };
 
-  const handleDelete = (_id: string) => {
-    void _id;
-    // Same here, call API.
+  const handleDelete = (id: string) => {
+    if (!user?.siecode) return;
+    if (activeTab === "deleted") {
+      if (confirm("¿Eliminar permanentemente?")) {
+        deletePermanentMessage(id, user.siecode);
+      }
+    } else {
+      deleteMessage(id, user.siecode);
+    }
     setSelectedMessage(null);
     setViewingDetail(false);
   };
@@ -106,9 +125,9 @@ export default function MailboxView() {
         </div>
         <div className="flex items-center bg-slate-100 p-1 rounded-2xl w-full md:w-auto">
           {[
-            { id: "all", label: "Todos" },
-            { id: "archived", label: "Archivados" },
-            { id: "deleted", label: "Eliminados" },
+            { id: "all", label: "Todos", count: counts.all },
+            { id: "archived", label: "Archivados", count: counts.archived },
+            { id: "deleted", label: "Eliminados", count: counts.deleted },
           ].map((tab) => (
             <Button
               key={tab.id}
@@ -123,7 +142,21 @@ export default function MailboxView() {
                   : "text-slate-400 hover:text-slate-600",
               )}
             >
-              {tab.label}
+              <div className="flex items-center gap-2">
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span
+                    className={clsx(
+                      "px-1.5 py-0.5 rounded-md text-[10px] font-black",
+                      activeTab === tab.id
+                        ? "bg-primary text-white"
+                        : "bg-slate-200 text-slate-500",
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </div>
             </Button>
           ))}
         </div>

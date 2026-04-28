@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Loader2, UserPlus, X, User as UserIcon } from "lucide-react";
 import { PortalRecipientUser, UsersSearchResponse } from "@/types/acceso/users";
 import { useUsersAdminStore } from "@/store/acceso/useUsersAdminStore";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 
 export default function UsuariosAdminPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const { selectedEvent } = useAdminAuthStore();
   const eventCode = selectedEvent ?? "";
@@ -176,10 +178,16 @@ export default function UsuariosAdminPage() {
 
             {selectedUsers.length > 0 && (
               <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
-                <button className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                <button 
+                  onClick={() => router.push("/acceso/grupos?create=true")}
+                  className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors border-none cursor-pointer"
+                >
                   Crear Grupo
                 </button>
-                <button className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors">
+                <button 
+                  onClick={() => router.push("/acceso/mensajes?compose=true")}
+                  className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors border-none cursor-pointer"
+                >
                   Enviar Mensaje Directo
                 </button>
               </div>

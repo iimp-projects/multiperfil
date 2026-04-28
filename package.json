@@ -7,8 +7,8 @@
     "dev": "prisma generate && prisma db push && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next typegen && tsc --noEmit && eslint --max-warnings=0",
-    "typecheck": "tsc --noEmit",
+    "lint": "next typegen && tsc --noEmit --incremental false && eslint --max-warnings=0",
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
     "postinstall": "prisma generate",
     "prisma": "prisma",
     "db:push": "prisma db push"
@@ -22,6 +22,7 @@
     "@nrivera-iimp/ui-kit-iimp": "^0.1.16",
     "@prisma/client": "^6.19.3",
     "@tiptap/extension-color": "^3.20.2",
+    "@tiptap/extension-image": "^3.22.5",
     "@tiptap/extension-text-align": "^3.20.2",
     "@tiptap/extension-text-style": "^3.20.2",
     "@tiptap/extension-underline": "^3.20.2",
@@ -43,6 +44,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-to-print": "^3.3.0",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
