@@ -29,7 +29,15 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: program });
+    const formattedProgram = {
+      ...program,
+      tabs: program.tabs.map((tab) => ({
+        ...tab,
+        title: tab.label,
+      })),
+    };
+
+    return NextResponse.json({ success: true, data: formattedProgram });
   } catch (error) {
     console.error("[PORTAL_PROGRAM_DETAIL_GET]", error);
     return NextResponse.json(

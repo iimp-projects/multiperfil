@@ -21,10 +21,11 @@ import clsx from "clsx";
 
 type Session = {
   id: string;
-  title: string;
+  title?: string | null;
   description?: string | null;
   timeRange?: string | null;
   location?: string | null;
+  image?: string | null;
   color?: string | null;
   order: number;
 };
@@ -86,7 +87,7 @@ export default function ConferencesView() {
 
   const filteredSessions = activeTab?.sessions.filter(
     (s) =>
-      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.location?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -149,17 +150,16 @@ export default function ConferencesView() {
   if (viewMode === "grid") {
     return (
       <div className="space-y-8 pb-20 animate-in fade-in duration-700">
-        <header className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 min-h-[180px] flex flex-col justify-center p-8 md:p-12 shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
-          <div className="relative z-10 space-y-2">
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
               Agenda de Conferencias
             </h1>
-            <p className="text-slate-400 font-medium">
+            <p className="text-slate-500 mt-1">
               Explora las charlas y actividades de todos nuestros programas.
             </p>
           </div>
-        </header>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {programs.map((program) => (
@@ -202,7 +202,7 @@ export default function ConferencesView() {
                 </p>
                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {program.tabs.length} Días / Pestañas
+                    {program.tabs.length} Días
                   </span>
                   <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary group-hover:text-white transition-all">
                     <ChevronRight className="w-5 h-5" />
@@ -403,33 +403,55 @@ export default function ConferencesView() {
 
                       <div className="flex flex-col md:flex-row gap-8 md:items-start">
                         {/* Time Column */}
-                        <div className="md:w-32 flex flex-col items-start md:items-center gap-2 shrink-0">
+                        <div className="md:w-32 flex flex-col items-center md:items-center gap-2 shrink-0">
                           <div
                             className="flex items-center gap-2"
                             style={{ color: "var(--theme-primary)" }}
                           >
-                            <Clock className="w-4 h-4" />
+                            <Clock className="w-4 h-4 !hidden" />
                             <span className="text-lg font-black tracking-tight">
                               {session.timeRange?.split("-")[0].trim()}
                             </span>
                           </div>
-                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                            {session.timeRange?.split("-")[1]?.trim() ||
-                              "Termina"}
-                          </span>
+                          <div className="mx-2 relative ml-2 border-r h-5 border-gray-300">
+                            {""}
+                          </div>
+                          <div
+                            className="flex items-center gap-2"
+                            style={{ color: "var(--theme-primary)" }}
+                          >
+                            <Clock className="w-4 h-4 invisible !hidden" />
+                            <span className="text-lg font-black tracking-tight">
+                              {session.timeRange?.split("-")[1]?.trim() ||
+                                "Termina"}
+                            </span>
+                          </div>
                         </div>
 
                         {/* Info Column */}
                         <div className="flex-1 space-y-4">
-                          <h4 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-                            {session.title}
-                          </h4>
-                          {session.description && (
-                            <p className="text-slate-500 text-sm md:text-base font-normal leading-relaxed">
-                              {session.description}
-                            </p>
+                          {session.image && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={getFullImageUrl(session.image) ?? undefined}
+                              alt={session.title || "Imagen de sesión"}
+                              className="w-full h-full object-cover"
+                            />
                           )}
-                          <div className="flex flex-wrap items-center gap-4 pt-2">
+                          {session.title && (
+                            <h4 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+                              {session.title}
+                            </h4>
+                          )}
+                          {session.description && (
+                            <div
+                              className="text-slate-500 text-sm md:text-base font-normal leading-relaxed [&_p]:m-0 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1"
+                              dangerouslySetInnerHTML={{
+                                __html: session.description,
+                              }}
+                            />
+                          )}
+                          <div className="flex flex-wrap items-center gap-4 pt-2 !hidden">
                             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                               <MapPin className="w-3.5 h-3.5 text-slate-400" />
                               {session.location || "Por confirmar"}
@@ -438,7 +460,7 @@ export default function ConferencesView() {
                         </div>
 
                         {/* Action Column */}
-                        <div className="flex items-center justify-end shrink-0">
+                        <div className="flex items-center justify-end shrink-0 !hidden">
                           <div
                             className="w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-500"
                             style={{

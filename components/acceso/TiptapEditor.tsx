@@ -24,13 +24,19 @@ import {
   Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { getBucketName } from "@/lib/s3-utils";
 
 interface TiptapEditorProps {
   content: string;
   onChange: (content: string) => void;
+  uploadFolder?: string;
 }
 
-export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
+export default function TiptapEditor({
+  content,
+  onChange,
+  uploadFolder = "programas",
+}: TiptapEditorProps) {
   const [mounted, setMounted] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -71,21 +77,33 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       if (!file) return;
 
       setIsUploading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-
       try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          body: formData,
+        const bucketName = getBucketName();
+
+        const presignRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            fileType: file.type,
+            bucketName,
+            folder: uploadFolder,
+          }),
         });
-        const data = await res.json();
-        if (data.success) {
-          editor?.chain().focus().setImage({ src: data.url }).run();
-          toast.success("Imagen subida con éxito");
-        } else {
-          toast.error(data.message || "Error al subir imagen");
+        const presignData = await presignRes.json();
+        if (!presignData?.success) {
+          toast.error(presignData?.message || "Error al generar URL de subida");
+          return;
         }
+
+        await fetch(presignData.uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: { "Content-Type": file.type },
+        });
+
+        editor?.chain().focus().setImage({ src: presignData.publicUrl }).run();
+        toast.success("Imagen subida con éxito");
       } catch (error) {
         console.error("Upload error:", error);
         toast.error("Error al conectar con el servidor");

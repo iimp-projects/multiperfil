@@ -9,10 +9,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, description, timeRange, location, tabId, order, color } = body;
+    const {
+      title,
+      description,
+      timeRange,
+      location,
+      tabId,
+      order,
+      color,
+      image,
+    } = body;
 
-    if (!title || !tabId) {
-      return NextResponse.json({ success: false, message: "Título y tabId requeridos." }, { status: 400 });
+    if (!tabId || !timeRange) {
+      return NextResponse.json(
+        { success: false, message: "Horario y tabId requeridos." },
+        { status: 400 },
+      );
     }
 
     const session = await prisma.portalProgramSession.create({
@@ -21,6 +33,7 @@ export async function POST(req: NextRequest) {
         description,
         timeRange,
         location,
+        image,
         tabId,
         color,
         order: order || 0
@@ -33,7 +46,7 @@ export async function POST(req: NextRequest) {
       userName: admin.name,
       action: "CREATE_SESSION",
       module: "PROGRAMS",
-      details: `Sesión creada: "${title}"`,
+      details: `Sesión creada: "${title || timeRange}"`,
       ip,
       userAgent
     });
