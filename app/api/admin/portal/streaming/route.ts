@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const streaming = await prisma.portalStreaming.create({
       data: {
-        event,
+        event: event.toUpperCase(),
         title,
         description,
         vimeoId,
@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const url = new URL(req.url);
-    const event = url.searchParams.get("event");
+    const { searchParams } = new URL(req.url);
+    const event = searchParams.get("event")?.trim().toUpperCase();
 
     if (!event) {
       return NextResponse.json(
@@ -60,7 +60,12 @@ export async function GET(req: NextRequest) {
     }
 
     const streamingList = await prisma.portalStreaming.findMany({
-      where: { event },
+      where: { 
+        event: {
+          equals: event,
+          mode: 'insensitive' // Búsqueda insensible a mayúsculas para mayor seguridad
+        }
+      },
       orderBy: { createdAt: "desc" }
     });
 
@@ -69,6 +74,80 @@ export async function GET(req: NextRequest) {
     console.error("[ADMIN_STREAMING_GET]", error);
     return NextResponse.json(
       { success: false, message: "Error al obtener los streamings." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { 
+      id, 
+      event, 
+      title, 
+      description, 
+      vimeoId, 
+      url, 
+      status, 
+      startsAt, 
+      expiresAt, 
+      recipients 
+    } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID requerido para actualización." },
+        { status: 400 }
+      );
+    }
+
+    const updated = await prisma.portalStreaming.update({
+      where: { id },
+      data: {
+        event: event?.toUpperCase(),
+        title,
+        description,
+        vimeoId,
+        url,
+        status,
+        startsAt: startsAt ? new Date(startsAt) : undefined,
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+        recipients
+      }
+    });
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (error) {
+    console.error("[ADMIN_STREAMING_PATCH]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al actualizar el contenido." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID requerido para eliminación." },
+        { status: 400 }
+      );
+    }
+
+    await prisma.portalStreaming.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true, message: "Streaming eliminado." });
+  } catch (error) {
+    console.error("[ADMIN_STREAMING_DELETE]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al eliminar el contenido." },
       { status: 500 }
     );
   }

@@ -6,6 +6,7 @@ import CryptoJS from "crypto-js";
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  hasStreamingAccess: boolean;
   _hasHydrated: boolean;
   setAuth: (user: User) => void;
   updateUser: (data: Partial<User>) => void;
@@ -53,23 +54,48 @@ const encryptedStorage = {
   },
 };
 
+const calculateStreamingAccess = (user: User | null): boolean => {
+  if (!user || !user.comprobantes || user.comprobantes.length === 0) return false;
+
+  const vouchers = user.comprobantes;
+  const hasPending = vouchers.some(
+    (v) => v.estado?.toUpperCase() === "PENDIENTE",
+  );
+  const hasPaidOrFree = vouchers.some((v) => {
+    const estado = v.estado?.toUpperCase();
+    return estado === "CANCELADO" || estado === "GRATUITO";
+  });
+
+  // Access is granted if NO pending vouchers exist AND at least one is Paid or Free
+  return !hasPending && hasPaidOrFree;
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
+      hasStreamingAccess: false,
       _hasHydrated: false,
-      setAuth: (user: User) => set({ user, isAuthenticated: true }),
+      setAuth: (user: User) =>
+        set({
+          user,
+          isAuthenticated: true,
+          hasStreamingAccess: calculateStreamingAccess(user),
+        }),
       updateUser: (data: Partial<User>) => {
         const currentUser = get().user;
         if (currentUser) {
+          const updatedUser = { ...currentUser, ...data };
           set({
-            user: { ...currentUser, ...data },
+            user: updatedUser,
+            hasStreamingAccess: calculateStreamingAccess(updatedUser),
           });
         }
       },
       setHasHydrated: (state: boolean) => set({ _hasHydrated: state }),
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () =>
+        set({ user: null, isAuthenticated: false, hasStreamingAccess: false }),
     }),
     {
       name: "auth-storage",

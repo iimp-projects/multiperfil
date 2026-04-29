@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -35,7 +35,6 @@ import {
   DialogContent,
   DialogTitle,
 } from "@nrivera-iimp/ui-kit-iimp";
-import { VOUCHER_STATUS } from "@/types/auth";
 import { getFullImageUrl } from "@/lib/s3-utils";
 import { getDynamicEventCode } from "@/lib/utils/event";
 import { Capacitor } from "@capacitor/core";
@@ -141,6 +140,14 @@ export default function DashboardLayout({
   const [isMaximized, setIsMaximized] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("notifications");
 
+  useLayoutEffect(() => {
+    // Open sidebar by default on large screens
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsSidebarOpen(true);
+    }
+  }, []);
+
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -154,6 +161,8 @@ export default function DashboardLayout({
     markAllNotificationsAsRead,
     deleteNotification,
   } = usePortalStore();
+
+  const { hasStreamingAccess: storeAccess } = useAuthStore();
 
   const prevIds = useRef<Set<string>>(new Set());
   const isFirstLoad = useRef(true);
@@ -217,6 +226,13 @@ export default function DashboardLayout({
 
     return () => clearInterval(intervalId);
   }, [fetchNotifications, fetchMessages, user, vertical]);
+
+  // Re-validate streaming access when vertical changes
+  useEffect(() => {
+    if (user) {
+      console.log(`[Streaming Access Check] Event: ${vertical}, Access: ${storeAccess}`);
+    }
+  }, [vertical, storeAccess, user]);
 
   // Initial arming of the notification system
   useEffect(() => {
@@ -349,12 +365,6 @@ export default function DashboardLayout({
   }, [_hasHydrated, isAuthenticated, endSession]);
 
   // Check if user is up to date with payments (no PENDIENTE vouchers)
-  const isPaidUser = React.useMemo(() => {
-    if (!user?.comprobantes || user.comprobantes.length === 0) return false;
-    return !user.comprobantes.some(
-      (c) => c.estado === VOUCHER_STATUS.PENDIENTE,
-    );
-  }, [user]);
 
   const getLogo = () => {
     switch (vertical) {
@@ -431,7 +441,7 @@ export default function DashboardLayout({
         </div>
       ),
       href: "/dashboard/streaming",
-      hidden: true,
+      hidden: !storeAccess,
     },
   ];
 
@@ -480,7 +490,10 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 lg:sticky lg:inset-y-auto lg:top-0 lg:h-[100dvh] lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={clsx(
+          "fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
       >
         <div className="h-full flex flex-col">
           {/* Logo - Fixed top part */}
@@ -511,7 +524,11 @@ export default function DashboardLayout({
                   key={item.href}
                   {...item}
                   active={pathname === item.href}
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={() => {
+                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
                 />
               ))}
 
@@ -528,7 +545,11 @@ export default function DashboardLayout({
                   key={item.href}
                   {...item}
                   active={pathname === item.href}
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={() => {
+                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
                 />
               ))}
 
@@ -544,7 +565,11 @@ export default function DashboardLayout({
                   key={item.href}
                   {...item}
                   active={pathname === item.href}
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={() => {
+                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
                 />
               ))}
 
@@ -578,7 +603,12 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-[100dvh] overflow-x-hidden">
+      <div
+        className={clsx(
+          "flex-1 flex flex-col min-w-0 min-h-[100dvh] overflow-x-hidden transition-all duration-300",
+          isSidebarOpen && "lg:pl-72",
+        )}
+      >
         {/* Header */}
         <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between z-30">
           <div className="flex items-center gap-4 lg:gap-0">
@@ -602,10 +632,10 @@ export default function DashboardLayout({
               </button>
             )}
             <button
-              className="p-2 -ml-2 text-slate-500 lg:hidden cursor-pointer h-auto bg-transparent border-none"
-              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 text-slate-500 cursor-pointer h-auto bg-transparent border-none"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
-              <Menu size={24} className="block lg:hidden" />
+              <Menu size={24} />
             </button>
 
             {/* Mobile Title */}
@@ -765,10 +795,9 @@ export default function DashboardLayout({
 
         {/* Page Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-10 mx-auto w-full l">
-          {/* Premium Streaming Alert */}
           <div className="!hidden">
             <AnimatePresence>
-              {isPaidUser && pathname === "/dashboard" && (
+              {storeAccess && pathname === "/dashboard" && (
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -42,6 +42,14 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
   const [showEventSelector, setShowEventSelector] = useState(false);
   const [events, setEvents] = useState<EventOption[]>([]);
   const { admin, selectedEvent, isAuthenticated, _hasHydrated, logoutAdmin, setSelectedEvent } = useAdminAuthStore();
+  
+  useLayoutEffect(() => {
+    // Open sidebar by default on large screens
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsSidebarOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -89,10 +97,6 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
     setVertical(option.slug);
     setShowEventSelector(false);
     toast.success(`Cambiado a evento: ${option.label}`);
-    // Optional: redirect to dashboard to refresh all data
-    if (pathname !== "/acceso/dashboard") {
-      router.push("/acceso/dashboard");
-    }
   };
 
   // Show plain layout for login / recovery pages
@@ -126,8 +130,8 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:shadow-none ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo area */}
@@ -166,7 +170,11 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setIsSidebarOpen(false)}
+                onClick={() => {
+                  if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/20"
@@ -210,12 +218,12 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isSidebarOpen ? "lg:pl-64" : "lg:pl-0"}`}>
         <header className="h-16 bg-white border-b border-slate-100 flex items-center px-4 lg:px-8 justify-between shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>

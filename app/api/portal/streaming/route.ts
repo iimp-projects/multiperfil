@@ -5,7 +5,6 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const event = url.searchParams.get("event");
-    const userKey = url.searchParams.get("userKey");
 
     if (!event) {
       return NextResponse.json(
@@ -20,10 +19,6 @@ export async function GET(req: NextRequest) {
       where: {
         event,
         status: "active",
-        OR: [
-          { recipients: { isEmpty: true } },
-          ...(userKey ? [{ recipients: { has: userKey } }] : []),
-        ],
         AND: [
           { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
           { OR: [{ expiresAt: null }, { expiresAt: { gte: now } }] }
