@@ -629,12 +629,12 @@ export default function ProfileView() {
         <p className="w-full text-center text-sm opacity-40 font-bold mb-2">
           Platform Security
         </p>
-        <div className="flex flex-row gap-4 mb-10 opacity-80  justify-center items-center w-full">
+        <div className="flex flex-col md:flex-row gap-4 mb-10 opacity-80  justify-center items-center w-full">
           <a
             href="https://aws.amazon.com/security/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-300 group cursor-pointer w-full"
+            className="flex items-center space-x-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-300 group cursor-pointer w-full"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -657,7 +657,7 @@ export default function ProfileView() {
             href="https://www.cloudflare.com/learning/ssl/what-is-ssl/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-300 group cursor-pointer w-full"
+            className="flex items-center space-x-3 bg-white p-3 rounded-xl border border-gray-200 shadow-sm hover:bg-gray-100 transition-all duration-300 group cursor-pointer w-full"
           >
             <Lock
               size={18}

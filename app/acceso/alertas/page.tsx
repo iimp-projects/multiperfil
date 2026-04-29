@@ -56,7 +56,7 @@ type PortalGroupItem = {
 };
 
 export default function AlertasAdminPage() {
-  const { selectedEvent } = useAdminAuthStore();
+  const { admin, selectedEvent } = useAdminAuthStore();
   const { selectedUsers, clearUsers } = useUsersAdminStore();
   
   const [alerts, setAlerts] = useState<PortalAlertItem[]>([]);
@@ -148,7 +148,12 @@ export default function AlertasAdminPage() {
 
       const res = await fetch("/api/admin/portal/alerts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
         body: JSON.stringify(payload)
       });
 
@@ -195,7 +200,12 @@ export default function AlertasAdminPage() {
     
     try {
       const res = await fetch(`/api/admin/portal/alerts?id=${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
       });
       const data = await res.json();
       if (data.success) {

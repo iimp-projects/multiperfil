@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { logActivity } from "@/lib/audit";
+import { getClientInfo } from "@/lib/utils/request";
 
 /**
  * RUTA DE EMERGENCIA PARA CREACIÓN DE ADMINISTRADORES INICIALES
@@ -17,6 +19,12 @@ export async function GET(req: NextRequest) {
     }
 
     const admins = [
+      {
+        email: "admin@multieventos.com",
+        password: "admin123",
+        name: "Admin Principal",
+        role: "admin",
+      },
       {
         email: "superadmin@iimp.org.pe",
         password: "Admin@IIMP2026!",
@@ -37,31 +45,33 @@ export async function GET(req: NextRequest) {
       },
     ];
 
-    const results = [];
-
-    for (const admin of admins) {
-      const hashedPassword = await bcrypt.hash(admin.password, 10);
-      const result = await prisma.adminUser.upsert({
-        where: { email: admin.email },
-        update: {
-          passwordHash: hashedPassword,
-          name: admin.name,
-          role: admin.role,
-        },
+    for (const a of admins) {
+      await prisma.adminUser.upsert({
+        where: { email: a.email },
+        update: {},
         create: {
-          email: admin.email,
-          passwordHash: hashedPassword,
-          name: admin.name,
-          role: admin.role,
-        },
+          email: a.email,
+          passwordHash: bcrypt.hashSync(a.password, 10),
+          name: a.name,
+          role: a.role,
+        }
       });
-      results.push(result.email);
     }
+
+    // Registro en Auditoría (Contexto de Sistema ya que no hay admin logueado)
+    const { ip, userAgent } = getClientInfo(req);
+    await logActivity({
+      action: "GENERIC_ACTION",
+      module: "SYSTEM",
+      details: "Inicialización de administradores del sistema vía setup API",
+      ip,
+      userAgent
+    });
 
     return NextResponse.json({
       success: true,
       message: "Administradores configurados correctamente",
-      seeded: results,
+      seeded: admins.map(a => a.email),
     });
   } catch (error) {
     console.error("[ADMIN_SETUP_ERROR]", error);

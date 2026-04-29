@@ -12,6 +12,14 @@ import {
   CheckCircle2,
   Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
+import { toast } from "sonner";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle 
+} from "@nrivera-iimp/ui-kit-iimp";
 
 // ── types ─────────────────────────────────────────────────────────────────────
 interface AdminUserItem {
@@ -38,6 +46,8 @@ const EMPTY_FORM: NewAdminForm = {
 
 // ── component ─────────────────────────────────────────────────────────────────
 export default function AdministradoresPage() {
+  const router = useRouter();
+  const { admin: currentAdmin } = useAdminAuthStore();
   const [admins, setAdmins] = useState<AdminUserItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -45,6 +55,14 @@ export default function AdministradoresPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [adminToDelete, setAdminToDelete] = useState<AdminUserItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (currentAdmin && currentAdmin.role.toLowerCase() === "moderador") {
+      router.replace("/acceso/dashboard");
+    }
+  }, [currentAdmin, router]);
 
   const fetchAdmins = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +76,33 @@ export default function AdministradoresPage() {
       setIsLoading(false);
     }
   }, []);
+
+  const confirmDelete = async () => {
+    if (!adminToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/users?id=${adminToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-id": currentAdmin?.id || "",
+          "x-admin-email": currentAdmin?.email || "",
+          "x-admin-name": currentAdmin?.name || "",
+        },
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Administrador "${adminToDelete.name}" eliminado correctamente.`);
+        setAdminToDelete(null);
+        fetchAdmins();
+      } else {
+        toast.error(json.message || "Error al eliminar administrador.");
+      }
+    } catch {
+      toast.error("Error de red al eliminar.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   useEffect(() => {
     // This effect is the integration point with the external system (the network).
@@ -74,20 +119,25 @@ export default function AdministradoresPage() {
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-id": currentAdmin?.id || "",
+          "x-admin-email": currentAdmin?.email || "",
+          "x-admin-name": currentAdmin?.name || "",
+        },
         body: JSON.stringify(form),
       });
       const json = await res.json();
       if (json.success) {
-        setSuccessMsg(`Administrador "${form.name}" creado exitosamente.`);
+        toast.success(`Administrador "${form.name}" creado exitosamente.`);
         setForm(EMPTY_FORM);
         setShowForm(false);
         fetchAdmins();
       } else {
-        setError(json.message || "Error al crear administrador.");
+        toast.error(json.message || "Error al crear administrador.");
       }
     } catch {
-      setError("Error de red. Inténtalo de nuevo.");
+      toast.error("Error de red. Inténtalo de nuevo.");
     } finally {
       setSaving(false);
     }
@@ -208,8 +258,7 @@ export default function AdministradoresPage() {
                   className="w-full h-12 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none cursor-pointer"
                 >
                   <option value="admin">Admin</option>
-                  <option value="superadmin">Super Admin</option>
-                  <option value="viewer">Solo lectura</option>
+                  <option value="moderador">Moderador</option>
                 </select>
               </div>
             </div>
@@ -308,6 +357,7 @@ export default function AdministradoresPage() {
                     })}
                   </span>
                   <button
+                    onClick={() => setAdminToDelete(admin)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"
                     title="Eliminar administrador"
                   >
@@ -319,6 +369,45 @@ export default function AdministradoresPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!adminToDelete}
+        onOpenChange={(open) => !open && setAdminToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 overflow-hidden border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+            
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                ¿Eliminar administrador?
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed text-sm">
+                Esta acción no se puede deshacer. El acceso de &quot;{adminToDelete?.name}&quot; será revocado permanentemente.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setAdminToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer flex items-center justify-center gap-2"
+              >
+                {deleting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

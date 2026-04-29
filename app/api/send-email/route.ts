@@ -1,22 +1,25 @@
 import { NextResponse } from "next/server";
-import nodemailer, { type SendMailOptions, type SentMessageInfo } from "nodemailer";
-import { Options as SMTPOptions } from "nodemailer/lib/smtp-transport";
+import { Resend } from "resend";
+
+type AttachmentRequest = {
+  filename: string;
+  content: string;
+  encoding?: string;
+  cid?: string;
+};
 
 type SendEmailBody = {
   to?: string;
   subject?: string;
   html?: string;
-  attachments?: unknown;
+  attachments?: AttachmentRequest[];
 };
 
 export async function POST(req: Request) {
   try {
     const body: SendEmailBody = await req.json();
     const { to, subject, html } = body;
-    const attachments: SendMailOptions["attachments"] = Array.isArray(body.attachments)
-      ? (body.attachments as SendMailOptions["attachments"])
-      : [];
-
+    
     if (!to || !subject || !html) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
@@ -24,82 +27,64 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if credentials are missing
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.error("SMTP Error: Missing SMTP_USER or SMTP_PASS environment variables");
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("Resend Error: Missing RESEND_API_KEY environment variable");
       return NextResponse.json(
         { 
           success: false, 
           message: "Email configuration error", 
-          error: "Missing SMTP credentials in environment variables. Please set SMTP_USER and SMTP_PASS." 
+          error: "Missing Resend API Key. Please set RESEND_API_KEY." 
         },
         { status: 500 },
       );
     }
 
-    // Configure transporter with SMTP settings from environment variables
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp-relay.sendinblue.com",
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000,   // 10 seconds
-      socketTimeout: 20000,    // 20 seconds
-      debug: true,
-      logger: true,
-    } as SMTPOptions);
+    const resend = new Resend(apiKey);
 
-    const mailOptions = {
-      from: process.env.SMTP_FROM || '"IIMP - Eventos" <postmast@iimp.org.pe>',
+    // Map attachments for Resend SDK
+    // If incoming attachment has encoding: 'base64', we convert content to Buffer
+    const attachments = Array.isArray(body.attachments)
+      ? body.attachments.map((att: AttachmentRequest) => ({
+          filename: att.filename,
+          content: att.encoding === "base64" ? Buffer.from(att.content, "base64") : att.content,
+          // Note: Resend currently doesn't support CID for inline images in the same way as nodemailer.
+          // However, we pass the content and filename as standard attachments.
+        }))
+      : [];
+
+    const fromEmail = process.env.SMTP_FROM || "no-reply@sistemasiimp.org.pe";
+    
+    console.log(`[Resend] Attempting to send email to ${to} from ${fromEmail}`);
+
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
       to,
       subject,
       html,
       attachments,
-    };
+    });
 
-    const email = to;
-    console.log(`[SMTP] Attempting to send email to ${email} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
-    
-    // Create a timeout promise to prevent hanging forever
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Internal SMTP Timeout")), 25000)
-    );
-
-    try {
-      // Verify connection configuration
-      console.log("[SMTP] Verifying connection...");
-      await transporter.verify();
-      console.log("[SMTP] Connection verified successfully.");
-
-      // Send email with timeout race
-      const info = (await Promise.race([
-        transporter.sendMail(mailOptions),
-        timeoutPromise
-      ])) as SentMessageInfo;
-
-      console.log(`[SMTP] Email sent successfully to ${email}. MessageId: ${info.messageId}`);
-      return NextResponse.json({ 
-        success: true, 
-        message: "Email sent successfully",
-        messageId: info.messageId 
-      });
-    } catch (smtpError: unknown) {
-      const error = smtpError as { message?: string; code?: string };
-      console.error("[SMTP] Error during verification or sending:", error);
+    if (error) {
+      console.error("[Resend] Error sending email:", error);
       return NextResponse.json(
         { 
           success: false, 
           message: "Error enviando el correo", 
-          error: error.message || "Unknown SMTP error",
-          code: error.code 
+          error: error.message || "Unknown Resend error",
+          name: error.name
         },
         { status: 500 }
       );
     }
+
+    console.log(`[Resend] Email sent successfully to ${to}. ID: ${data?.id}`);
+    return NextResponse.json({ 
+      success: true, 
+      message: "Email sent successfully",
+      messageId: data?.id 
+    });
+
   } catch (error: unknown) {
     console.error("Error processing email request:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,6 +31,8 @@ import {
   Mail,
   LogOut,
   Trash2,
+  Calendar,
+  Handshake,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -54,6 +62,11 @@ type SidebarNavItem = SidebarItemProps & {
   hidden?: boolean;
 };
 
+type ActiveStream = {
+  id: string;
+  [key: string]: unknown;
+};
+
 const SidebarItem = ({
   icon,
   label,
@@ -68,10 +81,11 @@ const SidebarItem = ({
     onClick={onClick}
     target={target}
     rel={rel}
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active
-      ? "bg-primary text-white shadow-lg shadow-primary/20"
-      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-      }`}
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+      active
+        ? "bg-primary text-white shadow-lg shadow-primary/20"
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+    }`}
   >
     <div
       className={`${active ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`}
@@ -174,7 +188,7 @@ export default function DashboardLayout({
   >(new Set());
   const [notificationToDelete, setNotificationToDelete] =
     useState<AppNotification | null>(null);
-  const [activeStreams, setActiveStreams] = useState<any[]>([]);
+  const [activeStreams, setActiveStreams] = useState<ActiveStream[]>([]);
   const hasActiveStreams = activeStreams.length > 0;
   const prevStreamIds = useRef<Set<string>>(new Set());
   const isFirstStreamLoad = useRef(true);
@@ -231,16 +245,16 @@ export default function DashboardLayout({
     const refreshData = () => {
       fetchNotifications(eventCode, user.siecode);
       fetchMessages(eventCode, user.siecode);
-      
+
       // Check active streams
       fetch(`/api/portal/streaming?event=${eventCode}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.success) {
             setActiveStreams(data.data);
           }
         })
-        .catch(err => console.error("Error checking streams:", err));
+        .catch((err) => console.error("Error checking streams:", err));
     };
 
     // Initial fetch
@@ -255,7 +269,9 @@ export default function DashboardLayout({
   // Re-validate streaming access when vertical changes
   useEffect(() => {
     if (user) {
-      console.log(`[Streaming Access Check] Event: ${vertical}, Access: ${storeAccess}`);
+      console.log(
+        `[Streaming Access Check] Event: ${vertical}, Access: ${storeAccess}`,
+      );
     }
   }, [vertical, storeAccess, user]);
 
@@ -484,7 +500,9 @@ export default function DashboardLayout({
       ...mapLink,
     },
     {
-      icon: <Radio size={20} className={hasActiveStreams ? "text-red-500" : ""} />,
+      icon: (
+        <Radio size={20} className={hasActiveStreams ? "text-red-500" : ""} />
+      ),
       label: (
         <div className="flex items-center gap-2">
           <span>Streaming</span>
@@ -512,6 +530,22 @@ export default function DashboardLayout({
       label: "Networking",
       href: "/dashboard/networking",
       hidden: true,
+    },
+  ];
+  
+  const programItems: SidebarNavItem[] = [
+    {
+      icon: <Calendar size={20} />,
+      label: "Conferencias",
+      href: "/dashboard/conferences",
+    },
+  ];
+
+  const sponsorItems: SidebarNavItem[] = [
+    {
+      icon: <Handshake size={20} />,
+      label: "Auspiciadores",
+      href: "/dashboard/sponsors",
     },
   ];
 
@@ -581,7 +615,34 @@ export default function DashboardLayout({
                   {...item}
                   active={pathname === item.href}
                   onClick={() => {
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
+                />
+              ))}
+
+            {/* Programas */}
+            <div className="pt-2 px-2 mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Programas
+              </span>
+            </div>
+            {programItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <SidebarItem
+                  key={item.href}
+                  {...item}
+                  active={pathname === item.href}
+                  onClick={() => {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
                       setIsSidebarOpen(false);
                     }
                   }}
@@ -589,7 +650,7 @@ export default function DashboardLayout({
               ))}
 
             {/* Networking */}
-            <div className="pt-8 px-2 mb-4">
+            <div className="pt-2 px-2 mb-4">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Networking
               </span>
@@ -602,14 +663,41 @@ export default function DashboardLayout({
                   {...item}
                   active={pathname === item.href}
                   onClick={() => {
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
                       setIsSidebarOpen(false);
                     }
                   }}
                 />
               ))}
 
-            <div className="pt-8 px-2 mb-4">
+            {/* Confian en nosotros */}
+            <div className="pt-2 px-2 mb-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                Confian en nosotros
+              </span>
+            </div>
+            {sponsorItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <SidebarItem
+                  key={item.href}
+                  {...item}
+                  active={pathname === item.href}
+                  onClick={() => {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
+                />
+              ))}
+
+            <div className="pt-2 px-2 mb-4">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                 Sistema
               </span>
@@ -622,7 +710,10 @@ export default function DashboardLayout({
                   {...item}
                   active={pathname === item.href}
                   onClick={() => {
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
                       setIsSidebarOpen(false);
                     }
                   }}
@@ -925,12 +1016,13 @@ export default function DashboardLayout({
 
       {/* Notifications Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 z-60 bg-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col right-0 ${isNotificationsOpen
-          ? isMaximized
-            ? "md:right-1/2 md:translate-x-1/2 w-full md:w-[700px] md:h-[90vh] md:my-[5vh] md:rounded-3xl translate-x-0"
-            : "w-full sm:w-[500px] translate-x-0"
-          : "w-full sm:w-[500px] translate-x-full"
-          }`}
+        className={`fixed top-0 bottom-0 z-60 bg-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col right-0 ${
+          isNotificationsOpen
+            ? isMaximized
+              ? "md:right-1/2 md:translate-x-1/2 w-full md:w-[700px] md:h-[90vh] md:my-[5vh] md:rounded-3xl translate-x-0"
+              : "w-full sm:w-[500px] translate-x-0"
+            : "w-full sm:w-[500px] translate-x-full"
+        }`}
       >
         <div className="flex flex-col h-full overflow-hidden p-6 gap-6">
           {/* AI Center Header */}
@@ -968,10 +1060,11 @@ export default function DashboardLayout({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as NotificationTab)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-all h-auto border-none cursor-pointer flex items-center justify-center gap-2 ${activeTab === tab.id
-                  ? "bg-white text-slate-900 shadow-sm hover:bg-white"
-                  : "bg-transparent text-slate-400 hover:text-slate-600"
-                  }`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-all h-auto border-none cursor-pointer flex items-center justify-center gap-2 ${
+                  activeTab === tab.id
+                    ? "bg-white text-slate-900 shadow-sm hover:bg-white"
+                    : "bg-transparent text-slate-400 hover:text-slate-600"
+                }`}
               >
                 {tab.label}
                 {tab.count > 0 && (
@@ -1009,10 +1102,11 @@ export default function DashboardLayout({
                     key={notif.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-2xl shadow-sm border-2 hover:shadow-md transition-all cursor-pointer group relative ${notif.isRead
-                      ? "bg-white border-slate-100 opacity-70"
-                      : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
-                      }`}
+                    className={`p-4 rounded-2xl shadow-sm border-2 hover:shadow-md transition-all cursor-pointer group relative ${
+                      notif.isRead
+                        ? "bg-white border-slate-100 opacity-70"
+                        : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
+                    }`}
                     onClick={() => {
                       markAsRead(notif.id);
                       if (notif.type === "modal") {
@@ -1167,7 +1261,9 @@ export default function DashboardLayout({
                 ¿Eliminar notificación?
               </DialogTitle>
               <p className="text-slate-500 font-medium leading-relaxed">
-                Esta acción no se puede deshacer. La notificación &quot;{notificationToDelete?.title}&quot; desaparecerá de tu centro de noticias.
+                Esta acción no se puede deshacer. La notificación &quot;
+                {notificationToDelete?.title}&quot; desaparecerá de tu centro de
+                noticias.
               </p>
             </div>
 

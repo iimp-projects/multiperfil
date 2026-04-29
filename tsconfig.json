@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
+    "scratch",
     ".next/cache",
     ".next/standalone",
     ".next/static",

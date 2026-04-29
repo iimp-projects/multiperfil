@@ -22,7 +22,7 @@ const s3Client = new S3Client({
 
 export async function POST(req: NextRequest) {
   try {
-    const { filename, fileType, bucketName } = await req.json();
+    const { filename, fileType, bucketName, folder } = await req.json();
 
     if (!filename || !fileType || !bucketName) {
       return NextResponse.json(
@@ -32,9 +32,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Define the key (path) in S3
-    // We add a timestamp to avoid collisions
     const timestamp = Date.now();
-    const key = `profiles/${timestamp}_${filename}`;
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const targetFolder = folder || "others";
+    const key = `${targetFolder}/${timestamp}_${randomStr}_${filename}`;
 
     const command = new PutObjectCommand({
       Bucket: bucketName,

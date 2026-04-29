@@ -62,7 +62,7 @@ interface StreamingFormData {
 }
 
 export default function StreamingAdminPage() {
-  const { selectedEvent } = useAdminAuthStore();
+  const { admin, selectedEvent } = useAdminAuthStore();
   const { selectedUsers, clearUsers } = useUsersAdminStore();
 
   const [streams, setStreams] = useState<PortalStreamingItem[]>([]);
@@ -138,7 +138,12 @@ export default function StreamingAdminPage() {
 
       const res = await fetch("/api/admin/portal/streaming", {
         method: editingId ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
         body: JSON.stringify(payload)
       });
 
@@ -204,7 +209,12 @@ export default function StreamingAdminPage() {
 
     try {
       const res = await fetch(`/api/admin/portal/streaming?id=${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
       });
       const data = await res.json();
       if (data.success) {
@@ -581,11 +591,15 @@ export default function StreamingAdminPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Frecuencia</label>
-                        <select
-                          value={formData.recurrenceType}
-                          onChange={(e) => setFormData({ ...formData, recurrenceType: e.target.value as any })}
-                          className="w-full px-4 py-3 bg-white border border-indigo-100 rounded-xl text-sm focus:border-indigo-600 transition-all outline-none"
-                        >
+                         <select
+                           value={formData.recurrenceType}
+                           onChange={(e) => {
+                             const next =
+                               e.target.value === "daily" ? "daily" : "weekly";
+                             setFormData({ ...formData, recurrenceType: next });
+                           }}
+                           className="w-full px-4 py-3 bg-white border border-indigo-100 rounded-xl text-sm focus:border-indigo-600 transition-all outline-none"
+                         >
                           <option value="daily">Diario</option>
                           <option value="weekly">Semanal</option>
                         </select>

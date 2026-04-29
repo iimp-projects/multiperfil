@@ -138,7 +138,12 @@ export default function MensajesAdminPage() {
 
       const res = await fetch("/api/admin/portal/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
         body: JSON.stringify(payload)
       });
 
@@ -178,7 +183,12 @@ export default function MensajesAdminPage() {
     
     try {
       const res = await fetch(`/api/admin/portal/messages?id=${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
       });
       const data = await res.json();
       if (data.success) {

@@ -16,6 +16,9 @@ import {
   Menu,
   X,
   RefreshCw,
+  ScrollText,
+  Calendar,
+  LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
@@ -31,7 +34,15 @@ const NAV_ITEMS = [
   { href: "/acceso/mensajes", label: "Mensajes", icon: MessageSquare },
   { href: "/acceso/alertas", label: "Alertas", icon: Bell },
   { href: "/acceso/streaming", label: "Streaming", icon: Video },
-  { href: "/acceso/administradores", label: "Administradores", icon: Shield },
+  
+  // Programas
+  { href: "/acceso/programas", label: "Conferencias", icon: Calendar, isNewSection: true, sectionLabel: "Programas" },
+  
+  // Confian en nosotros
+  { href: "/acceso/auspiciadores", label: "Auspiciadores", icon: LayoutGrid, isNewSection: true, sectionLabel: "Confian en nosotros" },
+  
+  { href: "/acceso/administradores", label: "Administradores", icon: Shield, roles: ["admin", "superadmin"], isNewSection: true, sectionLabel: "Sistema" },
+  { href: "/acceso/logs", label: "Logs", icon: ScrollText, roles: ["admin", "superadmin"] },
 ];
 
 export default function AccesoShell({ children }: { children: React.ReactNode }) {
@@ -163,28 +174,40 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.filter(item => {
+            if (!item.roles) return true;
+            return item.roles.includes(admin?.role?.toLowerCase() || "");
+          }).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => {
-                  if (typeof window !== "undefined" && window.innerWidth < 1024) {
-                    setIsSidebarOpen(false);
-                  }
-                }}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                  isActive
-                    ? "bg-primary text-white shadow-lg shadow-primary/20"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                }`}
-              >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`} />
-                <span className="font-semibold text-sm flex-1">{item.label}</span>
-                {isActive && <ChevronRight className="w-3 h-3 opacity-70" />}
-              </Link>
+              <div key={item.href}>
+                {item.isNewSection && (
+                  <div className="px-3 py-4 mt-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      {item.sectionLabel}
+                    </p>
+                  </div>
+                )}
+                <Link
+                  href={item.href}
+                  onClick={() => {
+                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                    isActive
+                      ? "bg-primary text-white shadow-lg shadow-primary/20"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`} />
+                  <span className="font-semibold text-sm flex-1">{item.label}</span>
+                  {isActive && <ChevronRight className="w-3 h-3 opacity-70" />}
+                </Link>
+              </div>
             );
           })}
         </nav>

@@ -8,6 +8,12 @@ async function main() {
   
   const admins = [
     {
+      email: 'admin@multieventos.com',
+      password: 'admin123',
+      name: 'Admin Maestro',
+      role: 'admin'
+    },
+    {
       email: 'superadmin@iimp.org.pe',
       password: 'Admin@IIMP2026!',
       name: 'Super Admin',

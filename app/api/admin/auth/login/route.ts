@@ -2,13 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { logActivity } from "@/lib/audit";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(1, "Contraseña requerida"),
 });
 
+function getClientInfo(req: NextRequest) {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0] : "127.0.0.1";
+  const userAgent = req.headers.get("user-agent") || "unknown";
+  return { ip, userAgent };
+}
+
 export async function POST(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
   try {
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);
@@ -39,6 +48,18 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Registro en Auditoría
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "LOGIN",
+      module: "AUTH",
+      details: "Inicio de sesión exitoso en el panel administrativo.",
+      ip,
+      userAgent
+    });
 
     return NextResponse.json({
       success: true,

@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       const nowTime = now.getTime();
 
       // Caso 1: No es recurrente (Lógica estándar de una sola vez)
-      if (!(s as any).isRecurring) {
+      if (!s.isRecurring) {
         const startsMatch = !s.startsAt || new Date(s.startsAt).getTime() <= nowTime;
         const expiresMatch = !s.expiresAt || new Date(s.expiresAt).getTime() >= nowTime;
         return startsMatch && expiresMatch;

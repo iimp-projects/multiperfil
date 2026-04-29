@@ -26,7 +26,7 @@ type RecipientGroupItem = {
 };
 
 export default function GruposAdminPage() {
-  const { selectedEvent } = useAdminAuthStore();
+  const { admin, selectedEvent } = useAdminAuthStore();
   const { selectedUsers, clearUsers } = useUsersAdminStore();
   
   const [groups, setGroups] = useState<RecipientGroupItem[]>([]);
@@ -94,7 +94,12 @@ export default function GruposAdminPage() {
 
       const res = await fetch("/api/admin/portal/groups", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
         body: JSON.stringify(payload)
       });
 
@@ -122,6 +127,11 @@ export default function GruposAdminPage() {
     try {
       const res = await fetch(`/api/admin/portal/groups?id=${groupId}`, {
         method: "DELETE",
+        headers: {
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
       });
       const data = await res.json();
       if (data.success) {

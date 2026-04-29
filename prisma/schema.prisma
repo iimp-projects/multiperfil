@@ -102,3 +102,81 @@ model RecipientGroup {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model AuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  userEmail String?
+  userName  String?
+  action    String   // e.g., "CREATE_USER", "LOGIN", "DELETE_MESSAGE"
+  module    String   // e.g., "ADMIN_USERS", "AUTH", "MESSAGES"
+  details   String?  // Descripción textual de la acción
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model PortalProgram {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String?
+  coverImage      String?
+  brochureUrl     String?
+  primaryColor    String?  @default("#f37021")
+  secondaryColor  String?  @default("#ffffff")
+  tertiaryColor   String?  @default("#333333")
+  event           String
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tabs            PortalProgramTab[]
+}
+
+model PortalProgramTab {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  label        String   // Button label: "DÍA 1"
+  dateTitle    String?  // Header: "LUNES MONDAY"
+  dateNumber   String?  // Header large number: "04"
+  color        String?  // Custom tab color
+  programId    String   @db.ObjectId
+  program      PortalProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  sessions     PortalProgramSession[]
+  order        Int      @default(0)
+}
+
+model PortalProgramSession {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tabId       String   @db.ObjectId
+  tab         PortalProgramTab @relation(fields: [tabId], references: [id], onDelete: Cascade)
+  timeRange   String?  // "08:30 - 09:00"
+  title       String
+  speaker     String?
+  description String?
+  location    String?
+  isHeader    Boolean  @default(false)
+  color       String?  // Hex color for special sessions
+  order       Int      @default(0)
+}
+
+model PortalSponsor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  logoUrl   String
+  category  String   // Reference to SponsorCategory.name
+  url       String?
+  event     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SponsorCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  event     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, event])
+}

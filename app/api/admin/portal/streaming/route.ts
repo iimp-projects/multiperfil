@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit";
+import { getClientInfo, getAdminInfo } from "@/lib/utils/request";
 
 export async function POST(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
+  const admin = getAdminInfo(req);
+
   try {
     const body = await req.json();
     const { 
@@ -43,6 +48,18 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // Registro en Auditoría
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "CREATE_STREAMING",
+      module: "STREAMING",
+      details: `Streaming creado: "${title}" para el evento ${event}`,
+      ip,
+      userAgent
+    });
+
     return NextResponse.json({ success: true, data: streaming });
   } catch (error) {
     console.error("[ADMIN_STREAMING_POST]", error);
@@ -69,7 +86,7 @@ export async function GET(req: NextRequest) {
       where: { 
         event: {
           equals: event,
-          mode: 'insensitive' // Búsqueda insensible a mayúsculas para mayor seguridad
+          mode: 'insensitive'
         }
       },
       orderBy: { createdAt: "desc" }
@@ -86,6 +103,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
+  const admin = getAdminInfo(req);
+
   try {
     const body = await req.json();
     const { 
@@ -129,6 +149,18 @@ export async function PATCH(req: NextRequest) {
       }
     });
 
+    // Registro en Auditoría
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "UPDATE_STREAMING",
+      module: "STREAMING",
+      details: `Streaming actualizado: "${title || updated.title}"`,
+      ip,
+      userAgent
+    });
+
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error("[ADMIN_STREAMING_PATCH]", error);
@@ -140,6 +172,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
+  const admin = getAdminInfo(req);
+
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
@@ -151,8 +186,25 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    const streaming = await prisma.portalStreaming.findUnique({
+      where: { id },
+      select: { title: true }
+    });
+
     await prisma.portalStreaming.delete({
       where: { id }
+    });
+
+    // Registro en Auditoría
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "DELETE_STREAMING",
+      module: "STREAMING",
+      details: `Streaming eliminado: "${streaming?.title || id}"`,
+      ip,
+      userAgent
     });
 
     return NextResponse.json({ success: true, message: "Streaming eliminado." });

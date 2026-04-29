@@ -87,6 +87,7 @@ jobs:
           TF_VAR_db_user: ${{ env.ENV == 'prod' && secrets.PROD_DB_USER || secrets.QA_DB_USER || 'multiuser' }}
           TF_VAR_db_pass: ${{ env.ENV == 'prod' && secrets.PROD_DB_PASS || secrets.QA_DB_PASS || 'multiperfil2026' }}
           TF_VAR_next_public_api_key: ${{ env.NEXT_PUBLIC_API_KEY_VAL }}
+          TF_VAR_resend_api_key: ${{ env.ENV == 'prod' && secrets.PROD_RESEND_API_KEY || secrets.QA_RESEND_API_KEY }}
           TF_VAR_main_domain: ${{ vars.MAIN_DOMAIN || 'sistemasiimp.org.pe' }}
           TF_VAR_subdomain_prefix: ${{ vars.SUBDOMAIN_PREFIX || 'multiperfil' }}
         run: |

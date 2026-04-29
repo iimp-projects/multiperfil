@@ -93,6 +93,13 @@ variable "smtp_port" {
   type    = string
   default = "587"
 }
+
+variable "resend_api_key" {
+  description = "API Key de Resend para el envío de correos"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
 # --- Dominios ---
 variable "main_domain" {
   description = "Dominio principal (ej. sistemasiimp.org.pe)"

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit";
+import { getClientInfo, getAdminInfo } from "@/lib/utils/request";
 
 export async function POST(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
+  const admin = getAdminInfo(req);
   try {
     const body = await req.json();
     const { 
@@ -34,6 +38,18 @@ export async function POST(req: NextRequest) {
         recipients: recipients || [],
         readBy: []
       }
+    });
+
+    // Registro en Auditoría
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "CREATE_MESSAGE",
+      module: "PORTAL_MESSAGES",
+      details: `Mensaje creado: "${subject}" para el evento ${event}`,
+      ip,
+      userAgent
     });
 
     return NextResponse.json({ success: true, data: message });
@@ -87,6 +103,20 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.portalMessage.delete({
       where: { id }
+    });
+
+    // Registro en Auditoría
+    const { ip, userAgent } = getClientInfo(req);
+    const admin = getAdminInfo(req);
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "DELETE_MESSAGE",
+      module: "PORTAL_MESSAGES",
+      details: `Mensaje eliminado ID: ${id}`,
+      ip,
+      userAgent
     });
 
     return NextResponse.json({ success: true, message: "Mensaje eliminado correctamente." });

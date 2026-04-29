@@ -1,0 +1,474 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  MapPin,
+  ChevronRight,
+  Layout,
+  Search,
+  Info,
+  Download,
+  ArrowLeft,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useVertical } from "@nrivera-iimp/ui-kit-iimp";
+import { getDynamicEventCode } from "@/lib/utils/event";
+import { getFullImageUrl } from "@/lib/s3-utils";
+import { toast } from "sonner";
+import clsx from "clsx";
+
+type Session = {
+  id: string;
+  title: string;
+  description?: string | null;
+  timeRange?: string | null;
+  location?: string | null;
+  color?: string | null;
+  order: number;
+};
+
+type Tab = {
+  id: string;
+  title: string;
+  dateTitle?: string | null;
+  dateNumber?: string | null;
+  color?: string | null;
+  order: number;
+  sessions: Session[];
+};
+
+type Program = {
+  id: string;
+  title: string;
+  description?: string | null;
+  coverImage?: string | null;
+  brochureUrl?: string | null;
+  primaryColor: string;
+  secondaryColor: string;
+  tertiaryColor: string;
+  tabs: Tab[];
+};
+
+export default function ConferencesView() {
+  const { vertical } = useVertical();
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "detail">("grid");
+
+  const fetchPrograms = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const eventCode = getDynamicEventCode(vertical);
+      const res = await fetch(`/api/portal/programas?event=${eventCode}`);
+      const data = await res.json();
+      if (data.success) {
+        setPrograms(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+      toast.error("No se pudo cargar la agenda de conferencias.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [vertical]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPrograms();
+  }, [fetchPrograms]);
+
+  const activeTab = selectedProgram?.tabs.find((t) => t.id === activeTabId);
+
+  const filteredSessions = activeTab?.sessions.filter(
+    (s) =>
+      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.location?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  // Dynamic styles based on tab color or program fallback
+  const themeStyles = {
+    "--theme-primary":
+      activeTab?.color || selectedProgram?.primaryColor || "#3b82f6",
+    "--theme-accent":
+      activeTab?.color || selectedProgram?.tertiaryColor || "#64748b",
+    "--theme-bg-10": activeTab?.color
+      ? `${activeTab.color}1a`
+      : "rgba(15, 23, 42, 0.05)", // 10%
+    "--theme-bg-20": activeTab?.color
+      ? `${activeTab.color}33`
+      : "rgba(15, 23, 42, 0.1)", // 20%
+    "--theme-bg-50": activeTab?.color
+      ? `${activeTab.color}80`
+      : "rgba(15, 23, 42, 0.2)", // 50%
+    "--theme-bg-80": activeTab?.color
+      ? `${activeTab.color}cc`
+      : "rgba(15, 23, 42, 0.4)", // 80%
+  } as React.CSSProperties;
+
+  const handleSelectProgram = (program: Program) => {
+    setSelectedProgram(program);
+    setViewMode("detail");
+    if (program.tabs.length > 0) {
+      setActiveTabId(program.tabs[0].id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-medium animate-pulse uppercase tracking-widest text-xs">
+          Cargando Agenda...
+        </p>
+      </div>
+    );
+  }
+
+  if (programs.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-12 text-center">
+        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+          <CalendarIcon className="w-10 h-10 opacity-20" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-800 mb-2">
+          No hay programas disponibles
+        </h3>
+        <p className="text-sm max-w-xs mx-auto">
+          La agenda para este evento aún no ha sido publicada. Vuelve pronto.
+        </p>
+      </div>
+    );
+  }
+
+  if (viewMode === "grid") {
+    return (
+      <div className="space-y-8 pb-20 animate-in fade-in duration-700">
+        <header className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 min-h-[180px] flex flex-col justify-center p-8 md:p-12 shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
+          <div className="relative z-10 space-y-2">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
+              Agenda de Conferencias
+            </h1>
+            <p className="text-slate-400 font-medium">
+              Explora las charlas y actividades de todos nuestros programas.
+            </p>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {programs.map((program) => (
+            <motion.div
+              key={program.id}
+              whileHover={{ y: -8 }}
+              className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-2xl transition-all cursor-pointer flex flex-col"
+              onClick={() => handleSelectProgram(program)}
+            >
+              <div className="h-48 relative bg-slate-900 overflow-hidden">
+                {program.coverImage ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={getFullImageUrl(program.coverImage) ?? undefined}
+                    alt={program.title}
+                    className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center opacity-20">
+                    <CalendarIcon className="w-16 h-16 text-white" />
+                  </div>
+                )}
+                <div className="absolute bottom-4 left-4 flex gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/20"
+                    style={{ backgroundColor: program.primaryColor }}
+                  />
+                  <div
+                    className="w-3 h-3 rounded-full border border-white/20"
+                    style={{ backgroundColor: program.tertiaryColor }}
+                  />
+                </div>
+              </div>
+              <div className="p-8 space-y-4 flex-1 flex flex-col">
+                <h3 className="text-xl font-bold text-slate-800 line-clamp-2">
+                  {program.title}
+                </h3>
+                <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-4">
+                  {program.description || "Sin descripción disponible."}
+                </p>
+                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {program.tabs.length} Días / Pestañas
+                  </span>
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary group-hover:text-white transition-all">
+                    <ChevronRight className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="space-y-8 pb-20 animate-in fade-in duration-700"
+      style={themeStyles}
+    >
+      {/* Header Section */}
+      <header
+        className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 min-h-[280px] flex flex-col justify-end p-8 md:p-12 shadow-2xl transition-all duration-500"
+        style={{ backgroundColor: selectedProgram?.primaryColor }}
+      >
+        {selectedProgram?.coverImage && (
+          <div className="absolute inset-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={getFullImageUrl(selectedProgram.coverImage) ?? undefined}
+              alt="Cover"
+              className="w-full h-full object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          </div>
+        )}
+
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="space-y-4 text-left">
+              <button
+                onClick={() => setViewMode("grid")}
+                className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-black text-white uppercase tracking-[0.2em] hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Volver a programas
+              </button>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
+                {selectedProgram?.title}
+              </h1>
+              {selectedProgram?.description && (
+                <p className="text-slate-200 text-sm md:text-base max-w-2xl font-medium leading-relaxed">
+                  {selectedProgram.description}
+                </p>
+              )}
+            </div>
+
+            {selectedProgram?.brochureUrl && (
+              <a
+                href={getFullImageUrl(selectedProgram.brochureUrl) ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-6 py-4 bg-primary hover:bg-secondary text-white hover:text-black rounded-3xl text-sm font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all no-underline shrink-0"
+              >
+                <Download className="w-5 h-5" />
+                Descargar Brochure
+              </a>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* Sidebar / Tabs Selector */}
+        <aside className="xl:col-span-3 space-y-6">
+          <div className="sticky top-24 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 space-y-8">
+            <div className=" border-slate-50 space-y-4">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 text-left">
+                Cronograma
+              </h3>
+              <div className="space-y-1">
+                {selectedProgram?.tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTabId(tab.id)}
+                    className={clsx(
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all border-none cursor-pointer text-left",
+                      activeTabId === tab.id
+                        ? "text-white shadow-lg"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                    )}
+                    style={
+                      activeTabId === tab.id
+                        ? {
+                            backgroundColor:
+                              tab.color || "var(--theme-primary)",
+                          }
+                        : {}
+                    }
+                  >
+                    <div
+                      className={clsx(
+                        "w-2 h-2 rounded-full",
+                        activeTabId === tab.id ? "bg-white" : "bg-slate-200",
+                      )}
+                      style={
+                        activeTabId === tab.id
+                          ? {}
+                          : {
+                              backgroundColor:
+                                tab.color || "var(--theme-accent)",
+                            }
+                      }
+                    />
+                    {tab.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Sessions List */}
+        <main className="xl:col-span-9 space-y-6">
+          {/* Search Bar */}
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-4 flex flex-col md:flex-row items-center gap-4">
+            <div className="relative flex-1 w-full text-left">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar por charla, conferencista o sala..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border-none rounded-3xl pl-14 pr-6 py-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+              />
+            </div>
+            <div
+              className="flex items-center gap-2 px-5 py-4 bg-slate-50 rounded-3xl text-slate-400"
+              style={{
+                color: "var(--theme-primary)",
+                backgroundColor: "var(--theme-bg-10)",
+              }}
+            >
+              <Info className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                {filteredSessions?.length || 0} Sesiones
+              </span>
+            </div>
+          </div>
+
+          {/* Sessions Feed */}
+          <div className="space-y-4">
+            <AnimatePresence mode="wait">
+              {filteredSessions && filteredSessions.length > 0 ? (
+                <motion.div
+                  key={`${activeTabId ?? "none"}-${selectedProgram?.id ?? "none"}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  {/* Timeline Title style LUNES 04 */}
+                  {activeTab &&
+                    (activeTab.dateTitle || activeTab.dateNumber) && (
+                      <div className="flex items-center gap-4 px-4 py-2">
+                        <div className="h-px flex-1 bg-slate-100" />
+                        <div className="flex items-center gap-2 text-slate-900 font-black uppercase">
+                          <span className="text-lg tracking-tight">
+                            {activeTab.dateTitle}
+                          </span>
+                          <span
+                            className="text-3xl"
+                            style={{ color: "var(--theme-primary)" }}
+                          >
+                            {activeTab.dateNumber}
+                          </span>
+                        </div>
+                        <div className="h-px flex-1 bg-slate-100" />
+                      </div>
+                    )}
+
+                  {filteredSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={clsx(
+                        "group bg-white rounded-[2.5rem] p-8 md:p-10 border-none shadow-sm hover:shadow-2xl transition-all duration-700 text-left relative overflow-hidden",
+                        session.color && "border-l-[12px]",
+                      )}
+                      style={
+                        session.color ? { borderLeftColor: session.color } : {}
+                      }
+                    >
+                      {session.color && (
+                        <div
+                          className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-[0.03] pointer-events-none"
+                          style={{ backgroundColor: session.color }}
+                        />
+                      )}
+
+                      <div className="flex flex-col md:flex-row gap-8 md:items-start">
+                        {/* Time Column */}
+                        <div className="md:w-32 flex flex-col items-start md:items-center gap-2 shrink-0">
+                          <div
+                            className="flex items-center gap-2"
+                            style={{ color: "var(--theme-primary)" }}
+                          >
+                            <Clock className="w-4 h-4" />
+                            <span className="text-lg font-black tracking-tight">
+                              {session.timeRange?.split("-")[0].trim()}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                            {session.timeRange?.split("-")[1]?.trim() ||
+                              "Termina"}
+                          </span>
+                        </div>
+
+                        {/* Info Column */}
+                        <div className="flex-1 space-y-4">
+                          <h4 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+                            {session.title}
+                          </h4>
+                          {session.description && (
+                            <p className="text-slate-500 text-sm md:text-base font-normal leading-relaxed">
+                              {session.description}
+                            </p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-4 pt-2">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                              {session.location || "Por confirmar"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Column */}
+                        <div className="flex items-center justify-end shrink-0">
+                          <div
+                            className="w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-500"
+                            style={{
+                              color: session.color || "var(--theme-primary)",
+                              backgroundColor: session.color
+                                ? `${session.color}1a`
+                                : "var(--theme-bg-10)",
+                            }}
+                          >
+                            <Layout className="w-6 h-6" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              ) : (
+                <div className="py-20 text-center bg-white rounded-[2.5rem] border border-slate-100 shadow-sm">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Search className="w-10 h-10 opacity-10" />
+                  </div>
+                  <p className="text-slate-400 font-medium">
+                    No encontramos sesiones que coincidan con tu búsqueda.
+                  </p>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
