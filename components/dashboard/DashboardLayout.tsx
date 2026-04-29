@@ -416,6 +416,7 @@ export default function DashboardLayout({
     {
       icon: <MapIcon size={20} />,
       label: "Mapa del evento",
+      hidden: true,
       ...mapLink,
     },
     {
@@ -430,6 +431,7 @@ export default function DashboardLayout({
         </div>
       ),
       href: "/dashboard/streaming",
+      hidden: true,
     },
   ];
 
@@ -443,6 +445,7 @@ export default function DashboardLayout({
       icon: <Users size={20} />,
       label: "Networking",
       href: "/dashboard/networking",
+      hidden: true,
     },
   ];
 
@@ -451,6 +454,7 @@ export default function DashboardLayout({
       icon: <ClipboardList size={20} />,
       label: "Encuesta de satisfacción",
       href: "/dashboard/survey",
+      hidden: true,
     },
     {
       icon: <Settings size={20} />,
