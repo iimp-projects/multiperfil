@@ -8,15 +8,30 @@ import {
   Bell, 
   Layers,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  BarChart3,
+  Activity
 } from "lucide-react";
 import Link from "next/link";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  AreaChart,
+  Area
+} from 'recharts';
 
 interface DashboardStats {
   activeUsers: number;
   messages: number;
   alerts: number;
   groups: number;
+  activityChart: { date: string, count: number }[];
+  reachChart: { name: string, total: number, opened: number }[];
 }
 
 export default function DashboardPage() {
@@ -129,16 +144,117 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Placeholder for Quick Actions or Charts */}
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[400px] flex flex-col items-center justify-center text-center">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-            <TrendingUp className="w-10 h-10 text-slate-300" />
+        <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                <Activity className="w-5 h-5 text-primary" />
+                Gráficos de Actividad
+              </h3>
+              <p className="text-slate-400 text-xs font-medium mt-1">Sesiones de usuarios en los últimos 7 días</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-primary" />
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sesiones</span>
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-slate-800">Gráficos de Actividad</h3>
-          <p className="text-slate-500 max-w-sm mt-2 text-sm leading-relaxed">
-            Estamos preparando visualizaciones detalladas de interacciones y alcance para que puedas medir el éxito de tus comunicaciones.
-          </p>
+          
+          <div className="flex-1 w-full h-[300px]">
+            {isLoading ? (
+              <div className="w-full h-full bg-slate-50 animate-pulse rounded-3xl" />
+            ) : stats?.activityChart && stats.activityChart.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.activityChart}>
+                  <defs>
+                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-primary, #3b82f6)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--color-primary, #3b82f6)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                    tickFormatter={(str) => {
+                      const date = new Date(str);
+                      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                    }}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fontWeight: 700, fill: '#94a3b8'}}
+                  />
+                  <Tooltip 
+                    contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                    labelStyle={{fontWeight: 800, color: '#1e293b', marginBottom: '4px'}}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="var(--color-primary, #3b82f6)" 
+                    strokeWidth={4}
+                    fillOpacity={1} 
+                    fill="url(#colorCount)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                <BarChart3 className="w-12 h-12 mb-2 opacity-20" />
+                <p className="text-sm font-bold opacity-40">No hay datos suficientes</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reach Chart */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                <Users className="w-5 h-5 text-emerald-500" />
+                Alcance Reciente
+              </h3>
+              <p className="text-slate-400 text-xs font-medium mt-1">Apertura de los últimos 5 comunicados</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full h-[300px]">
+            {isLoading ? (
+              <div className="w-full h-full bg-slate-50 animate-pulse rounded-3xl" />
+            ) : stats?.reachChart && stats.reachChart.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.reachChart} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fontSize: 10, fontWeight: 700, fill: '#1e293b'}}
+                    width={100}
+                  />
+                  <Tooltip 
+                    cursor={{fill: '#f8fafc'}}
+                    contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                  />
+                  <Bar dataKey="total" fill="#f1f5f9" radius={[0, 8, 8, 0]} barSize={12} />
+                  <Bar dataKey="opened" fill="#10b981" radius={[0, 8, 8, 0]} barSize={12} style={{marginTop: -12}} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                <BarChart3 className="w-12 h-12 mb-2 opacity-20" />
+                <p className="text-sm font-bold opacity-40">Sin datos de envío</p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl text-white flex flex-col justify-between relative overflow-hidden group">

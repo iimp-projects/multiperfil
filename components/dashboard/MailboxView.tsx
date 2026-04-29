@@ -229,8 +229,8 @@ export default function MailboxView() {
         {/* Message Detail */}
         <div
           className={clsx(
-            "flex-1 bg-white flex flex-col overflow-hidden transition-all duration-300",
-            !viewingDetail ? "hidden md:flex" : "flex",
+            "flex-1 bg-white flex flex-col overflow-hidden transition-all duration-300 z-20",
+            !viewingDetail ? "hidden md:flex" : "flex absolute inset-0 md:relative",
           )}
         >
           {selectedMessage ? (

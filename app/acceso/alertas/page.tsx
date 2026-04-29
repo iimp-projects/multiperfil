@@ -14,7 +14,9 @@ import {
   Users as UsersIcon,
   Calendar,
   Clock,
-  Eye
+  Eye,
+  Trash2,
+  BarChart2
 } from "lucide-react";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { useUsersAdminStore } from "@/store/acceso/useUsersAdminStore";
@@ -22,6 +24,11 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import TiptapEditor from "@/components/acceso/TiptapEditor";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle 
+} from "@nrivera-iimp/ui-kit-iimp";
 
 type AlertType = "standard" | "expandable" | "modal" | "accordion";
 type AlertVariant = "success" | "info" | "warning" | "error" | "default";
@@ -40,6 +47,7 @@ type PortalAlertItem = {
   actionText?: string | null;
   actionUrl?: string | null;
   createdAt: string;
+  readBy: string[];
 };
 
 type PortalGroupItem = {
@@ -57,6 +65,7 @@ export default function AlertasAdminPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState<PortalAlertItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [alertToDelete, setAlertToDelete] = useState<PortalAlertItem | null>(null);
   
   // Filtering
   const [searchTerm, setSearchTerm] = useState("");
@@ -173,6 +182,35 @@ export default function AlertasAdminPage() {
     }
   };
 
+  const handleDeleteAlert = async (id: string) => {
+    const alert = alerts.find(a => a.id === id);
+    if (alert) {
+      setAlertToDelete(alert);
+    }
+  };
+
+  const confirmDeleteAlert = async () => {
+    if (!alertToDelete) return;
+    const id = alertToDelete.id;
+    
+    try {
+      const res = await fetch(`/api/admin/portal/alerts?id=${id}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Alerta eliminada correctamente.");
+        setSelectedAlert(null);
+        setAlertToDelete(null);
+        fetchAlerts();
+      } else {
+        toast.error(data.message || "Error al eliminar la alerta.");
+      }
+    } catch {
+      toast.error("Error de red al eliminar la alerta.");
+    }
+  };
+
   const getVariantIcon = (variant: AlertVariant) => {
     switch (variant) {
       case "success": return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
@@ -218,12 +256,14 @@ export default function AlertasAdminPage() {
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <Eye className="w-6 h-6 text-emerald-500" />
+          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+            <Eye className="w-6 h-6 text-green-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tasa de Apertura</p>
-            <p className="text-2xl font-bold text-slate-800">--</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Lecturas Totales</p>
+            <p className="text-2xl font-bold text-slate-800">
+              {alerts.reduce((acc, curr) => acc + (curr.readBy?.length || 0), 0)}
+            </p>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
@@ -231,8 +271,12 @@ export default function AlertasAdminPage() {
             <UsersIcon className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuarios Impactados</p>
-            <p className="text-2xl font-bold text-slate-800">--</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Promedio Alcance</p>
+            <p className="text-2xl font-bold text-slate-800">
+              {alerts.length > 0 
+                ? `${Math.round((alerts.reduce((acc, curr) => acc + (curr.readBy?.length || 0), 0) / alerts.length))}`
+                : "0"}
+            </p>
           </div>
         </div>
       </div>
@@ -632,13 +676,26 @@ export default function AlertasAdminPage() {
                   </div>
                 </div>
 
-                {selectedAlert.actionText && (
-                  <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Botón de Acción</p>
-                    <p className="text-xs font-bold text-slate-800">{selectedAlert.actionText}</p>
-                    <p className="text-[10px] text-slate-400 truncate mt-0.5">{selectedAlert.actionUrl}</p>
+                
+
+                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                      <BarChart2 size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Leído por</p>
+                      <p className="text-sm font-black text-blue-800">{selectedAlert.readBy?.length || 0} usuarios</p>
+                    </div>
                   </div>
-                )}
+                  <button 
+                    onClick={() => handleDeleteAlert(selectedAlert.id)}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 rounded-xl text-xs font-bold hover:bg-red-100 transition-all border-none cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                    Recall
+                  </button>
+                </div>
               </div>
             </div>
             <div className="p-6 bg-slate-50 border-t border-slate-100">
@@ -652,6 +709,44 @@ export default function AlertasAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!alertToDelete}
+        onOpenChange={(open) => !open && setAlertToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 overflow-hidden border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+            
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                ¿Eliminar notificación?
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Esta acción no se puede deshacer. La notificación &quot;{alertToDelete?.title}&quot; desaparecerá de todos los buzones de los usuarios.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setAlertToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteAlert}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

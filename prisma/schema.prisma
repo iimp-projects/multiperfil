@@ -86,6 +86,9 @@ model PortalStreaming {
   status       String   @default("active") // active, scheduled, inactive
   startsAt     DateTime?
   expiresAt    DateTime?
+  isRecurring  Boolean  @default(false)
+  recurrenceType String @default("none")
+  recurrenceInterval Int @default(1)
   createdAt    DateTime @default(now())
   recipients   String[] // Array de userKeys o vacío para todos
 }

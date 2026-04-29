@@ -82,3 +82,29 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID de alerta requerido." },
+        { status: 400 }
+      );
+    }
+
+    await prisma.portalAlert.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true, message: "Alerta eliminada correctamente." });
+  } catch (error) {
+    console.error("[ADMIN_ALERTS_DELETE]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al eliminar la alerta." },
+      { status: 500 }
+    );
+  }
+}

@@ -72,3 +72,29 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "ID de mensaje requerido." },
+        { status: 400 }
+      );
+    }
+
+    await prisma.portalMessage.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true, message: "Mensaje eliminado correctamente." });
+  } catch (error) {
+    console.error("[ADMIN_MESSAGES_DELETE]", error);
+    return NextResponse.json(
+      { success: false, message: "Error al eliminar el mensaje." },
+      { status: 500 }
+    );
+  }
+}

@@ -24,6 +24,7 @@ import {
   Ticket,
   Mail,
   LogOut,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -67,11 +68,10 @@ const SidebarItem = ({
     onClick={onClick}
     target={target}
     rel={rel}
-    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-      active
-        ? "bg-primary text-white shadow-lg shadow-primary/20"
-        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-    }`}
+    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active
+      ? "bg-primary text-white shadow-lg shadow-primary/20"
+      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+      }`}
   >
     <div
       className={`${active ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`}
@@ -172,6 +172,12 @@ export default function DashboardLayout({
   const [expandedNotifications, setExpandedNotifications] = useState<
     Set<string>
   >(new Set());
+  const [notificationToDelete, setNotificationToDelete] =
+    useState<AppNotification | null>(null);
+  const [activeStreams, setActiveStreams] = useState<any[]>([]);
+  const hasActiveStreams = activeStreams.length > 0;
+  const prevStreamIds = useRef<Set<string>>(new Set());
+  const isFirstStreamLoad = useRef(true);
 
   const toggleExpand = (id: string) => {
     setExpandedNotifications((prev) => {
@@ -190,8 +196,17 @@ export default function DashboardLayout({
 
   const removeNotification = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (user?.siecode) {
-      deleteNotification(id, user.siecode);
+    const notif = notifications.find((n) => n.id === id);
+    if (notif) {
+      setNotificationToDelete(notif);
+    }
+  };
+
+  const confirmDeleteNotification = () => {
+    if (notificationToDelete && user?.siecode) {
+      deleteNotification(notificationToDelete.id, user.siecode);
+      setNotificationToDelete(null);
+      toast.success("Notificación eliminada");
     }
   };
 
@@ -216,13 +231,23 @@ export default function DashboardLayout({
     const refreshData = () => {
       fetchNotifications(eventCode, user.siecode);
       fetchMessages(eventCode, user.siecode);
+      
+      // Check active streams
+      fetch(`/api/portal/streaming?event=${eventCode}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setActiveStreams(data.data);
+          }
+        })
+        .catch(err => console.error("Error checking streams:", err));
     };
 
     // Initial fetch
     refreshData();
 
-    // Polling every 30 seconds
-    const intervalId = setInterval(refreshData, 30000);
+    // Polling every 10 seconds
+    const intervalId = setInterval(refreshData, 10000);
 
     return () => clearInterval(intervalId);
   }, [fetchNotifications, fetchMessages, user, vertical]);
@@ -290,6 +315,35 @@ export default function DashboardLayout({
     // Update the ref for next comparison
     prevIds.current = currentIds;
   }, [notifications, messages]);
+
+  // Sound logic for new active streams
+  useEffect(() => {
+    const currentIds = new Set(activeStreams.map((s) => s.id));
+
+    // On first load, we just populate the ref to avoid playing sound for existing streams
+    if (isFirstStreamLoad.current) {
+      prevStreamIds.current = currentIds;
+      isFirstStreamLoad.current = false;
+      return;
+    }
+
+    // Check if there are any NEW stream IDs
+    const hasNewStream = Array.from(currentIds).some(
+      (id) => !prevStreamIds.current.has(id),
+    );
+
+    if (hasNewStream) {
+      const audio = new Audio("/mp3/noti_streaming.mp3");
+      audio
+        .play()
+        .catch((err) =>
+          console.log("Streaming audio play blocked by browser policy:", err),
+        );
+    }
+
+    // Update the ref for the next poll
+    prevStreamIds.current = currentIds;
+  }, [activeStreams]);
 
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -430,14 +484,16 @@ export default function DashboardLayout({
       ...mapLink,
     },
     {
-      icon: <Radio size={20} className="text-red-500" />,
+      icon: <Radio size={20} className={hasActiveStreams ? "text-red-500" : ""} />,
       label: (
         <div className="flex items-center gap-2">
           <span>Streaming</span>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
+          {hasActiveStreams && (
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+          )}
         </div>
       ),
       href: "/dashboard/streaming",
@@ -795,9 +851,9 @@ export default function DashboardLayout({
 
         {/* Page Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-10 mx-auto w-full l">
-          <div className="!hidden">
+          <div className="">
             <AnimatePresence>
-              {storeAccess && pathname === "/dashboard" && (
+              {storeAccess && hasActiveStreams && pathname === "/dashboard" && (
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -869,13 +925,12 @@ export default function DashboardLayout({
 
       {/* Notifications Sidebar */}
       <aside
-        className={`fixed top-0 bottom-0 z-60 bg-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col right-0 ${
-          isNotificationsOpen
-            ? isMaximized
-              ? "md:right-1/2 md:translate-x-1/2 w-full md:w-[700px] md:h-[90vh] md:my-[5vh] md:rounded-3xl translate-x-0"
-              : "w-full sm:w-[500px] translate-x-0"
-            : "w-full sm:w-[500px] translate-x-full"
-        }`}
+        className={`fixed top-0 bottom-0 z-60 bg-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col right-0 ${isNotificationsOpen
+          ? isMaximized
+            ? "md:right-1/2 md:translate-x-1/2 w-full md:w-[700px] md:h-[90vh] md:my-[5vh] md:rounded-3xl translate-x-0"
+            : "w-full sm:w-[500px] translate-x-0"
+          : "w-full sm:w-[500px] translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full overflow-hidden p-6 gap-6">
           {/* AI Center Header */}
@@ -913,11 +968,10 @@ export default function DashboardLayout({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as NotificationTab)}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-all h-auto border-none cursor-pointer flex items-center justify-center gap-2 ${
-                  activeTab === tab.id
-                    ? "bg-white text-slate-900 shadow-sm hover:bg-white"
-                    : "bg-transparent text-slate-400 hover:text-slate-600"
-                }`}
+                className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-all h-auto border-none cursor-pointer flex items-center justify-center gap-2 ${activeTab === tab.id
+                  ? "bg-white text-slate-900 shadow-sm hover:bg-white"
+                  : "bg-transparent text-slate-400 hover:text-slate-600"
+                  }`}
               >
                 {tab.label}
                 {tab.count > 0 && (
@@ -955,11 +1009,10 @@ export default function DashboardLayout({
                     key={notif.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer group relative ${
-                      notif.isRead
-                        ? "bg-white border-slate-100 opacity-70"
-                        : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
-                    }`}
+                    className={`p-4 rounded-2xl shadow-sm border-2 hover:shadow-md transition-all cursor-pointer group relative ${notif.isRead
+                      ? "bg-white border-slate-100 opacity-70"
+                      : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
+                      }`}
                     onClick={() => {
                       markAsRead(notif.id);
                       if (notif.type === "modal") {
@@ -975,9 +1028,10 @@ export default function DashboardLayout({
                     {/* Delete button */}
                     <button
                       onClick={(e) => removeNotification(notif.id, e)}
-                      className="absolute top-2 right-2 p-1 rounded-full bg-white/50 text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all z-10 border-none cursor-pointer"
+                      className="absolute top-0 right-0 p-2.5 rounded-bl-2xl rounded-tr-2xl bg-red-500 text-white shadow-lg z-10 border-none cursor-pointer hover:bg-red-600 transition-colors"
+                      title="Eliminar notificación"
                     >
-                      <X size={14} />
+                      <Trash2 size={16} />
                     </button>
 
                     <div className="flex gap-4">
@@ -991,12 +1045,6 @@ export default function DashboardLayout({
                           <span className="text-[10px] font-black text-primary uppercase tracking-widest">
                             {notif.category}
                           </span>
-                          <span className="text-[10px] font-medium text-slate-400">
-                            {new Date(notif.date).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
                         </div>
                         <h4 className="font-bold text-slate-900 text-sm mb-1 leading-tight">
                           {notif.title}
@@ -1005,8 +1053,8 @@ export default function DashboardLayout({
                           {notif.description}
                         </p>
 
-                        {notif.actionUrl && notif.actionText && (
-                          <div className="mt-2">
+                        <div className="mt-2 flex items-end justify-between">
+                          {notif.actionUrl && notif.actionText ? (
                             <Link
                               href={notif.actionUrl}
                               target={notif.target || "_self"}
@@ -1015,8 +1063,16 @@ export default function DashboardLayout({
                             >
                               {notif.actionText} →
                             </Link>
-                          </div>
-                        )}
+                          ) : (
+                            <div />
+                          )}
+                          <span className="text-[10px] font-medium text-slate-400">
+                            {new Date(notif.date).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
 
                         <AnimatePresence>
                           {expandedNotifications.has(notif.id) &&
@@ -1091,6 +1147,44 @@ export default function DashboardLayout({
                 </div>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!notificationToDelete}
+        onOpenChange={(open) => !open && setNotificationToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2rem] p-8 overflow-hidden border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                ¿Eliminar notificación?
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Esta acción no se puede deshacer. La notificación &quot;{notificationToDelete?.title}&quot; desaparecerá de tu centro de noticias.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setNotificationToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteNotification}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

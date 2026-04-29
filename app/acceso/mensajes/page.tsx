@@ -9,7 +9,10 @@ import {
   Plus, 
   X, 
   Inbox,
-  ArrowRight
+  ArrowRight,
+  Trash2,
+  BarChart2,
+  Users as UsersIcon
 } from "lucide-react";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { useUsersAdminStore } from "@/store/acceso/useUsersAdminStore";
@@ -17,6 +20,11 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import TiptapEditor from "@/components/acceso/TiptapEditor";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle 
+} from "@nrivera-iimp/ui-kit-iimp";
 
 type PortalMessageItem = {
   id: string;
@@ -28,6 +36,7 @@ type PortalMessageItem = {
   targetGroup?: string | null;
   senderName?: string;
   senderRole?: string;
+  readBy: string[];
 };
 
 type PortalGroupItem = {
@@ -46,6 +55,7 @@ export default function MensajesAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<PortalMessageItem | null>(null);
   const [groups, setGroups] = useState<PortalGroupItem[]>([]);
+  const [messageToDelete, setMessageToDelete] = useState<PortalMessageItem | null>(null);
   
   const searchParams = useSearchParams();
   const autoComposeParam = searchParams.get("compose") === "true";
@@ -152,6 +162,35 @@ export default function MensajesAdminPage() {
       toast.error("Error de red al enviar el mensaje.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    const msg = messages.find(m => m.id === id);
+    if (msg) {
+      setMessageToDelete(msg);
+    }
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!messageToDelete) return;
+    const id = messageToDelete.id;
+    
+    try {
+      const res = await fetch(`/api/admin/portal/messages?id=${id}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Mensaje eliminado correctamente.");
+        setSelectedMessage(null);
+        setMessageToDelete(null);
+        fetchMessages();
+      } else {
+        toast.error(data.message || "Error al eliminar el mensaje.");
+      }
+    } catch {
+      toast.error("Error de red al eliminar el mensaje.");
     }
   };
 
@@ -378,12 +417,21 @@ export default function MensajesAdminPage() {
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                         {format(new Date(selectedMessage.createdAt), "PPPP", { locale: es })}
                       </span>
-                      <button 
-                        onClick={() => setSelectedMessage(null)}
-                        className="p-2 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
-                      >
-                        <X size={20} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleDeleteMessage(selectedMessage.id)}
+                          className="p-2 hover:bg-red-50 rounded-xl text-red-500 transition-colors border-none bg-transparent cursor-pointer"
+                          title="Eliminar / Recall"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                        <button 
+                          onClick={() => setSelectedMessage(null)}
+                          className="p-2 hover:bg-slate-200 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
                     </div>
                     <h2 className="text-2xl font-black text-slate-900 leading-tight mb-4">
                       {selectedMessage.subject}
@@ -410,6 +458,33 @@ export default function MensajesAdminPage() {
                            selectedMessage.recipients?.length > 0 ? `${selectedMessage.recipients.length} Usuarios` : 
                            "Global (Todos)"}
                         </span>
+                      </div>
+                    </div>
+
+                    {/* Tracking Stats */}
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                          <BarChart2 size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tasa de Apertura</p>
+                          <p className="text-lg font-black text-slate-800">
+                            {selectedMessage.recipients.length > 0 
+                              ? `${Math.round((selectedMessage.readBy.length / selectedMessage.recipients.length) * 100)}%`
+                              : `${selectedMessage.readBy.length} Lecturas`
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                          <UsersIcon size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Leído por</p>
+                          <p className="text-lg font-black text-slate-800">{selectedMessage.readBy.length} usuarios</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -442,6 +517,44 @@ export default function MensajesAdminPage() {
           </>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!messageToDelete}
+        onOpenChange={(open) => !open && setMessageToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 overflow-hidden border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+            
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                ¿Eliminar comunicado?
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Esta acción no se puede deshacer. El comunicado &quot;{messageToDelete?.subject}&quot; desaparecerá de todos los buzones de los usuarios.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setMessageToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteMessage}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

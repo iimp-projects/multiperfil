@@ -14,8 +14,15 @@ import {
   Activity,
   Code,
   Terminal,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Trash2,
+  RefreshCw
 } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle 
+} from "@nrivera-iimp/ui-kit-iimp";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { useUsersAdminStore } from "@/store/acceso/useUsersAdminStore";
 import { toast } from "sonner";
@@ -31,7 +38,28 @@ type PortalStreamingItem = {
   status: string;
   recipients: string[];
   createdAt: string;
+  startsAt: string;
+  expiresAt: string;
+  targetAll: boolean;
+  isRecurring: boolean;
+  recurrenceType: "daily" | "weekly" | "none";
+  recurrenceInterval: number;
 };
+
+interface StreamingFormData {
+  title: string;
+  description: string;
+  vimeoId: string;
+  url: string;
+  status: string;
+  startsAt: string;
+  expiresAt: string;
+  targetAll: boolean;
+  event: string;
+  isRecurring: boolean;
+  recurrenceType: "daily" | "weekly" | "none";
+  recurrenceInterval: number;
+}
 
 export default function StreamingAdminPage() {
   const { selectedEvent } = useAdminAuthStore();
@@ -42,9 +70,10 @@ export default function StreamingAdminPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [streamToDelete, setStreamToDelete] = useState<PortalStreamingItem | null>(null);
 
   // Form State
-  const resetFormData = () => ({
+  const resetFormData = (): StreamingFormData => ({
     title: "",
     description: "",
     vimeoId: "",
@@ -53,10 +82,13 @@ export default function StreamingAdminPage() {
     startsAt: "",
     expiresAt: "",
     targetAll: true,
-    event: ""
+    event: "",
+    isRecurring: false,
+    recurrenceType: "none",
+    recurrenceInterval: 1
   });
 
-  const [formData, setFormData] = useState(resetFormData());
+  const [formData, setFormData] = useState<StreamingFormData>(resetFormData());
 
   // Force reset form when event changes or modal opens
   useEffect(() => {
@@ -115,17 +147,7 @@ export default function StreamingAdminPage() {
         toast.success(editingId ? "Streaming actualizado correctamente." : "Streaming configurado correctamente.");
         setShowCreateModal(false);
         setEditingId(null);
-        setFormData({
-          title: "",
-          description: "",
-          vimeoId: "",
-          url: "",
-          status: "active",
-          startsAt: "",
-          expiresAt: "",
-          targetAll: true,
-          event: selectedEvent || ""
-        });
+        setFormData(resetFormData());
         if (!formData.targetAll) clearUsers();
         fetchStreams();
       } else {
@@ -139,6 +161,18 @@ export default function StreamingAdminPage() {
   };
 
   const handleEdit = (stream: PortalStreamingItem) => {
+    const formatDateForInput = (dateStr: string | null | undefined) => {
+      if (!dateStr) return "";
+      const date = new Date(dateStr);
+      // Format as YYYY-MM-DDTHH:mm for datetime-local input
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     setEditingId(stream.id);
     setFormData({
       title: stream.title,
@@ -146,16 +180,27 @@ export default function StreamingAdminPage() {
       vimeoId: stream.vimeoId || "",
       url: "",
       status: stream.status,
-      startsAt: "", // Need to format dates if present
-      expiresAt: "",
+      startsAt: formatDateForInput(stream.startsAt),
+      expiresAt: formatDateForInput(stream.expiresAt),
       targetAll: stream.recipients?.length === 0,
-      event: stream.event
+      event: stream.event,
+      isRecurring: stream.isRecurring || false,
+      recurrenceType: stream.recurrenceType || "none",
+      recurrenceInterval: stream.recurrenceInterval || 1
     });
     setShowCreateModal(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta transmisión?")) return;
+    const stream = streams.find(s => s.id === id);
+    if (stream) {
+      setStreamToDelete(stream);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!streamToDelete) return;
+    const id = streamToDelete.id;
 
     try {
       const res = await fetch(`/api/admin/portal/streaming?id=${id}`, {
@@ -164,6 +209,7 @@ export default function StreamingAdminPage() {
       const data = await res.json();
       if (data.success) {
         toast.success("Streaming eliminado correctamente.");
+        setStreamToDelete(null);
         fetchStreams();
       } else {
         toast.error(data.message || "Error al eliminar.");
@@ -184,17 +230,7 @@ export default function StreamingAdminPage() {
         <button
           onClick={() => {
             setEditingId(null);
-            setFormData({
-              title: "",
-              description: "",
-              vimeoId: "",
-              url: "",
-              status: "active",
-              startsAt: "",
-              expiresAt: "",
-              targetAll: true,
-              event: selectedEvent || ""
-            });
+            setFormData(resetFormData());
             setShowCreateModal(true);
           }}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
@@ -209,82 +245,128 @@ export default function StreamingAdminPage() {
         {/* Streams List Container */}
         <div className="flex-1 space-y-6">
           <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
-            {isLoading ? (
+            {isLoading ?
               <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
                 <p className="text-sm font-medium">Cargando transmisiones...</p>
               </div>
-            ) : streams.length === 0 ? (
+            : streams.length === 0 ?
               <div className="col-span-full bg-white p-20 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center text-slate-400 opacity-60">
                 <Radio className="w-16 h-16 mb-4 stroke-1" />
                 <p className="text-lg font-bold">No hay transmisiones configuradas</p>
                 <p className="text-sm">Configura tu primer ID de Vimeo para comenzar.</p>
               </div>
-            ) : (
-              streams.map((stream) => (
-                <div key={stream.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-full group hover:shadow-md transition-all">
-                  {/* Preview Thumbnail (Vimeo style) */}
-                  <div className="md:w-48 bg-slate-900 relative flex items-center justify-center group-hover:bg-slate-800 transition-colors">
-                    <Video className="w-10 h-10 text-slate-700" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
-                        <Play className="w-5 h-5 fill-current ml-1" />
-                      </div>
-                    </div>
-                    {stream.status === 'active' && (
-                      <div className="absolute top-3 left-3 px-2 py-0.5 bg-red-500 text-white text-[10px] font-black rounded uppercase flex items-center gap-1 ">
-                        <Activity className="w-3 h-3" />
-                        En Vivo
-                      </div>
-                    )}
-                  </div>
+            :
+              streams.map((stream) => {
+                const now = new Date();
+                const startsAt = stream.startsAt ? new Date(stream.startsAt) : null;
+                const expiresAt = stream.expiresAt ? new Date(stream.expiresAt) : null;
+                
+                let streamStatus = { label: "Inactivo", color: "bg-slate-100 text-slate-500", pulse: false };
+                
+                if (stream.status === 'active') {
+                  if (stream.isRecurring) {
+                    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    const startMinutes = startsAt ? startsAt.getHours() * 60 + startsAt.getMinutes() : 0;
+                    const endMinutes = expiresAt ? expiresAt.getHours() * 60 + expiresAt.getMinutes() : 1440;
+                    
+                    const isWithinWindow = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+                    const isWithinGlobalRange = (!startsAt || startsAt.getTime() <= now.getTime()) && 
+                                               (!expiresAt || expiresAt.getTime() >= now.getTime());
 
-                  <div className="flex-1 p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-slate-800 line-clamp-1">{stream.title}</h3>
-                        <button className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="text-slate-500 text-xs line-clamp-2 mb-4">{stream.description || "Sin descripción."}</p>
+                    if (isWithinGlobalRange && isWithinWindow) {
+                      streamStatus = { label: "En Vivo", color: "bg-red-500 text-white", pulse: true };
+                    } else if (isWithinGlobalRange && !isWithinWindow) {
+                      streamStatus = { label: "Programado (Recurrente)", color: "bg-indigo-500 text-white", pulse: false };
+                    } else if (!isWithinGlobalRange && startsAt && startsAt > now) {
+                      streamStatus = { label: "Próximamente", color: "bg-blue-400 text-white", pulse: false };
+                    } else {
+                      streamStatus = { label: "Finalizado", color: "bg-slate-400 text-white", pulse: false };
+                    }
+                  } else {
+                    if (startsAt && startsAt > now) {
+                      streamStatus = { label: "Programado", color: "bg-blue-500 text-white", pulse: false };
+                    } else if (expiresAt && expiresAt < now) {
+                      streamStatus = { label: "Finalizado", color: "bg-slate-400 text-white", pulse: false };
+                    } else {
+                      streamStatus = { label: "En Vivo", color: "bg-red-500 text-white", pulse: true };
+                    }
+                  }
+                } else if (stream.status === 'scheduled') {
+                  streamStatus = { label: "Pendiente", color: "bg-amber-500 text-white", pulse: false };
+                }
 
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          <div className="w-5 flex justify-center"><Video className="w-3 h-3" /></div>
-                          Vimeo ID: <span className="text-slate-700">{stream.vimeoId || "N/A"}</span>
+                return (
+                  <div key={stream.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row h-full group hover:shadow-md transition-all">
+                    {/* Preview Thumbnail (Vimeo style) */}
+                    <div className="md:w-48 bg-slate-900 relative flex items-center justify-center group-hover:bg-slate-800 transition-colors">
+                      <Video className="w-10 h-10 text-slate-700" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+                          <Play className="w-5 h-5 fill-current ml-1" />
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          <div className="w-5 flex justify-center"><UsersIcon className="w-3 h-3" /></div>
-                          Acceso: <span className="text-slate-700">{stream.recipients?.length > 0 ? `${stream.recipients.length} Usuarios` : "Público General"}</span>
-                        </div>
+                      </div>
+                      <div className={`absolute top-3 left-3 px-2 py-0.5 text-[10px] font-black rounded uppercase flex items-center gap-1 shadow-sm ${streamStatus.color}`}>
+                        {streamStatus.pulse && <Activity className="w-3 h-3 animate-pulse" />}
+                        {streamStatus.label}
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-                        <Calendar className="w-3 h-3" />
-                        {format(new Date(stream.createdAt), "dd MMM, yyyy", { locale: es })}
+                    <div className="flex-1 p-6 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-slate-800 line-clamp-1">{stream.title}</h3>
+                          <button className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-slate-500 text-xs line-clamp-2 mb-4">{stream.description || "Sin descripción."}</p>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <div className="w-5 flex justify-center"><Video className="w-3 h-3" /></div>
+                            Vimeo ID: <span className="text-slate-700">{stream.vimeoId || "N/A"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <div className="w-5 flex justify-center"><UsersIcon className="w-3 h-3" /></div>
+                            Acceso: <span className="text-slate-700">{stream.recipients?.length > 0 ? `${stream.recipients.length} Usuarios` : "Público General"}</span>
+                          </div>
+                          {startsAt && (
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              <div className="w-5 flex justify-center"><Calendar className="w-3 h-3" /></div>
+                              Inicia: <span className={startsAt > now ? "text-blue-600" : "text-slate-700"}>
+                                {format(startsAt, "PPPp", { locale: es })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(stream)}
-                          className="px-3 py-1.5 bg-slate-50 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-lg text-[10px] font-bold uppercase transition-all border-none cursor-pointer"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(stream.id)}
-                          className="px-3 py-1.5 bg-slate-50 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg text-[10px] font-bold uppercase transition-all border-none cursor-pointer"
-                        >
-                          Eliminar
-                        </button>
+
+                      <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(stream.createdAt), "dd MMM, yyyy", { locale: es })}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(stream)}
+                            className="px-3 py-1.5 bg-slate-50 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-lg text-[10px] font-bold uppercase transition-all border-none cursor-pointer"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(stream.id)}
+                            className="px-3 py-1.5 bg-slate-50 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg text-[10px] font-bold uppercase transition-all border-none cursor-pointer"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
+                );
+              })
+            }
           </div>
         </div>
 
@@ -308,21 +390,19 @@ export default function StreamingAdminPage() {
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Parámetros requeridos</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lógica de Visibilidad</p>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <div className="mt-1"><div className="w-1 h-1 bg-indigo-400 rounded-full" /></div>
-                    <div>
-                      <span className="text-[10px] font-mono font-black text-indigo-500 block">event</span>
-                      <span className="text-[11px] text-slate-500 font-medium">Código del evento (Ej: PROEXPLO26)</span>
-                    </div>
+                    <p className="text-[11px] text-slate-600">
+                      <span className="font-bold">Una vez:</span> Basado estrictamente en <span className="text-indigo-500 font-mono">startsAt</span> y <span className="text-indigo-500 font-mono">expiresAt</span>.
+                    </p>
                   </li>
-                  <li className="flex items-start gap-2 opacity-50">
-                    <div className="mt-1"><div className="w-1 h-1 bg-slate-400 rounded-full" /></div>
-                    <div>
-                      <span className="text-[10px] font-mono font-black text-slate-400 block line-through">userKey</span>
-                      <span className="text-[11px] text-slate-400 font-medium italic">Ya no es necesario</span>
-                    </div>
+                  <li className="flex items-start gap-2">
+                    <div className="mt-1"><div className="w-1 h-1 bg-indigo-400 rounded-full" /></div>
+                    <p className="text-[11px] text-slate-600">
+                      <span className="font-bold">Recurrente:</span> Activo solo durante las <span className="text-indigo-500">horas</span> definidas en las fechas, repitiéndose diariamente o semanalmente.
+                    </p>
                   </li>
                 </ul>
               </div>
@@ -340,8 +420,10 @@ export default function StreamingAdminPage() {
     {
       "id": "uuid",
       "title": "Sala 1",
-      "vimeoId": "123456",
-      "status": "active"
+      "status": "active",
+      "isRecurring": true,
+      "startsAt": "2024-05-01T08:00:00Z",
+      "expiresAt": "2024-05-01T10:00:00Z"
     }
   ]
 }`}
@@ -349,13 +431,13 @@ export default function StreamingAdminPage() {
                 </div>
               </div>
 
-              <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                <p className="text-[10px] font-bold text-amber-700 flex items-center gap-2">
+              <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <p className="text-[10px] font-bold text-indigo-700 flex items-center gap-2">
                   <Activity className="w-3 h-3" />
-                  NOTA DE ACCESO
+                  FILTRADO INTELIGENTE
                 </p>
-                <p className="text-[11px] text-amber-600/80 mt-1 leading-relaxed font-medium">
-                  El API filtra automáticamente los contenidos según el estado de pago del usuario.
+                <p className="text-[11px] text-indigo-600/80 mt-1 leading-relaxed font-medium">
+                  El API ya no devuelve contenidos expirados o fuera de su horario recurrente. El frontend solo recibe lo que debe mostrar.
                 </p>
               </div>
             </div>
@@ -446,26 +528,85 @@ export default function StreamingAdminPage() {
                   </div>
                 </div>
 
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha Inicio (Opcional)</label>
-                    <input
-                      type="datetime-local"
-                      value={formData.startsAt}
-                      onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha Inicio (Opcional)</label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                      <input
+                        type="datetime-local"
+                        value={formData.startsAt}
+                        onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                      />
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha Expiración (Opcional)</label>
-                    <input
-                      type="datetime-local"
-                      value={formData.expiresAt}
-                      onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha Expiración (Opcional)</label>
+                    <div className="relative group">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                      <input
+                        type="datetime-local"
+                        value={formData.expiresAt}
+                        onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none"
+                      />
+                    </div>
                   </div>
+                </div>
+
+                {/* Recurrence Section */}
+                <div className="p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                        <RefreshCw className={`w-5 h-5 text-indigo-600 ${formData.isRecurring ? "animate-spin" : ""}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">Tarea Recurrente</p>
+                        <p className="text-[10px] text-slate-500">Repite este evento automáticamente</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, isRecurring: !formData.isRecurring })}
+                      className={`w-12 h-6 rounded-full transition-all relative ${formData.isRecurring ? "bg-indigo-600" : "bg-slate-200"}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.isRecurring ? "left-7" : "left-1"}`} />
+                    </button>
+                  </div>
+
+                  {formData.isRecurring && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Frecuencia</label>
+                        <select
+                          value={formData.recurrenceType}
+                          onChange={(e) => setFormData({ ...formData, recurrenceType: e.target.value as any })}
+                          className="w-full px-4 py-3 bg-white border border-indigo-100 rounded-xl text-sm focus:border-indigo-600 transition-all outline-none"
+                        >
+                          <option value="daily">Diario</option>
+                          <option value="weekly">Semanal</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cada (Intervalo)</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            value={formData.recurrenceInterval}
+                            onChange={(e) => setFormData({ ...formData, recurrenceInterval: parseInt(e.target.value) || 1 })}
+                            className="w-full px-4 py-3 bg-white border border-indigo-100 rounded-xl text-sm focus:border-indigo-600 transition-all outline-none"
+                          />
+                          <span className="text-xs font-bold text-slate-500 whitespace-nowrap">
+                            {formData.recurrenceType === "daily" ? "días" : "semanas"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             </div>
@@ -491,6 +632,44 @@ export default function StreamingAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!streamToDelete}
+        onOpenChange={(open) => !open && setStreamToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 overflow-hidden border-none shadow-2xl">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+            
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                ¿Eliminar transmisión?
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                Esta acción no se puede deshacer. La transmisión &quot;{streamToDelete?.title}&quot; desaparecerá del portal de los usuarios.
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setStreamToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

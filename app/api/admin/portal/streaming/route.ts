@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
       status, 
       startsAt, 
       expiresAt, 
-      recipients 
+      recipients,
+      isRecurring,
+      recurrenceType,
+      recurrenceInterval
     } = body;
 
     if (!event || !title) {
@@ -33,7 +36,10 @@ export async function POST(req: NextRequest) {
         status: status || "active",
         startsAt: startsAt ? new Date(startsAt) : null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
-        recipients: recipients || []
+        recipients: recipients || [],
+        isRecurring: isRecurring || false,
+        recurrenceType: recurrenceType || "none",
+        recurrenceInterval: recurrenceInterval || 1
       }
     });
 
@@ -92,7 +98,10 @@ export async function PATCH(req: NextRequest) {
       status, 
       startsAt, 
       expiresAt, 
-      recipients 
+      recipients,
+      isRecurring,
+      recurrenceType,
+      recurrenceInterval
     } = body;
 
     if (!id) {
@@ -113,7 +122,10 @@ export async function PATCH(req: NextRequest) {
         status,
         startsAt: startsAt ? new Date(startsAt) : undefined,
         expiresAt: expiresAt ? new Date(expiresAt) : undefined,
-        recipients
+        recipients,
+        isRecurring: isRecurring !== undefined ? isRecurring : undefined,
+        recurrenceType: recurrenceType !== undefined ? recurrenceType : undefined,
+        recurrenceInterval: recurrenceInterval !== undefined ? recurrenceInterval : undefined
       }
     });
 

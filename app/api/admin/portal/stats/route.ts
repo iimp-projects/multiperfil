@@ -26,13 +26,54 @@ export async function GET(req: NextRequest) {
       })
     ]);
 
+    // Get sessions per day for the last 7 days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const sessions = await prisma.userSession.findMany({
+      where: { event, createdAt: { gte: sevenDaysAgo } },
+      select: { createdAt: true }
+    });
+
+    const activityByDay: Record<string, number> = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().split('T')[0];
+      activityByDay[key] = 0;
+    }
+
+    sessions.forEach(s => {
+      const key = s.createdAt.toISOString().split('T')[0];
+      if (activityByDay[key] !== undefined) {
+        activityByDay[key]++;
+      }
+    });
+
+    const chartData = Object.entries(activityByDay)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Get last 5 messages with read count
+    const lastMessages = await prisma.portalMessage.findMany({
+      where: { event },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { subject: true, recipients: true, readBy: true }
+    });
+
+    const reachData = lastMessages.map(m => ({
+      name: m.subject.length > 15 ? m.subject.substring(0, 15) + '...' : m.subject,
+      total: m.recipients.length || 100, // placeholder if all
+      opened: m.readBy.length
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
         activeUsers: activeSessionsCount,
         messages: messagesCount,
         alerts: alertsCount,
-        groups: groupsCount
+        groups: groupsCount,
+        activityChart: chartData,
+        reachChart: reachData
       }
     });
   } catch (error) {
