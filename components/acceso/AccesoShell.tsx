@@ -34,26 +34,61 @@ const NAV_ITEMS = [
   { href: "/acceso/mensajes", label: "Mensajes", icon: MessageSquare },
   { href: "/acceso/alertas", label: "Alertas", icon: Bell },
   { href: "/acceso/streaming", label: "Streaming", icon: Video },
-  
+
   // Programas
-  { href: "/acceso/programas", label: "Conferencias", icon: Calendar, isNewSection: true, sectionLabel: "Programas" },
-  
+  {
+    href: "/acceso/programas",
+    label: "Conferencias",
+    icon: Calendar,
+    isNewSection: true,
+    sectionLabel: "Programas",
+  },
+
   // Confian en nosotros
-  { href: "/acceso/auspiciadores", label: "Auspiciadores", icon: LayoutGrid, isNewSection: true, sectionLabel: "Confian en nosotros" },
-  
-  { href: "/acceso/administradores", label: "Administradores", icon: Shield, roles: ["admin", "superadmin"], isNewSection: true, sectionLabel: "Sistema" },
-  { href: "/acceso/logs", label: "Logs", icon: ScrollText, roles: ["admin", "superadmin"] },
+  {
+    href: "/acceso/auspiciadores",
+    label: "Auspiciadores",
+    icon: LayoutGrid,
+    isNewSection: true,
+    sectionLabel: "Confian en nosotros",
+  },
+
+  {
+    href: "/acceso/administradores",
+    label: "Administradores",
+    icon: Shield,
+    roles: ["admin", "superadmin"],
+    isNewSection: true,
+    sectionLabel: "Sistema",
+  },
+  {
+    href: "/acceso/logs",
+    label: "Logs",
+    icon: ScrollText,
+    roles: ["admin", "superadmin"],
+  },
 ];
 
-export default function AccesoShell({ children }: { children: React.ReactNode }) {
+export default function AccesoShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { setVertical } = useVertical();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showEventSelector, setShowEventSelector] = useState(false);
   const [events, setEvents] = useState<EventOption[]>([]);
-  const { admin, selectedEvent, isAuthenticated, _hasHydrated, logoutAdmin, setSelectedEvent } = useAdminAuthStore();
-  
+  const {
+    admin,
+    selectedEvent,
+    isAuthenticated,
+    _hasHydrated,
+    logoutAdmin,
+    setSelectedEvent,
+  } = useAdminAuthStore();
+
   useLayoutEffect(() => {
     // Open sidebar by default on large screens
     if (typeof window !== "undefined" && window.innerWidth >= 1024) {
@@ -72,10 +107,19 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
             let slug: Vertical = "proexplo";
             let logo = "/logos/favicon-iimp.png";
 
-            if (name.includes("PROEXPLO")) { slug = "proexplo"; logo = "/logos/favicon-iimp.png"; }
-            else if (name.includes("WMC")) { slug = "wmc"; logo = "/logos/favicon-wmc.png"; }
-            else if (name.includes("GESS")) { slug = "gess"; logo = "/logos/favicon-gess.png"; }
-            else if (name.includes("PERUMIN")) { slug = "perumin"; logo = "/logos/favicon-perumin.png"; }
+            if (name.includes("PROEXPLO")) {
+              slug = "proexplo";
+              logo = "/logos/favicon-iimp.png";
+            } else if (name.includes("WMC")) {
+              slug = "wmc";
+              logo = "/logos/favicon-wmc.png";
+            } else if (name.includes("GESS")) {
+              slug = "gess";
+              logo = "/logos/favicon-gess.png";
+            } else if (name.includes("PERUMIN")) {
+              slug = "perumin";
+              logo = "/logos/favicon-perumin.png";
+            }
 
             return { slug, label: evt.Evento, logo, originalName: evt.Evento };
           });
@@ -91,7 +135,11 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!_hasHydrated) return;
     // Allow access to login page without auth
-    if (pathname.startsWith("/acceso/login") || pathname.startsWith("/acceso/recovery")) return;
+    if (
+      pathname.startsWith("/acceso/login") ||
+      pathname.startsWith("/acceso/recovery")
+    )
+      return;
     if (!isAuthenticated) {
       router.replace("/acceso/login");
     }
@@ -111,7 +159,9 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
   };
 
   // Show plain layout for login / recovery pages
-  const isPublicRoute = pathname.startsWith("/acceso/login") || pathname.startsWith("/acceso/recovery");
+  const isPublicRoute =
+    pathname.startsWith("/acceso/login") ||
+    pathname.startsWith("/acceso/recovery");
   if (isPublicRoute) {
     return <>{children}</>;
   }
@@ -140,7 +190,7 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
       </AnimatePresence>
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
@@ -153,11 +203,15 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
                 <Shield className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none">Admin IIMP</h1>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Gestión V2</p>
+                <h1 className="text-sm font-black text-slate-900 tracking-tight leading-none">
+                  Admin IIMP
+                </h1>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
+                  Gestión V2
+                </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(false)}
               className="lg:hidden p-2 text-slate-400 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
             >
@@ -166,21 +220,26 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
           </div>
           {selectedEvent && (
             <div className="mt-4 px-3 py-2 bg-primary/5 border border-primary/10 rounded-xl">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Evento activo</p>
-              <p className="text-xs font-bold text-primary truncate mt-0.5">{selectedEvent}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                Evento activo
+              </p>
+              <p className="text-xs font-bold text-primary truncate mt-0.5">
+                {selectedEvent}
+              </p>
             </div>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.filter(item => {
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+          {NAV_ITEMS.filter((item) => {
             if (!item.roles) return true;
             return item.roles.includes(admin?.role?.toLowerCase() || "");
           }).map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            
+            const isActive =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+
             return (
               <div key={item.href}>
                 {item.isNewSection && (
@@ -193,7 +252,10 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
                 <Link
                   href={item.href}
                   onClick={() => {
-                    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                    if (
+                      typeof window !== "undefined" &&
+                      window.innerWidth < 1024
+                    ) {
                       setIsSidebarOpen(false);
                     }
                   }}
@@ -203,8 +265,12 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
                       : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`} />
-                  <span className="font-semibold text-sm flex-1">{item.label}</span>
+                  <Icon
+                    className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400 group-hover:text-primary"} transition-colors`}
+                  />
+                  <span className="font-semibold text-sm flex-1">
+                    {item.label}
+                  </span>
                   {isActive && <ChevronRight className="w-3 h-3 opacity-70" />}
                 </Link>
               </div>
@@ -219,8 +285,12 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
               {admin?.name?.charAt(0)?.toUpperCase() ?? "A"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{admin?.name ?? "Administrador"}</p>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{admin?.role ?? "admin"}</p>
+              <p className="text-sm font-bold text-slate-800 truncate">
+                {admin?.name ?? "Administrador"}
+              </p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                {admin?.role ?? "admin"}
+              </p>
             </div>
           </div>
           <button
@@ -241,16 +311,20 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isSidebarOpen ? "lg:pl-64" : "lg:pl-0"}`}>
+      <main
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isSidebarOpen ? "lg:pl-64" : "lg:pl-0"}`}
+      >
         <header className="h-16 bg-white border-b border-slate-100 flex items-center px-4 lg:px-8 justify-between shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border-none bg-transparent cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="font-semibold text-slate-700">Panel Administrativo</div>
+            <div className="font-semibold text-slate-700">
+              Panel Administrativo
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {selectedEvent && (
@@ -263,17 +337,15 @@ export default function AccesoShell({ children }: { children: React.ReactNode })
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-4 lg:p-8">
-          {children}
-        </div>
+        <div className="flex-1 overflow-auto p-4 lg:p-8">{children}</div>
       </main>
 
       {showEventSelector && (
-        <EventSelectorOverlay 
-          events={events} 
-          onSelect={handleEventChange} 
-          showClose 
-          onClose={() => setShowEventSelector(false)} 
+        <EventSelectorOverlay
+          events={events}
+          onSelect={handleEventChange}
+          showClose
+          onClose={() => setShowEventSelector(false)}
         />
       )}
     </div>

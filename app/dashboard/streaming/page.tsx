@@ -11,6 +11,7 @@ import { getDynamicEventCode } from "@/lib/utils/event";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import { VimeoPlayer } from "@/components/dashboard/VimeoPlayer";
 
 type PortalStreamingItem = {
   id: string;
@@ -114,7 +115,7 @@ export default function StreamingPage() {
                 {/* Video Player Area */}
                 <div className="flex-1 aspect-video bg-black relative overflow-hidden group">
                   {stream.vimeoId ? (
-                    <VimeoObfuscatedPlayer
+                    <VimeoPlayer
                       vimeoId={stream.vimeoId}
                       title={stream.title}
                     />
@@ -190,50 +191,4 @@ export default function StreamingPage() {
   );
 }
 
-/**
- * COMPONENTE DE OFUSCACIÓN DE VIDEO
- * Este componente ayuda a ocultar el ID de Vimeo del código fuente estático (View Source).
- * Además, inyecta el iframe dinámicamente solo en el cliente.
- */
-function VimeoObfuscatedPlayer({
-  vimeoId,
-  title,
-}: {
-  vimeoId: string;
-  title: string;
-}) {
-  const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Generamos la URL dinámicamente en el cliente
-    // Esto evita que aparezca en el HTML inicial (SSR)
-    const base = "https://player.vimeo.com/video/";
-    const params = "?h=0&badge=0&autopause=0&player_id=0&app_id=58479";
-
-    // Pequeño retardo para asegurar que el DOM esté listo y dificultar bots
-    const timer = setTimeout(() => {
-      setPlayerUrl(`${base}${vimeoId}${params}`);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [vimeoId]);
-
-  if (!playerUrl) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  return (
-    <iframe
-      src={playerUrl}
-      frameBorder="0"
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowFullScreen
-      className="absolute inset-0 w-full h-full animate-in fade-in duration-700"
-      title={title}
-    />
-  );
-}

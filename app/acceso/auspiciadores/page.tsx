@@ -51,7 +51,8 @@ export default function AuspiciadoresAdminPage() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isManagingCategories, setIsManagingCategories] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<SponsorCategory | null>(null);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<SponsorCategory | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -211,16 +212,27 @@ export default function AuspiciadoresAdminPage() {
         }),
       });
 
-      const { uploadUrl, key } = await res.json();
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.message || "Error al obtener URL de subida.");
+        return;
+      }
+
+      const { uploadUrl, key } = data;
 
       // 2. Upload to S3
-      await fetch(uploadUrl, {
+      const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
         headers: {
           "Content-Type": file.type,
         },
       });
+
+      if (!uploadRes.ok) {
+        toast.error("Error al subir el archivo al almacenamiento.");
+        return;
+      }
 
       setFormData((prev) => ({ ...prev, logoUrl: key }));
       toast.success("Logo subido correctamente.");
@@ -470,14 +482,16 @@ export default function AuspiciadoresAdminPage() {
 
       {/* Modal CRUD */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl z-50">
+        <DialogContent className="max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl z-50 [&>button]:hidden">
           <div className="bg-white max-h-[90vh] flex flex-col">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <DialogTitle className="text-lg font-bold text-slate-800">
                 {editingId ? "Editar Auspiciador" : "Nuevo Auspiciador"}
               </DialogTitle>
               <div className="hidden">
-                <p>Formulario para gestionar la información de un auspiciador.</p>
+                <p>
+                  Formulario para gestionar la información de un auspiciador.
+                </p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
@@ -606,9 +620,7 @@ export default function AuspiciadoresAdminPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        setFormData({ ...formData, logoUrl: "" })
-                      }
+                      onClick={() => setFormData({ ...formData, logoUrl: "" })}
                       className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors border-none bg-transparent cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -618,7 +630,7 @@ export default function AuspiciadoresAdminPage() {
               </form>
             </div>
 
-            <div className="p-6 border-t border-slate-100 flex gap-4">
+            <div className="p-6 border-t border-slate-100 flex gap-4 flex-col md:flex-row">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
@@ -630,7 +642,7 @@ export default function AuspiciadoresAdminPage() {
                 type="submit"
                 form="sponsor-form"
                 disabled={isSubmitting || uploading}
-                className="flex-[2] py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 border-none cursor-pointer transition-all"
+                className="flex-[2] py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 border-none cursor-pointer transition-all flex items-center justify-center gap-3"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -659,7 +671,9 @@ export default function AuspiciadoresAdminPage() {
                 ¿Eliminar auspiciador?
               </DialogTitle>
               <div className="hidden">
-                <p>Confirmación para eliminar permanentemente un auspiciador.</p>
+                <p>
+                  Confirmación para eliminar permanentemente un auspiciador.
+                </p>
               </div>
               <p className="text-slate-500 font-medium">
                 Esta acción eliminará permanentemente a &quot;
@@ -688,14 +702,17 @@ export default function AuspiciadoresAdminPage() {
         open={showCategoryModal}
         onOpenChange={(open) => !open && setShowCategoryModal(false)}
       >
-        <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl z-[60]">
+        <DialogContent className="max-w-md rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl z-[60] [&>button]:hidden">
           <div className="bg-white">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <DialogTitle className="text-lg font-bold text-slate-800">
                 Gestionar Categorías
               </DialogTitle>
               <div className="hidden">
-                <p>Ventana para agregar, editar u ordenar categorías de auspiciadores.</p>
+                <p>
+                  Ventana para agregar, editar u ordenar categorías de
+                  auspiciadores.
+                </p>
               </div>
               <button
                 onClick={() => setShowCategoryModal(false)}
@@ -712,7 +729,7 @@ export default function AuspiciadoresAdminPage() {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="Nombre de categoría (ej. DIAMANTE)"
-                  className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <button
                   onClick={handleAddCategory}
@@ -791,7 +808,9 @@ export default function AuspiciadoresAdminPage() {
                 ¿Eliminar categoría?
               </DialogTitle>
               <div className="hidden">
-                <p>Confirmación para eliminar una categoría de auspiciadores.</p>
+                <p>
+                  Confirmación para eliminar una categoría de auspiciadores.
+                </p>
               </div>
               <p className="text-slate-500 font-medium leading-relaxed">
                 Esta acción eliminará la categoría &quot;

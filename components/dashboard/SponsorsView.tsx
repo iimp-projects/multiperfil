@@ -180,70 +180,97 @@ export default function SponsorsView() {
 
       {/* Sponsors Grid */}
       <div className="space-y-16">
-        {groupedSponsors.map(({ category, items }) => (
-          <section
-            key={category}
-            className="space-y-8 animate-in slide-in-from-bottom-4 duration-500"
-          >
-            <div className="flex items-center gap-6">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-[0.4em]">
-                  Auspiciadores {category}
-                </h2>
+        {groupedSponsors.map(({ category, items }) => {
+          const isGold = category.toUpperCase() === "ORO";
+          const isSilver = category.toUpperCase() === "PLATA";
+          
+          return (
+            <section
+              key={category}
+              className="space-y-8 animate-in slide-in-from-bottom-4 duration-500"
+            >
+              <div className="flex items-center gap-6">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                <div className="flex items-center gap-3">
+                  <ShieldCheck 
+                    className={clsx(
+                      "w-5 h-5",
+                      isGold ? "text-amber-500" : isSilver ? "text-slate-400" : "text-primary"
+                    )} 
+                  />
+                  <h2 className={clsx(
+                    "text-sm font-bold uppercase tracking-[0.4em]",
+                    isGold ? "text-amber-600" : "text-slate-900"
+                  )}>
+                    Auspiciadores {category}
+                  </h2>
+                </div>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
               </div>
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {items.map((sponsor) => (
-                <motion.a
-                  key={sponsor.id}
-                  href={sponsor.url || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className={clsx(
-                    "group relative bg-white aspect-video rounded-[2rem] p-6 flex flex-col items-center justify-center border border-slate-100 shadow-sm transition-all duration-500",
-                    sponsor.url
-                      ? "cursor-pointer hover:shadow-2xl hover:border-primary/20"
-                      : "cursor-default",
-                  )}
-                >
-                  <div className="relative w-full h-full">
-                    {sponsor.logoUrl ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={getFullImageUrl(sponsor.logoUrl) ?? undefined}
-                        alt={sponsor.name}
-                        className="w-full h-full object-contain  group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:opacity-100"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-xl">
-                        <Handshake className="w-8 h-8 text-slate-200" />
+              <div className={clsx(
+                "grid gap-6",
+                isGold 
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" 
+                  : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+              )}>
+                {items.map((sponsor) => (
+                  <motion.a
+                    key={sponsor.id}
+                    href={sponsor.url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className={clsx(
+                      "group relative bg-white aspect-video rounded-[2rem] p-6 flex flex-col items-center justify-center border transition-all duration-500",
+                      isGold 
+                        ? "border-amber-100 bg-gradient-to-br from-white to-amber-50/30 shadow-amber-200/20" 
+                        : "border-slate-100 shadow-sm",
+                      sponsor.url
+                        ? "cursor-pointer hover:shadow-2xl hover:border-primary/20"
+                        : "cursor-default",
+                    )}
+                  >
+                    <div className="relative w-full h-full">
+                      {sponsor.logoUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={getFullImageUrl(sponsor.logoUrl) ?? undefined}
+                          alt={sponsor.name}
+                          className={clsx(
+                            "w-full h-full object-contain transition-all duration-500",
+                            isGold ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+                          )}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-xl">
+                          <Handshake className="w-8 h-8 text-slate-200" />
+                        </div>
+                      )}
+                    </div>
+
+                    {sponsor.url && (
+                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className={clsx(
+                          "w-8 h-8 rounded-full text-white flex items-center justify-center shadow-lg",
+                          isGold ? "bg-amber-500" : "bg-primary"
+                        )}>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </div>
                       </div>
                     )}
-                  </div>
 
-                  {sponsor.url && (
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </div>
+                    <div className="absolute inset-x-0 bottom-4 text-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        {sponsor.name}
+                      </span>
                     </div>
-                  )}
-
-                  <div className="absolute inset-x-0 bottom-4 text-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                      {sponsor.name}
-                    </span>
-                  </div>
-                </motion.a>
-              ))}
-            </div>
-          </section>
-        ))}
+                  </motion.a>
+                ))}
+              </div>
+            </section>
+          );
+        })}
 
         {filteredSponsors.length === 0 && (
           <div className="py-32 text-center">

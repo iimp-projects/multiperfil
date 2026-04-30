@@ -384,70 +384,62 @@ export default function StreamingAdminPage() {
         <aside className="w-full lg:w-80 xl:w-96 shrink-0">
           <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 space-y-6 sticky top-24">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-                <Code className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                <Video className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-bold text-slate-800">Guía de Integración API</h3>
+              <h3 className="font-bold text-slate-800">Guía de Configuración</h3>
             </div>
 
             <div className="space-y-4">
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Endpoint de Consulta</p>
-                <div className="flex items-center gap-2 text-indigo-600">
-                  <Terminal className="w-3 h-3" />
-                  <code className="text-xs font-mono break-all font-bold">GET /api/portal/streaming</code>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Formatos Soportados</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Terminal className="w-3 h-3 text-primary" />
+                    <span className="text-[11px] font-medium">Solo el ID: <code className="bg-slate-200 px-1 rounded text-primary">5904371</code></span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Terminal className="w-3 h-3 text-primary" />
+                    <span className="text-[11px] font-medium">Link completo de Vimeo Event</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Terminal className="w-3 h-3 text-primary" />
+                    <span className="text-[11px] font-medium">Código Iframe completo (Vimeo)</span>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lógica de Visibilidad</p>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <div className="mt-1"><div className="w-1 h-1 bg-indigo-400 rounded-full" /></div>
-                    <p className="text-[11px] text-slate-600">
-                      <span className="font-bold">Una vez:</span> Basado estrictamente en <span className="text-indigo-500 font-mono">startsAt</span> y <span className="text-indigo-500 font-mono">expiresAt</span>.
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pasos para Configurar</p>
+                <ul className="space-y-4">
+                  <li className="flex gap-3">
+                    <div className="flex-shrink-0 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold">1</div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      En <span className="font-bold">Vimeo</span>, ve a la configuración de tu <span className="font-bold">Evento en Vivo</span>.
                     </p>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <div className="mt-1"><div className="w-1 h-1 bg-indigo-400 rounded-full" /></div>
-                    <p className="text-[11px] text-slate-600">
-                      <span className="font-bold">Recurrente:</span> Activo solo durante las <span className="text-indigo-500">horas</span> definidas en las fechas, repitiéndose diariamente o semanalmente.
+                  <li className="flex gap-3">
+                    <div className="flex-shrink-0 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold">2</div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Haz clic en <span className="font-bold">"Insertar" (Embed)</span> y copia el código o simplemente el ID numérico del link.
+                    </p>
+                  </li>
+                  <li className="flex gap-3">
+                    <div className="flex-shrink-0 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold">3</div>
+                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                      Pega la información en el campo <span className="font-bold">"Vimeo Video ID"</span> de esta pantalla. El sistema lo detectará automáticamente.
                     </p>
                   </li>
                 </ul>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
-                <div className="flex items-center gap-2 mb-3">
-                  <InfoIcon className="w-3 h-3 text-slate-400" />
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estructura de Retorno (JSON)</p>
-                </div>
-                <div className="bg-slate-900 rounded-2xl p-5 overflow-x-auto shadow-inner">
-                  <pre className="text-[10px] text-indigo-300 font-mono leading-relaxed">
-                    {`{
-  "success": true,
-  "data": [
-    {
-      "id": "uuid",
-      "title": "Sala 1",
-      "status": "active",
-      "isRecurring": true,
-      "startsAt": "2024-05-01T08:00:00Z",
-      "expiresAt": "2024-05-01T10:00:00Z"
-    }
-  ]
-}`}
-                  </pre>
-                </div>
-              </div>
-
-              <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                <p className="text-[10px] font-bold text-indigo-700 flex items-center gap-2">
-                  <Activity className="w-3 h-3" />
-                  FILTRADO INTELIGENTE
+              <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                <p className="text-[10px] font-bold text-primary flex items-center gap-2">
+                  <InfoIcon className="w-3 h-3" />
+                  DETECCIÓN INTELIGENTE
                 </p>
-                <p className="text-[11px] text-indigo-600/80 mt-1 leading-relaxed font-medium">
-                  El API ya no devuelve contenidos expirados o fuera de su horario recurrente. El frontend solo recibe lo que debe mostrar.
+                <p className="text-[11px] text-slate-600 mt-1 leading-relaxed font-medium">
+                  No te preocupes por el formato. Si pegas el código de iframe completo, el portal extraerá solo el link necesario para mostrar el video y el chat.
                 </p>
               </div>
             </div>
