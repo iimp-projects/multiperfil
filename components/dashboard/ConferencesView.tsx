@@ -518,7 +518,9 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                       )}
                       style={{
                         backgroundColor: session.isSpecial
-                          ? session.backgroundColor || "#f37021"
+                          ? session.backgroundColor ||
+                            selectedProgram?.secondaryColor ||
+                            "#f37021"
                           : "white",
                       }}
                     >

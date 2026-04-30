@@ -1042,8 +1042,14 @@ export default function ProgramDetailAdminPage() {
                           ...sessionFormData,
                           isSpecial: e.target.checked,
                           // Default colors if checking
-                          backgroundColor: e.target.checked ? (sessionFormData.backgroundColor || "#f37021") : "",
-                          textColor: e.target.checked ? (sessionFormData.textColor || "#ffffff") : "",
+                          backgroundColor: e.target.checked
+                            ? sessionFormData.backgroundColor ||
+                              program?.secondaryColor ||
+                              "#f37021"
+                            : "",
+                          textColor: e.target.checked
+                            ? sessionFormData.textColor || "#ffffff"
+                            : "",
                         })
                       }
                       className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-200 transition-all checked:border-primary checked:bg-primary"
@@ -1067,12 +1073,19 @@ export default function ProgramDetailAdminPage() {
                         <div
                           className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                           style={{
-                            backgroundColor: sessionFormData.backgroundColor || "#F1F5F9",
+                            backgroundColor:
+                              sessionFormData.backgroundColor ||
+                              program?.secondaryColor ||
+                              "#f37021",
                           }}
                         >
                           <input
                             type="color"
-                            value={sessionFormData.backgroundColor || "#F1F5F9"}
+                            value={
+                              sessionFormData.backgroundColor ||
+                              program?.secondaryColor ||
+                              "#f37021"
+                            }
                             onChange={(e) =>
                               setSessionFormData({
                                 ...sessionFormData,
@@ -1082,6 +1095,21 @@ export default function ProgramDetailAdminPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                         </div>
+                        {sessionFormData.isSpecial && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSessionFormData({
+                                ...sessionFormData,
+                                backgroundColor: "",
+                              })
+                            }
+                            className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Restablecer al color del sistema"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -1092,12 +1120,13 @@ export default function ProgramDetailAdminPage() {
                         <div
                           className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                           style={{
-                            backgroundColor: sessionFormData.textColor || "#000000",
+                            backgroundColor:
+                              sessionFormData.textColor || "#ffffff",
                           }}
                         >
                           <input
                             type="color"
-                            value={sessionFormData.textColor || "#000000"}
+                            value={sessionFormData.textColor || "#ffffff"}
                             onChange={(e) =>
                               setSessionFormData({
                                 ...sessionFormData,
@@ -1107,6 +1136,21 @@ export default function ProgramDetailAdminPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                         </div>
+                        {sessionFormData.isSpecial && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSessionFormData({
+                                ...sessionFormData,
+                                textColor: "",
+                              })
+                            }
+                            className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Restablecer al color del sistema"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

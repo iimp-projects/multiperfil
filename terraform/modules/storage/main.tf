@@ -46,7 +46,9 @@ resource "aws_s3_bucket_policy" "public_read_files" {
         Action    = "s3:GetObject"
         Resource  = [
           "${aws_s3_bucket.files.arn}/profiles/*",
-          "${aws_s3_bucket.files.arn}/vouchers/*"
+          "${aws_s3_bucket.files.arn}/vouchers/*",
+          "${aws_s3_bucket.files.arn}/auspiciadores/*",
+          "${aws_s3_bucket.files.arn}/programas/*"
         ]
       }
     ]
