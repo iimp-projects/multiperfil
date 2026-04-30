@@ -14,14 +14,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (permanent) {
-      const current = await prisma.portalMessage.findUnique({
-        where: { id: messageId },
-        select: { recipients: true },
-      });
-      const currentRecipients = current?.recipients ?? [];
       await prisma.portalMessage.update({
         where: { id: messageId },
-        data: { recipients: { set: currentRecipients.filter((k) => k !== userKey) } },
+        data: { 
+          permanentlyDeletedBy: { push: userKey },
+          // Also ensure it's removed from deletedBy to be clean
+          deletedBy: { set: (await prisma.portalMessage.findUnique({ where: { id: messageId }, select: { deletedBy: true } }))?.deletedBy.filter(k => k !== userKey) || [] }
+        },
       });
     } else {
       await prisma.portalMessage.update({

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
           { recipients: { isEmpty: true } },
           ...(userKey ? [{ recipients: { has: userKey } }] : []),
         ],
+        NOT: userKey ? { permanentlyDeletedBy: { has: userKey } } : undefined,
       },
       orderBy: { createdAt: "desc" }
     });
@@ -32,8 +33,14 @@ export async function GET(req: NextRequest) {
       subject: msg.subject,
       preview: msg.preview,
       content: msg.content,
-      date: msg.createdAt.toISOString().split("T")[0],
-      time: msg.createdAt.toISOString().split("T")[1].substring(0, 5),
+      date: msg.createdAt.toLocaleDateString("en-CA", {
+        timeZone: "America/Lima",
+      }),
+      time: msg.createdAt.toLocaleTimeString("en-GB", {
+        timeZone: "America/Lima",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       isRead: userKey ? msg.readBy.includes(userKey) : false,
       isArchived: userKey ? msg.archivedBy.includes(userKey) : false,
       isDeleted: userKey ? msg.deletedBy.includes(userKey) : false,

@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import { useVertical, Button, Input } from "@nrivera-iimp/ui-kit-iimp";
 import {
   Search,
   Mail,
@@ -11,7 +10,16 @@ import {
   ArrowLeft,
   Inbox as InboxIcon,
 } from "lucide-react";
+import {
+  useVertical,
+  Button,
+  Input,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@nrivera-iimp/ui-kit-iimp";
 import clsx from "clsx";
+import { toast } from "sonner";
 
 import { usePortalStore, PortalMessage } from "@/store/portal/usePortalStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -36,6 +44,9 @@ export default function MailboxView() {
     "all",
   );
   const [viewingDetail, setViewingDetail] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<PortalMessage | null>(
+    null,
+  );
 
   const verticalFavicon = useMemo(() => {
     switch (vertical) {
@@ -94,14 +105,24 @@ export default function MailboxView() {
   };
 
   const handleDelete = (id: string) => {
-    if (!user?.siecode) return;
-    if (activeTab === "deleted") {
-      if (confirm("¿Eliminar permanentemente?")) {
-        deletePermanentMessage(id, user.siecode);
-      }
-    } else {
-      deleteMessage(id, user.siecode);
+    const msg = messages.find((m) => m.id === id);
+    if (msg) {
+      setMessageToDelete(msg);
     }
+  };
+
+  const confirmDelete = () => {
+    if (!messageToDelete || !user?.siecode) return;
+
+    if (activeTab === "deleted") {
+      deletePermanentMessage(messageToDelete.id, user.siecode);
+      toast.success("Mensaje eliminado permanentemente");
+    } else {
+      deleteMessage(messageToDelete.id, user.siecode);
+      toast.success("Mensaje movido a eliminados");
+    }
+
+    setMessageToDelete(null);
     setSelectedMessage(null);
     setViewingDetail(false);
   };
@@ -123,7 +144,7 @@ export default function MailboxView() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex items-center bg-slate-100 p-1 rounded-2xl w-full md:w-auto">
+        <div className="flex flex-nowrap overflow-x-auto items-center bg-slate-100 p-1 rounded-2xl w-full md:w-auto custom-scrollbar">
           {[
             { id: "all", label: "Todos", count: counts.all },
             { id: "archived", label: "Archivados", count: counts.archived },
@@ -230,7 +251,9 @@ export default function MailboxView() {
         <div
           className={clsx(
             "flex-1 bg-white flex flex-col overflow-hidden transition-all duration-300 z-20",
-            !viewingDetail ? "hidden md:flex" : "flex absolute inset-0 md:relative",
+            !viewingDetail
+              ? "hidden md:flex"
+              : "flex absolute inset-0 md:relative",
           )}
         >
           {selectedMessage ? (
@@ -281,7 +304,7 @@ export default function MailboxView() {
               </div>
 
               {/* Detail Content */}
-              <div className="p-10 text-sm text-slate-600 leading-relaxed font-normal break-words prose prose-slate max-w-none">
+              <div className="p-10 text-sm text-slate-600 leading-relaxed font-normal break-words prose prose-slate max-w-none portal-message-content">
                 <div
                   dangerouslySetInnerHTML={{ __html: selectedMessage.content }}
                 />
@@ -289,13 +312,13 @@ export default function MailboxView() {
 
               {/* Actions Footer */}
               {/* Actions Footer */}
-              <div className="mt-auto p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+              <div className="mt-auto p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 flex-col md:flex-row">
                 {activeTab !== "deleted" ? (
                   <>
                     <Button
                       variant="default"
                       onClick={() => handleToggleArchive(selectedMessage.id)}
-                      className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg shadow-slate-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs cursor-pointer border-none"
+                      className="h-12 px-6 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-lg shadow-slate-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs cursor-pointer border-none w-full md:w-auto"
                     >
                       <Archive size={16} />
                       {activeTab === "all" ? "Archivar" : "Desarchivar"}
@@ -305,7 +328,7 @@ export default function MailboxView() {
                       onClick={() => {
                         handleDelete(selectedMessage.id);
                       }}
-                      className="h-12 px-6 bg-white border border-red-100 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 hover:border-red-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs cursor-pointer"
+                      className="h-12 px-6 bg-white border border-red-100 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 hover:border-red-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-xs cursor-pointer w-full md:w-auto"
                     >
                       <Trash2 size={16} /> Eliminar
                     </Button>
@@ -317,14 +340,14 @@ export default function MailboxView() {
                       onClick={() => {
                         handleToggleArchive(selectedMessage.id);
                       }}
-                      className="h-12 px-6 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] cursor-pointer border-none"
+                      className="h-12 px-6 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] cursor-pointer border-none md:w-auto w-full"
                     >
                       Restaurar
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleDelete(selectedMessage.id)}
-                      className="h-12 px-6 bg-white border border-red-100 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 hover:border-red-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] cursor-pointer"
+                      className="h-12 px-6 bg-white border border-red-100 text-red-500 font-bold rounded-2xl shadow-sm hover:bg-red-50 hover:border-red-200 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] cursor-pointer md:w-auto w-full"
                     >
                       <Trash2 size={16} /> Eliminar Permanente
                     </Button>
@@ -348,6 +371,48 @@ export default function MailboxView() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!messageToDelete}
+        onOpenChange={(open) => !open && setMessageToDelete(null)}
+      >
+        <DialogContent className="max-w-md rounded-[2rem] p-8 overflow-hidden border-none shadow-2xl bg-white">
+          <div className="flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <Trash2 size={40} />
+            </div>
+
+            <div className="space-y-2">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                {activeTab === "deleted"
+                  ? "¿Eliminar permanentemente?"
+                  : "¿Mover a eliminados?"}
+              </DialogTitle>
+              <p className="text-slate-500 font-medium leading-relaxed">
+                {activeTab === "deleted"
+                  ? "Esta acción no se puede deshacer. El mensaje desaparecerá definitivamente."
+                  : "El mensaje se moverá a la pestaña de eliminados y podrás restaurarlo más tarde si lo deseas."}
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full pt-4">
+              <button
+                onClick={() => setMessageToDelete(null)}
+                className="flex-1 h-14 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 h-14 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-200 transition-all border-none cursor-pointer"
+              >
+                {activeTab === "deleted" ? "Eliminar" : "Mover"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

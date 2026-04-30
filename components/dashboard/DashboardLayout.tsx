@@ -336,22 +336,56 @@ export default function DashboardLayout({
   useEffect(() => {
     const currentIds = new Set(activeStreams.map((s) => s.id));
 
-    // On first load, we just populate the ref to avoid playing sound for existing streams
+    // Get previously played IDs from sessionStorage to persist across remounts
+    let playedIds: string[] = [];
+    try {
+      const stored = sessionStorage.getItem("played_stream_sounds");
+      if (stored) playedIds = JSON.parse(stored);
+    } catch (e) {
+      console.error(
+        "Error reading played_stream_sounds from sessionStorage",
+        e,
+      );
+    }
+
+    const playedIdsSet = new Set(playedIds);
+
+    // On first load of the layout component, we populate prevStreamIds
+    // to avoid playing sound for streams that were ALREADY active when this specific instance mounted
     if (isFirstStreamLoad.current) {
       prevStreamIds.current = currentIds;
       isFirstStreamLoad.current = false;
       return;
     }
 
-    // Check if there are any NEW stream IDs
-    const hasNewStream = Array.from(currentIds).some(
-      (id) => !prevStreamIds.current.has(id),
+    // Check if there are any NEW stream IDs that haven't been played in this SESSION
+    const newlyActiveIds = Array.from(currentIds).filter(
+      (id) => !prevStreamIds.current.has(id) && !playedIdsSet.has(id),
     );
 
-    if (hasNewStream) {
-      const audio = new Audio("/mp3/noti_streaming.mp3");
+    if (newlyActiveIds.length > 0) {
+      // Detect language from googtrans cookie
+      let soundPath = "/mp3/stream_es.mp3";
+      try {
+        const match = document.cookie.match(/googtrans=\/es\/(\w+)/);
+        if (match && match[1] === "en") {
+          soundPath = "/mp3/stream_en.mp3";
+        }
+      } catch (e) {
+        console.error("Error detecting language for audio", e);
+      }
+
+      const audio = new Audio(soundPath);
       audio
         .play()
+        .then(() => {
+          // After playing, mark these IDs as played in sessionStorage
+          const updatedPlayedIds = [...playedIds, ...newlyActiveIds];
+          sessionStorage.setItem(
+            "played_stream_sounds",
+            JSON.stringify(updatedPlayedIds),
+          );
+        })
         .catch((err) =>
           console.log("Streaming audio play blocked by browser policy:", err),
         );
@@ -532,7 +566,7 @@ export default function DashboardLayout({
       hidden: true,
     },
   ];
-  
+
   const programItems: SidebarNavItem[] = [
     {
       icon: <Calendar size={20} />,
@@ -758,7 +792,7 @@ export default function DashboardLayout({
       >
         {/* Header */}
         <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between z-30">
-          <div className="flex items-center gap-4 lg:gap-0">
+          <div className="flex items-center gap-2 lg:gap-0">
             {pathname !== "/dashboard" && (
               <button
                 className="p-2 -ml-2 text-slate-500 lg:hidden cursor-pointer h-auto bg-transparent border-none"
@@ -853,7 +887,7 @@ export default function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
               className="!hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer h-auto bg-transparent border-none"
@@ -1102,7 +1136,9 @@ export default function DashboardLayout({
                     key={notif.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-2xl shadow-sm border-2 hover:shadow-md transition-all cursor-pointer group relative ${
+                    className={`rounded-2xl shadow-sm border-2 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden ${
+                      notif.type === "image_only" ? "p-0" : "p-4"
+                    } ${
                       notif.isRead
                         ? "bg-white border-slate-100 opacity-70"
                         : "bg-slate-50 border-primary/10 shadow-sm ring-1 ring-primary/5"
@@ -1129,44 +1165,77 @@ export default function DashboardLayout({
                     </button>
 
                     <div className="flex gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 shrink-0 group-hover:scale-110 transition-transform">
-                        {notif.icon || (
-                          <Bell size={18} className="text-primary" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                            {notif.category}
-                          </span>
+                      {notif.type === "image_only" && notif.imageUrl ? (
+                        <div className="flex-1 relative group/banner aspect-[16/9]">
+                          <Image
+                            src={notif.imageUrl}
+                            alt={notif.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover/banner:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex flex-col justify-end p-4">
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <span className="text-[9px] font-black text-white/80 uppercase tracking-widest mb-1">
+                                  {notif.category}
+                                </span>
+                                <h4 className="font-bold text-white text-sm leading-tight">
+                                  {notif.title}
+                                </h4>
+                              </div>
+                              <span className="text-[9px] font-medium text-white/60">
+                                {new Date(notif.date).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <h4 className="font-bold text-slate-900 text-sm mb-1 leading-tight">
-                          {notif.title}
-                        </h4>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium mb-2">
-                          {notif.description}
-                        </p>
+                      ) : (
+                        <>
+                          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-slate-100 shrink-0 group-hover:scale-110 transition-transform">
+                            {notif.icon || (
+                              <Bell size={18} className="text-primary" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-black text-primary uppercase tracking-widest">
+                                {notif.category}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-sm mb-1 leading-tight">
+                              {notif.title}
+                            </h4>
+                            <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium mb-2">
+                              {notif.description}
+                            </p>
+                            <div className="mt-2 flex items-end justify-between">
+                              {notif.actionUrl && notif.actionText ? (
+                                <Link
+                                  href={notif.actionUrl}
+                                  target={notif.target || "_self"}
+                                  className="inline-flex items-center text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {notif.actionText} →
+                                </Link>
+                              ) : (
+                                <div />
+                              )}
+                              <span className="text-[10px] font-medium text-slate-400">
+                                {new Date(notif.date).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
 
-                        <div className="mt-2 flex items-end justify-between">
-                          {notif.actionUrl && notif.actionText ? (
-                            <Link
-                              href={notif.actionUrl}
-                              target={notif.target || "_self"}
-                              className="inline-flex items-center text-[10px] font-bold text-primary hover:underline uppercase tracking-widest"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {notif.actionText} →
-                            </Link>
-                          ) : (
-                            <div />
-                          )}
-                          <span className="text-[10px] font-medium text-slate-400">
-                            {new Date(notif.date).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
 
                         <AnimatePresence>
                           {expandedNotifications.has(notif.id) &&
@@ -1178,7 +1247,7 @@ export default function DashboardLayout({
                                 className="mt-4 pt-4 border-t border-slate-100 overflow-hidden"
                               >
                                 <div
-                                  className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed"
+                                  className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed portal-message-content"
                                   dangerouslySetInnerHTML={{
                                     __html: notif.longDescription,
                                   }}
@@ -1186,8 +1255,6 @@ export default function DashboardLayout({
                               </motion.div>
                             )}
                         </AnimatePresence>
-                      </div>
-                    </div>
                   </motion.div>
                 ))
               )}
@@ -1221,7 +1288,7 @@ export default function DashboardLayout({
                 </div>
 
                 <div
-                  className="text-slate-600 leading-relaxed font-medium text-lg prose prose-slate max-w-none"
+                  className="text-slate-600 leading-relaxed font-medium text-lg prose prose-slate max-w-none portal-message-content"
                   dangerouslySetInnerHTML={{
                     __html:
                       modalNotification.longDescription ||

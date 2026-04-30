@@ -53,6 +53,7 @@ model PortalMessage {
   readBy       String[] // Array de userKeys que ya leyeron
   archivedBy   String[] @default([]) // Array de userKeys que lo archivaron
   deletedBy    String[] @default([]) // Array de userKeys que lo eliminaron
+  permanentlyDeletedBy String[] @default([]) // Array de userKeys que lo eliminaron permanentemente
 }
 
 model PortalAlert {
@@ -74,6 +75,7 @@ model PortalAlert {
   readBy       String[] // Array de userKeys
   archivedBy   String[] @default([]) // Array de userKeys que lo archivaron
   deletedBy    String[] @default([]) // Array de userKeys que lo eliminaron
+  permanentlyDeletedBy String[] @default([]) // Array de userKeys que lo eliminaron permanentemente
 }
 
 model PortalStreaming {

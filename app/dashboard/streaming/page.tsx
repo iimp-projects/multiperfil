@@ -20,7 +20,8 @@ type PortalStreamingItem = {
 };
 
 export default function StreamingPage() {
-  const { user, isAuthenticated, hasStreamingAccess, _hasHydrated } = useAuthStore();
+  const { user, isAuthenticated, hasStreamingAccess, _hasHydrated } =
+    useAuthStore();
   const { vertical } = useVertical();
   const router = useRouter();
 
@@ -36,7 +37,8 @@ export default function StreamingPage() {
   useEffect(() => {
     if (_hasHydrated && isAuthenticated && !hasStreamingAccess) {
       toast.error("Acceso restringido", {
-        description: "Debes estar al día en tus pagos para acceder al contenido en vivo.",
+        description:
+          "Debes estar al día en tus pagos para acceder al contenido en vivo.",
       });
       router.push("/dashboard");
     }
@@ -73,14 +75,21 @@ export default function StreamingPage() {
     <DashboardLayout>
       <div className="space-y-8 animate-in fade-in duration-700">
         <header>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Streaming Live</h1>
-          <p className="text-slate-500 mt-1">Disfruta de las transmisiones en vivo y contenido exclusivo del evento.</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Streaming Live
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Disfruta de las transmisiones en vivo y contenido exclusivo del
+            evento.
+          </p>
         </header>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center p-20 bg-white rounded-3xl border border-slate-100 shadow-sm min-h-[400px]">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 font-medium">Buscando transmisiones activas...</p>
+            <p className="text-slate-400 font-medium">
+              Buscando transmisiones activas...
+            </p>
           </div>
         ) : streams.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl shadow-sm border border-slate-100 min-h-[50vh]">
@@ -91,26 +100,30 @@ export default function StreamingPage() {
               No hay transmisiones activas
             </h2>
             <p className="text-slate-500 mt-3 text-center max-w-md mx-auto text-lg leading-relaxed">
-              La transmisión en vivo estará disponible pronto. Vuelve más tarde para disfrutar del evento.
+              La transmisión en vivo estará disponible pronto. Vuelve más tarde
+              para disfrutar del evento.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-8">
             {streams.map((stream) => (
-              <div key={stream.id} className="bg-white rounded-md overflow-hidden shadow-xl border border-slate-100 flex flex-col xl:flex-row">
+              <div
+                key={stream.id}
+                className="bg-white rounded-md overflow-hidden shadow-xl border border-slate-100 flex flex-col xl:flex-row"
+              >
                 {/* Video Player Area */}
                 <div className="flex-1 aspect-video bg-black relative overflow-hidden group">
                   {stream.vimeoId ? (
-                    <VimeoObfuscatedPlayer 
-                      vimeoId={stream.vimeoId} 
-                      title={stream.title} 
+                    <VimeoObfuscatedPlayer
+                      vimeoId={stream.vimeoId}
+                      title={stream.title}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-white/20">
                       <Play size={80} />
                     </div>
                   )}
-                  
+
                   {/* Subtle Protective Overlay (makes it slightly harder to right click directly on player) */}
                   <div className="absolute inset-0 pointer-events-none z-10 border-[10px] border-black/10" />
                 </div>
@@ -132,7 +145,8 @@ export default function StreamingPage() {
                     </h2>
 
                     <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                      {stream.description || "Bienvenidos a la transmisión oficial del evento."}
+                      {stream.description ||
+                        "Bienvenidos a la transmisión oficial del evento."}
                     </p>
 
                     <div className="space-y-3">
@@ -152,8 +166,10 @@ export default function StreamingPage() {
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-slate-200">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Integrado por IIMP</p>
-                    <div className="flex items-center gap-4 grayscale opacity-50">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                      Integrado por IIMP
+                    </p>
+                    <div className="flex items-center gap-4 transition-all duration-200 ease-in-out hover:grayscale ">
                       <Image
                         src="/logos/favicon-iimp.png"
                         alt="IIMP"
@@ -179,7 +195,13 @@ export default function StreamingPage() {
  * Este componente ayuda a ocultar el ID de Vimeo del código fuente estático (View Source).
  * Además, inyecta el iframe dinámicamente solo en el cliente.
  */
-function VimeoObfuscatedPlayer({ vimeoId, title }: { vimeoId: string; title: string }) {
+function VimeoObfuscatedPlayer({
+  vimeoId,
+  title,
+}: {
+  vimeoId: string;
+  title: string;
+}) {
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -187,7 +209,7 @@ function VimeoObfuscatedPlayer({ vimeoId, title }: { vimeoId: string; title: str
     // Esto evita que aparezca en el HTML inicial (SSR)
     const base = "https://player.vimeo.com/video/";
     const params = "?h=0&badge=0&autopause=0&player_id=0&app_id=58479";
-    
+
     // Pequeño retardo para asegurar que el DOM esté listo y dificultar bots
     const timer = setTimeout(() => {
       setPlayerUrl(`${base}${vimeoId}${params}`);
