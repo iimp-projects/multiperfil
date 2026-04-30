@@ -149,9 +149,10 @@ model PortalProgramSession {
   tabId       String   @db.ObjectId
   tab         PortalProgramTab @relation(fields: [tabId], references: [id], onDelete: Cascade)
   timeRange   String?  // "08:30 - 09:00"
-  title       String
+  title       String?
   speaker     String?
   description String?
+  image       String?
   location    String?
   isHeader    Boolean  @default(false)
   color       String?  // Hex color for special sessions
