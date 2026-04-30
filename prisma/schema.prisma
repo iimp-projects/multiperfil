@@ -155,6 +155,9 @@ model PortalProgramSession {
   image       String?
   location    String?
   isHeader    Boolean  @default(false)
+  isSpecial   Boolean  @default(false)
+  backgroundColor String?
+  textColor   String?
   color       String?  // Hex color for special sessions
   order       Int      @default(0)
 }

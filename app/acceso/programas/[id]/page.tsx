@@ -28,6 +28,9 @@ type Session = {
   location?: string | null;
   image?: string | null;
   color?: string | null;
+  isSpecial: boolean;
+  backgroundColor?: string | null;
+  textColor?: string | null;
   order: number;
 };
 
@@ -85,6 +88,7 @@ export default function ProgramDetailAdminPage() {
   const [tabToDelete, setTabToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showBrochureConfirm, setShowBrochureConfirm] = useState(false);
 
   const [tabFormData, setTabFormData] = useState({
     title: "",
@@ -100,6 +104,9 @@ export default function ProgramDetailAdminPage() {
     color: "",
     image: "",
     order: 0,
+    isSpecial: false,
+    backgroundColor: "",
+    textColor: "",
   });
   const [programFormData, setProgramFormData] = useState({
     title: "",
@@ -281,6 +288,9 @@ export default function ProgramDetailAdminPage() {
           color: "",
           image: "",
           order: 0,
+          isSpecial: false,
+          backgroundColor: "",
+          textColor: "",
         });
         fetchDetail();
       }
@@ -351,6 +361,9 @@ export default function ProgramDetailAdminPage() {
       color: session.color || "",
       image: session.image || "",
       order: session.order || 0,
+      isSpecial: !!session.isSpecial,
+      backgroundColor: session.backgroundColor || "",
+      textColor: session.textColor || "",
     });
     setEditingSessionId(session.id);
     setShowSessionModal(true);
@@ -503,8 +516,8 @@ export default function ProgramDetailAdminPage() {
                             setProgram((prev) =>
                               prev ? { ...prev, primaryColor: val } : null,
                             );
-                            handleProgramUpdate("primaryColor", val);
                           }}
+                          onBlur={(e) => handleProgramUpdate("primaryColor", e.target.value)}
                           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         />
                     </div>
@@ -525,8 +538,8 @@ export default function ProgramDetailAdminPage() {
                             setProgram((prev) =>
                               prev ? { ...prev, secondaryColor: val } : null,
                             );
-                            handleProgramUpdate("secondaryColor", val);
                           }}
+                          onBlur={(e) => handleProgramUpdate("secondaryColor", e.target.value)}
                           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         />
                     </div>
@@ -547,8 +560,8 @@ export default function ProgramDetailAdminPage() {
                             setProgram((prev) =>
                               prev ? { ...prev, tertiaryColor: val } : null,
                             );
-                            handleProgramUpdate("tertiaryColor", val);
                           }}
+                          onBlur={(e) => handleProgramUpdate("tertiaryColor", e.target.value)}
                           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         />
                     </div>
@@ -571,8 +584,9 @@ export default function ProgramDetailAdminPage() {
                         Archivo subido
                       </span>
                       <button
-                        onClick={() => handleProgramUpdate("brochureUrl", null)}
+                        onClick={() => setShowBrochureConfirm(true)}
                         className="ml-auto p-1 hover:bg-indigo-100 rounded text-indigo-400 border-none bg-transparent cursor-pointer"
+                        title="Eliminar brochure"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -690,6 +704,9 @@ export default function ProgramDetailAdminPage() {
                           color: "",
                           image: "",
                           order: 0,
+                          isSpecial: false,
+                          backgroundColor: "",
+                          textColor: "",
                         });
                         setShowSessionModal(true);
                       }}
@@ -875,6 +892,17 @@ export default function ProgramDetailAdminPage() {
                   {`${(tabFormData.dateTitle || "").trim()}${(tabFormData.dateNumber || "").trim()}` ||
                     "(vacío)"}
                 </span>
+
+                {tabFormData.color && (
+                  <button
+                    type="button"
+                    onClick={() => setTabFormData({ ...tabFormData, color: "" })}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    Restablecer
+                  </button>
+                )}
               </div>
             </div>
             <div className="flex gap-4">
@@ -1003,41 +1031,86 @@ export default function ProgramDetailAdminPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Color Especial
-                </label>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
-                    style={{
-                      backgroundColor: sessionFormData.color || "#F1F5F9",
-                    }}
-                  >
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
                     <input
-                      type="color"
-                      value={sessionFormData.color || "#F1F5F9"}
+                      type="checkbox"
+                      checked={sessionFormData.isSpecial}
                       onChange={(e) =>
                         setSessionFormData({
                           ...sessionFormData,
-                          color: e.target.value,
+                          isSpecial: e.target.checked,
+                          // Default colors if checking
+                          backgroundColor: e.target.checked ? (sessionFormData.backgroundColor || "#f37021") : "",
+                          textColor: e.target.checked ? (sessionFormData.textColor || "#ffffff") : "",
                         })
                       }
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-200 transition-all checked:border-primary checked:bg-primary"
                     />
+                    <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-[10px]">
+                      ✓
+                    </span>
                   </div>
-                  {sessionFormData.color && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSessionFormData({ ...sessionFormData, color: "" })
-                      }
-                      className="text-[10px] font-bold text-red-500 hover:underline border-none bg-transparent cursor-pointer"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    ¿Es una Sesión Especial?
+                  </span>
+                </label>
+
+                {sessionFormData.isSpecial && (
+                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Color de Fondo
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                          style={{
+                            backgroundColor: sessionFormData.backgroundColor || "#F1F5F9",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={sessionFormData.backgroundColor || "#F1F5F9"}
+                            onChange={(e) =>
+                              setSessionFormData({
+                                ...sessionFormData,
+                                backgroundColor: e.target.value,
+                              })
+                            }
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Color de Texto
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                          style={{
+                            backgroundColor: sessionFormData.textColor || "#000000",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={sessionFormData.textColor || "#000000"}
+                            onChange={(e) =>
+                              setSessionFormData({
+                                ...sessionFormData,
+                                textColor: e.target.value,
+                              })
+                            }
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1237,6 +1310,35 @@ export default function ProgramDetailAdminPage() {
               className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl border-none cursor-pointer hover:bg-red-600 transition-colors"
             >
               Eliminar Todo
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Brochure Delete Confirmation Modal */}
+      <Dialog open={showBrochureConfirm} onOpenChange={setShowBrochureConfirm}>
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl z-[70]">
+          <DialogTitle className="text-xl font-bold text-slate-800 mb-2">
+            ¿Eliminar brochure?
+          </DialogTitle>
+          <p className="text-slate-500 text-sm mb-8">
+            Se eliminará el archivo PDF vinculado a este programa. Esta acción no se puede deshacer.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowBrochureConfirm(false)}
+              className="flex-1 py-3 font-bold text-slate-500 border-none bg-slate-100 rounded-xl cursor-pointer hover:bg-slate-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => {
+                handleProgramUpdate("brochureUrl", null);
+                setShowBrochureConfirm(false);
+              }}
+              className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl border-none cursor-pointer hover:bg-red-600 transition-colors"
+            >
+              Eliminar Brochure
             </button>
           </div>
         </DialogContent>

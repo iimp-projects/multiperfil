@@ -29,6 +29,9 @@ type Session = {
   location?: string | null;
   image?: string | null;
   color?: string | null;
+  isSpecial?: boolean;
+  backgroundColor?: string | null;
+  textColor?: string | null;
   order: number;
 };
 
@@ -368,7 +371,9 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                       activeTabId === tab.id
                         ? {
                             backgroundColor:
-                              tab.color || "var(--theme-primary)",
+                              tab.color ||
+                              selectedProgram?.primaryColor ||
+                              "var(--theme-primary)",
                           }
                         : {}
                     }
@@ -383,7 +388,9 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                           ? {}
                           : {
                               backgroundColor:
-                                tab.color || "var(--theme-accent)",
+                                tab.color ||
+                                selectedProgram?.primaryColor ||
+                                "var(--theme-accent)",
                             }
                       }
                     />
@@ -446,8 +453,8 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
             <div
               className="flex items-center gap-2 px-5 py-4 bg-slate-50 rounded-3xl text-slate-400"
               style={{
-                color: "var(--theme-primary)",
-                backgroundColor: "var(--theme-bg-10)",
+                color: selectedProgram?.primaryColor || "var(--theme-primary)",
+                backgroundColor: `${selectedProgram?.primaryColor || "#000000"}10`,
               }}
             >
               <Info className="w-4 h-4" />
@@ -482,12 +489,12 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                           }}
                         >
                           {activeTab.dateTitle && (
-                            <span className="text-lg tracking-tight">
+                            <span className="text-6xl tracking-tight">
                               {activeTab.dateTitle}
                             </span>
                           )}
                           {activeTab.dateNumber && (
-                            <span className="text-3xl">
+                            <span className="text-4xl">
                               {activeTab.dateNumber}
                             </span>
                           )}
@@ -509,30 +516,29 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                         "group bg-white rounded-[2.5rem] p-8 border-none shadow-sm hover:shadow-2xl transition-all duration-700 text-left relative overflow-hidden",
                         session.color && "border-l-[12px]",
                       )}
-                      style={
-                        session.color
-                          ? {
-                              borderLeftColor: session.color,
-                              backgroundColor: session.color + "0D", // 5% opacity
-                            }
-                          : {}
-                      }
+                      style={{
+                        backgroundColor: session.isSpecial
+                          ? session.backgroundColor || "#f37021"
+                          : "white",
+                      }}
                     >
-                      {session.color && (
+                      {/* Subtitle/Accent line if special */}
+                      {session.isSpecial && (
                         <div
-                          className="absolute top-0 right-0 w-48 h-48 -mr-24 -mt-24 rounded-full opacity-[0.05] pointer-events-none"
-                          style={{ backgroundColor: session.color }}
+                          className="absolute top-0 left-0 w-full h-1.5 opacity-40"
+                          style={{
+                            backgroundColor: session.textColor || "#ffffff",
+                          }}
                         />
                       )}
 
-                      <div className="flex flex-col md:flex-row gap-8 md:items-start">
+                      <div className="flex flex-col md:flex-row gap-8 md:items-center">
                         {/* Time Column */}
                         <div
-                          className="md:w-28 flex flex-col items-center justify-center gap-1 shrink-0 rounded-2xl py-5 px-4 shadow-lg h-fit mt-1 border border-black/5"
+                          className="md:w-28 flex flex-col items-center justify-center gap-1 shrink-0 rounded-2xl py-5 px-4 shadow-sm h-fit mt-1"
                           style={{
                             backgroundColor:
-                              selectedProgram?.tertiaryColor ||
-                              "var(--theme-accent)",
+                              selectedProgram?.tertiaryColor || "#ffffff",
                           }}
                         >
                           <div className="flex flex-col items-center">
@@ -566,13 +572,31 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                             />
                           )}
                           {session.title && (
-                            <h4 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+                            <h4
+                              className={clsx(
+                                "text-xl md:text-2xl font-bold leading-tight !text-center",
+                                !session.isSpecial && "text-slate-800",
+                              )}
+                              style={{
+                                color: session.isSpecial
+                                  ? session.textColor || "#ffffff"
+                                  : undefined,
+                              }}
+                            >
                               {session.title}
                             </h4>
                           )}
                           {session.description && (
                             <div
-                              className="text-slate-500 text-sm md:text-base font-normal leading-relaxed [&_p]:m-0 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1"
+                              className={clsx(
+                                "text-sm md:text-base font-normal leading-relaxed [&_p]:m-0 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1",
+                                !session.isSpecial && "text-slate-500",
+                              )}
+                              style={{
+                                color: session.isSpecial
+                                  ? session.textColor || "#ffffff"
+                                  : undefined,
+                              }}
                               dangerouslySetInnerHTML={{
                                 __html: session.description,
                               }}

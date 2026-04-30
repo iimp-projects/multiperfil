@@ -341,32 +341,48 @@ export default function ProgramasAdminPage() {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">
                     Primario
                   </label>
-                  <input
-                    type="color"
-                    value={formData.primaryColor}
-                    onChange={(e) =>
-                      setFormData({ ...formData, primaryColor: e.target.value })
-                    }
-                    className="w-full h-10 rounded-lg cursor-pointer border-none"
-                  />
+                  <div
+                    className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                    style={{ backgroundColor: formData.primaryColor }}
+                  >
+                    <input
+                      type="color"
+                      value={formData.primaryColor}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          primaryColor: e.target.value,
+                        })
+                      }
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">
                     Secundario
                   </label>
-                  <input
-                    type="color"
-                    value={formData.secondaryColor}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        secondaryColor: e.target.value,
-                      })
-                    }
-                    className="w-full h-10 rounded-lg cursor-pointer border-none"
-                  />
+                  <div
+                    className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                    style={{ backgroundColor: formData.secondaryColor }}
+                  >
+                    <input
+                      type="color"
+                      value={formData.secondaryColor}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          secondaryColor: e.target.value,
+                        })
+                      }
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center block">
+                    Accent
+                  </label>
                   <div
                     className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                     style={{ backgroundColor: formData.tertiaryColor }}
@@ -375,14 +391,14 @@ export default function ProgramasAdminPage() {
                       type="color"
                       value={formData.tertiaryColor}
                       onChange={(e) =>
-                        setFormData({ ...formData, tertiaryColor: e.target.value })
+                        setFormData({
+                          ...formData,
+                          tertiaryColor: e.target.value,
+                        })
                       }
                       className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                     />
                   </div>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase block text-center">
-                    Accent
-                  </span>
                 </div>
               </div>
 
