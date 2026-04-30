@@ -11,7 +11,25 @@ import {
   Upload,
   FileText,
   ChevronLeft,
+  GripVertical,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Dialog, DialogContent, DialogTitle } from "@nrivera-iimp/ui-kit-iimp";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { toast } from "sonner";
@@ -64,6 +82,95 @@ type ProgramUpdatableField =
   | "primaryColor"
   | "secondaryColor"
   | "tertiaryColor";
+
+function SortableSessionItem({
+  session,
+  openEditSession,
+  setSessionToDelete,
+  stripHtml,
+}: {
+  session: Session;
+  openEditSession: (s: Session) => void;
+  setSessionToDelete: (id: string) => void;
+  stripHtml: (html: string) => string;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: session.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 hover:border-slate-200 transition-all group relative flex items-center gap-4"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 text-slate-300 hover:text-slate-600 transition-colors"
+      >
+        <GripVertical className="w-4 h-4" />
+      </div>
+
+      <div className="flex-1 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="bg-white px-2 py-0.5 rounded text-[10px] font-bold  border border-slate-100">
+              {session.timeRange || "00:00 - 00:00"}
+            </span>
+            {(session.title || session.description) && (
+              <h4 className="font-normal text-slate-800 text-sm flex items-center gap-2">
+                {session.title ||
+                  stripHtml(session.description || "") ||
+                  "Sesión"}
+                {session.color && (
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor: session.color,
+                    }}
+                    title="Color especial aplicado"
+                  />
+                )}
+                {session.image && (
+                  <span className="ml-2 text-[9px] font-black uppercase tracking-widest text-slate-300">
+                    Imagen
+                  </span>
+                )}
+              </h4>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => openEditSession(session)}
+            className="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setSessionToDelete(session.id)}
+            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type UploadTarget =
   | { kind: "program"; folder: string; field: "coverImage" | "brochureUrl" }
@@ -140,6 +247,61 @@ export default function ProgramDetailAdminPage() {
       setIsLoading(false);
     }
   }, [id, activeTabId]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !program || !activeTabId) return;
+
+    const tabIndex = program.tabs.findIndex((t) => t.id === activeTabId);
+    if (tabIndex === -1) return;
+
+    const oldIndex = program.tabs[tabIndex].sessions.findIndex(
+      (s) => s.id === active.id,
+    );
+    const newIndex = program.tabs[tabIndex].sessions.findIndex(
+      (s) => s.id === over.id,
+    );
+
+    const newSessions = arrayMove(
+      program.tabs[tabIndex].sessions,
+      oldIndex,
+      newIndex,
+    ).map((s, idx) => ({ ...s, order: idx }));
+
+    // Optimistic UI update
+    const newProgram = { ...program };
+    newProgram.tabs[tabIndex].sessions = [...newSessions];
+    setProgram(newProgram);
+
+    try {
+      const res = await fetch("/api/admin/portal/programas/sessions/reorder", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
+        body: JSON.stringify({
+          sessions: newSessions.map((s) => ({ id: s.id, order: s.order })),
+        }),
+      });
+      if (!(await res.json()).success) {
+        toast.error("Error al guardar el nuevo orden.");
+        fetchDetail(); // Rollback
+      }
+    } catch {
+      toast.error("Error al conectar con el servidor.");
+      fetchDetail(); // Rollback
+    }
+  };
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -743,57 +905,28 @@ export default function ProgramDetailAdminPage() {
                         </p>
                       </div>
                     ) : (
-                      activeTab.sessions.map((session) => (
-                        <div
-                          key={session.id}
-                          className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 hover:border-slate-200 transition-all group relative"
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={activeTab.sessions.map((s) => s.id)}
+                          strategy={verticalListSortingStrategy}
                         >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <span className="bg-white px-2 py-0.5 rounded text-[10px] font-bold  border border-slate-100">
-                                  {session.timeRange || "00:00 - 00:00"}
-                                </span>
-                                {(session.title || session.description) && (
-                                  <h4 className="font-normal text-slate-800 text-sm flex items-center gap-2">
-                                    {session.title ||
-                                      stripHtml(session.description || "") ||
-                                      "Sesión"}
-                                    {session.color && (
-                                      <div
-                                        className="w-2 h-2 rounded-full"
-                                        style={{
-                                          backgroundColor: session.color,
-                                        }}
-                                        title="Color especial aplicado"
-                                      />
-                                    )}
-                                    {session.image && (
-                                      <span className="ml-2 text-[9px] font-black uppercase tracking-widest text-slate-300">
-                                        Imagen
-                                      </span>
-                                    )}
-                                  </h4>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => openEditSession(session)}
-                                className="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => setSessionToDelete(session.id)}
-                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
+                          <div className="space-y-3">
+                            {activeTab.sessions.map((session) => (
+                              <SortableSessionItem
+                                key={session.id}
+                                session={session}
+                                openEditSession={openEditSession}
+                                setSessionToDelete={setSessionToDelete}
+                                stripHtml={stripHtml}
+                              />
+                            ))}
                           </div>
-                        </div>
-                      ))
+                        </SortableContext>
+                      </DndContext>
                     )}
                   </div>
                 </>
