@@ -62,7 +62,7 @@ export default function SponsorsView() {
   }, [fetchSponsors]);
 
   const displayCategories = useMemo(() => {
-    return ["TODOS", ...categories.map(c => c.name)];
+    return ["TODOS", ...categories.map((c) => c.name)];
   }, [categories]);
 
   const filteredSponsors = sponsors.filter((s) => {
@@ -76,24 +76,30 @@ export default function SponsorsView() {
 
   const groupedSponsors = useMemo(() => {
     const groups: { category: string; items: Sponsor[] }[] = [];
-    
-    // Sort sponsors within each category by their order field
-    const sortedSponsors = [...filteredSponsors].sort((a, b) => a.order - b.order);
 
-    categories.forEach(cat => {
-      const items = sortedSponsors.filter(s => s.category.toUpperCase() === cat.name.toUpperCase());
+    // Sort sponsors within each category by their order field
+    const sortedSponsors = [...filteredSponsors].sort(
+      (a, b) => a.order - b.order,
+    );
+
+    categories.forEach((cat) => {
+      const items = sortedSponsors.filter(
+        (s) => s.category.toUpperCase() === cat.name.toUpperCase(),
+      );
       if (items.length > 0) {
         groups.push({ category: cat.name, items });
       }
     });
 
     // Fallback for sponsors with categories not in the categories list
-    const knownCatNames = new Set(categories.map(c => c.name.toUpperCase()));
-    const orphans = sortedSponsors.filter(s => !knownCatNames.has(s.category.toUpperCase()));
+    const knownCatNames = new Set(categories.map((c) => c.name.toUpperCase()));
+    const orphans = sortedSponsors.filter(
+      (s) => !knownCatNames.has(s.category.toUpperCase()),
+    );
     if (orphans.length > 0) {
       // Group orphans by category name
       const orphanGroups: Record<string, Sponsor[]> = {};
-      orphans.forEach(s => {
+      orphans.forEach((s) => {
         const c = s.category.toUpperCase();
         if (!orphanGroups[c]) orphanGroups[c] = [];
         orphanGroups[c].push(s);
@@ -160,7 +166,7 @@ export default function SponsorsView() {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={clsx(
-                "px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shrink-0 border-none cursor-pointer",
+                "px-5 py-2.5 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all shrink-0 border-none cursor-pointer",
                 activeCategory === cat
                   ? "bg-slate-900 text-white shadow-lg"
                   : "bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-900",
@@ -175,69 +181,69 @@ export default function SponsorsView() {
       {/* Sponsors Grid */}
       <div className="space-y-16">
         {groupedSponsors.map(({ category, items }) => (
-            <section
-              key={category}
-              className="space-y-8 animate-in slide-in-from-bottom-4 duration-500"
-            >
-              <div className="flex items-center gap-6">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-5 h-5 text-primary" />
-                  <h2 className="text-sm font-black text-slate-900 uppercase tracking-[0.4em]">
-                    Auspiciadores {category}
-                  </h2>
-                </div>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+          <section
+            key={category}
+            className="space-y-8 animate-in slide-in-from-bottom-4 duration-500"
+          >
+            <div className="flex items-center gap-6">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-[0.4em]">
+                  Auspiciadores {category}
+                </h2>
               </div>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+            </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {items.map((sponsor) => (
-                  <motion.a
-                    key={sponsor.id}
-                    href={sponsor.url || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ y: -8, scale: 1.02 }}
-                    className={clsx(
-                      "group relative bg-white aspect-video rounded-[2rem] p-6 flex flex-col items-center justify-center border border-slate-100 shadow-sm transition-all duration-500",
-                      sponsor.url
-                        ? "cursor-pointer hover:shadow-2xl hover:border-primary/20"
-                        : "cursor-default",
-                    )}
-                  >
-                    <div className="relative w-full h-full">
-                      {sponsor.logoUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={getFullImageUrl(sponsor.logoUrl) ?? undefined}
-                          alt={sponsor.name}
-                          className="w-full h-full object-contain  group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:opacity-100"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-xl">
-                          <Handshake className="w-8 h-8 text-slate-200" />
-                        </div>
-                      )}
-                    </div>
-
-                    {sponsor.url && (
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {items.map((sponsor) => (
+                <motion.a
+                  key={sponsor.id}
+                  href={sponsor.url || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  className={clsx(
+                    "group relative bg-white aspect-video rounded-[2rem] p-6 flex flex-col items-center justify-center border border-slate-100 shadow-sm transition-all duration-500",
+                    sponsor.url
+                      ? "cursor-pointer hover:shadow-2xl hover:border-primary/20"
+                      : "cursor-default",
+                  )}
+                >
+                  <div className="relative w-full h-full">
+                    {sponsor.logoUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={getFullImageUrl(sponsor.logoUrl) ?? undefined}
+                        alt={sponsor.name}
+                        className="w-full h-full object-contain  group-hover:grayscale-0 transition-all duration-500 opacity-70 group-hover:opacity-100"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-xl">
+                        <Handshake className="w-8 h-8 text-slate-200" />
                       </div>
                     )}
+                  </div>
 
-                    <div className="absolute inset-x-0 bottom-4 text-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                        {sponsor.name}
-                      </span>
+                  {sponsor.url && (
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </div>
                     </div>
-                  </motion.a>
-                ))}
-              </div>
-            </section>
-          ))}
+                  )}
+
+                  <div className="absolute inset-x-0 bottom-4 text-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                      {sponsor.name}
+                    </span>
+                  </div>
+                </motion.a>
+              ))}
+            </div>
+          </section>
+        ))}
 
         {filteredSponsors.length === 0 && (
           <div className="py-32 text-center">

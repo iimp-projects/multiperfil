@@ -73,3 +73,42 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: false, message: "Error." }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  const { ip, userAgent } = getClientInfo(req);
+  const admin = getAdminInfo(req);
+
+  try {
+    const body = await req.json();
+    const { id, label, title, dateTitle, dateNumber, color, order } = body;
+
+    if (!id) return NextResponse.json({ success: false, message: "ID requerido." }, { status: 400 });
+
+    const tab = await prisma.portalProgramTab.update({
+      where: { id },
+      data: {
+        label: label || title,
+        dateTitle,
+        dateNumber,
+        color,
+        order: order !== undefined ? Number(order) : undefined
+      }
+    });
+
+    await logActivity({
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name,
+      action: "UPDATE_TAB",
+      module: "PROGRAMS",
+      details: `Pestaña actualizada: "${tab.label}"`,
+      ip,
+      userAgent
+    });
+
+    return NextResponse.json({ success: true, data: tab });
+  } catch (error) {
+    console.error("[ADMIN_TABS_PATCH]", error);
+    return NextResponse.json({ success: false, message: "Error." }, { status: 500 });
+  }
+}

@@ -476,6 +476,9 @@ export default function AuspiciadoresAdminPage() {
               <DialogTitle className="text-lg font-bold text-slate-800">
                 {editingId ? "Editar Auspiciador" : "Nuevo Auspiciador"}
               </DialogTitle>
+              <div className="hidden">
+                <p>Formulario para gestionar la información de un auspiciador.</p>
+              </div>
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
@@ -655,6 +658,9 @@ export default function AuspiciadoresAdminPage() {
               <DialogTitle className="text-2xl font-black text-slate-900">
                 ¿Eliminar auspiciador?
               </DialogTitle>
+              <div className="hidden">
+                <p>Confirmación para eliminar permanentemente un auspiciador.</p>
+              </div>
               <p className="text-slate-500 font-medium">
                 Esta acción eliminará permanentemente a &quot;
                 {sponsorToDelete?.name}&quot; del portal.
@@ -688,6 +694,9 @@ export default function AuspiciadoresAdminPage() {
               <DialogTitle className="text-lg font-bold text-slate-800">
                 Gestionar Categorías
               </DialogTitle>
+              <div className="hidden">
+                <p>Ventana para agregar, editar u ordenar categorías de auspiciadores.</p>
+              </div>
               <button
                 onClick={() => setShowCategoryModal(false)}
                 className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
@@ -781,6 +790,9 @@ export default function AuspiciadoresAdminPage() {
               <DialogTitle className="text-2xl font-black text-slate-900">
                 ¿Eliminar categoría?
               </DialogTitle>
+              <div className="hidden">
+                <p>Confirmación para eliminar una categoría de auspiciadores.</p>
+              </div>
               <p className="text-slate-500 font-medium leading-relaxed">
                 Esta acción eliminará la categoría &quot;
                 {categoryToDelete?.name}&quot;. <br />

@@ -17,10 +17,7 @@ export async function GET(req: NextRequest) {
 
     const sponsors = await prisma.portalSponsor.findMany({
       where: { 
-        event: {
-          equals: event,
-          mode: 'insensitive'
-        }
+        event: event,
       },
       orderBy: [
         { category: "asc" },

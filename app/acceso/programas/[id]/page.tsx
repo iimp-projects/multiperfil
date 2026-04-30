@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
+  Pencil,
   Plus,
-  X,
   Trash2,
-  ChevronLeft,
-  Layout,
-  Upload,
-  Image as ImageIcon,
   Clock,
+  Layout,
+  ImageIcon,
+  Upload,
   FileText,
+  ChevronLeft,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@nrivera-iimp/ui-kit-iimp";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
 import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
@@ -77,6 +78,11 @@ export default function ProgramDetailAdminPage() {
   // Modals
   const [showTabModal, setShowTabModal] = useState(false);
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showProgramModal, setShowProgramModal] = useState(false);
+  const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [tabToDelete, setTabToDelete] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -88,10 +94,19 @@ export default function ProgramDetailAdminPage() {
     color: "",
   });
   const [sessionFormData, setSessionFormData] = useState({
+    title: "",
     description: "",
     timeRange: "",
     color: "",
     image: "",
+    order: 0,
+  });
+  const [programFormData, setProgramFormData] = useState({
+    title: "",
+    description: "",
+    primaryColor: "#1e293b",
+    secondaryColor: "#ffffff",
+    tertiaryColor: "#fbbf24",
     order: 0,
   });
 
@@ -192,23 +207,38 @@ export default function ProgramDetailAdminPage() {
     }
   };
 
-  const handleAddTab = async (e: React.FormEvent) => {
+  const handleAddOrUpdateTab = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const method = editingTabId ? "PATCH" : "POST";
+      const payload = editingTabId
+        ? { ...tabFormData, id: editingTabId }
+        : { ...tabFormData, programId: id };
+
       const res = await fetch("/api/admin/portal/programas/tabs", {
-        method: "POST",
+        method,
         headers: {
           "Content-Type": "application/json",
           "x-admin-id": admin?.id || "",
           "x-admin-email": admin?.email || "",
           "x-admin-name": admin?.name || "",
         },
-        body: JSON.stringify({ ...tabFormData, programId: id }),
+        body: JSON.stringify(payload),
       });
       if ((await res.json()).success) {
-        toast.success("Pestaña creada.");
+        toast.success(
+          editingTabId ? "Pestaña actualizada." : "Pestaña creada.",
+        );
         setShowTabModal(false);
+        setEditingTabId(null);
+        setTabFormData({
+          title: "",
+          order: 0,
+          dateTitle: "",
+          dateNumber: "",
+          color: "",
+        });
         fetchDetail();
       }
     } catch {
@@ -218,25 +248,34 @@ export default function ProgramDetailAdminPage() {
     }
   };
 
-  const handleAddSession = async (e: React.FormEvent) => {
+  const handleAddOrUpdateSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeTabId) return;
+    if (!activeTabId && !editingSessionId) return;
     setIsSubmitting(true);
     try {
+      const method = editingSessionId ? "PATCH" : "POST";
+      const payload = editingSessionId
+        ? { ...sessionFormData, id: editingSessionId }
+        : { ...sessionFormData, tabId: activeTabId };
+
       const res = await fetch("/api/admin/portal/programas/sessions", {
-        method: "POST",
+        method,
         headers: {
           "Content-Type": "application/json",
           "x-admin-id": admin?.id || "",
           "x-admin-email": admin?.email || "",
           "x-admin-name": admin?.name || "",
         },
-        body: JSON.stringify({ ...sessionFormData, tabId: activeTabId }),
+        body: JSON.stringify(payload),
       });
       if ((await res.json()).success) {
-        toast.success("Sesión creada.");
+        toast.success(
+          editingSessionId ? "Sesión actualizada." : "Sesión creada.",
+        );
         setShowSessionModal(false);
+        setEditingSessionId(null);
         setSessionFormData({
+          title: "",
           description: "",
           timeRange: "",
           color: "",
@@ -252,10 +291,75 @@ export default function ProgramDetailAdminPage() {
     }
   };
 
-  const deleteTab = async (tabId: string) => {
-    if (!confirm("¿Eliminar esta pestaña y todas sus sesiones?")) return;
+  const handleUpdateProgramModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!program) return;
+    setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/portal/programas/tabs?id=${tabId}`, {
+      const res = await fetch("/api/admin/portal/programas", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-id": admin?.id || "",
+          "x-admin-email": admin?.email || "",
+          "x-admin-name": admin?.name || "",
+        },
+        body: JSON.stringify({ id: program.id, ...programFormData }),
+      });
+      if ((await res.json()).success) {
+        toast.success("Programa actualizado.");
+        setShowProgramModal(false);
+        fetchDetail();
+      }
+    } catch {
+      toast.error("Error al actualizar.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditProgram = () => {
+    if (!program) return;
+    setProgramFormData({
+      title: program.title,
+      description: program.description || "",
+      primaryColor: program.primaryColor,
+      secondaryColor: program.secondaryColor,
+      tertiaryColor: program.tertiaryColor,
+      order: 0,
+    });
+    setShowProgramModal(true);
+  };
+
+  const openEditTab = (tab: Tab) => {
+    setTabFormData({
+      title: tab.title,
+      order: tab.order,
+      dateTitle: tab.dateTitle || "",
+      dateNumber: tab.dateNumber || "",
+      color: tab.color || "",
+    });
+    setEditingTabId(tab.id);
+    setShowTabModal(true);
+  };
+
+  const openEditSession = (session: Session) => {
+    setSessionFormData({
+      title: session.title || "",
+      description: session.description || "",
+      timeRange: session.timeRange || "",
+      color: session.color || "",
+      image: session.image || "",
+      order: session.order || 0,
+    });
+    setEditingSessionId(session.id);
+    setShowSessionModal(true);
+  };
+
+  const deleteTab = async () => {
+    if (!tabToDelete) return;
+    try {
+      const res = await fetch(`/api/admin/portal/programas/tabs?id=${tabToDelete}`, {
         method: "DELETE",
         headers: {
           "x-admin-id": admin?.id || "",
@@ -265,7 +369,8 @@ export default function ProgramDetailAdminPage() {
       });
       if ((await res.json()).success) {
         toast.success("Pestaña eliminada.");
-        if (activeTabId === tabId) setActiveTabId(null);
+        if (activeTabId === tabToDelete) setActiveTabId(null);
+        setTabToDelete(null);
         fetchDetail();
       }
     } catch {
@@ -273,10 +378,11 @@ export default function ProgramDetailAdminPage() {
     }
   };
 
-  const deleteSession = async (sessionId: string) => {
+  const deleteSession = async () => {
+    if (!sessionToDelete) return;
     try {
       const res = await fetch(
-        `/api/admin/portal/programas/sessions?id=${sessionId}`,
+        `/api/admin/portal/programas/sessions?id=${sessionToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -288,6 +394,7 @@ export default function ProgramDetailAdminPage() {
       );
       if ((await res.json()).success) {
         toast.success("Sesión eliminada.");
+        setSessionToDelete(null);
         fetchDetail();
       }
     } catch {
@@ -359,17 +466,24 @@ export default function ProgramDetailAdminPage() {
             </div>
 
             <div className="p-8 space-y-6">
-              <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                   Título
                 </label>
-                <input
-                  type="text"
-                  defaultValue={program.title}
-                  onBlur={(e) => handleProgramUpdate("title", e.target.value)}
-                  className="w-full bg-transparent border-none text-xl font-black text-slate-800 focus:outline-none p-0"
-                />
+                <button
+                  onClick={openEditProgram}
+                  className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all border-none bg-transparent cursor-pointer"
+                  title="Editar detalles del programa"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
               </div>
+              <input
+                type="text"
+                defaultValue={program.title}
+                onBlur={(e) => handleProgramUpdate("title", e.target.value)}
+                className="w-full bg-transparent border-none text-xl font-black text-slate-800 focus:outline-none p-0"
+              />
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
@@ -381,14 +495,18 @@ export default function ProgramDetailAdminPage() {
                       className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                       style={{ backgroundColor: program.primaryColor }}
                     >
-                      <input
-                        type="color"
-                        value={program.primaryColor}
-                        onChange={(e) =>
-                          handleProgramUpdate("primaryColor", e.target.value)
-                        }
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
+                        <input
+                          type="color"
+                          value={program.primaryColor}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProgram((prev) =>
+                              prev ? { ...prev, primaryColor: val } : null,
+                            );
+                            handleProgramUpdate("primaryColor", val);
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
                     </div>
                     <span className="text-[9px] font-bold text-slate-400 uppercase block text-center">
                       Base
@@ -399,14 +517,18 @@ export default function ProgramDetailAdminPage() {
                       className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                       style={{ backgroundColor: program.secondaryColor }}
                     >
-                      <input
-                        type="color"
-                        value={program.secondaryColor}
-                        onChange={(e) =>
-                          handleProgramUpdate("secondaryColor", e.target.value)
-                        }
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
+                        <input
+                          type="color"
+                          value={program.secondaryColor}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProgram((prev) =>
+                              prev ? { ...prev, secondaryColor: val } : null,
+                            );
+                            handleProgramUpdate("secondaryColor", val);
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
                     </div>
                     <span className="text-[9px] font-bold text-slate-400 uppercase block text-center">
                       Header
@@ -417,14 +539,18 @@ export default function ProgramDetailAdminPage() {
                       className="w-full h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
                       style={{ backgroundColor: program.tertiaryColor }}
                     >
-                      <input
-                        type="color"
-                        value={program.tertiaryColor}
-                        onChange={(e) =>
-                          handleProgramUpdate("tertiaryColor", e.target.value)
-                        }
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
+                        <input
+                          type="color"
+                          value={program.tertiaryColor}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProgram((prev) =>
+                              prev ? { ...prev, tertiaryColor: val } : null,
+                            );
+                            handleProgramUpdate("tertiaryColor", val);
+                          }}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
                     </div>
                     <span className="text-[9px] font-bold text-slate-400 uppercase block text-center">
                       Accent
@@ -448,7 +574,7 @@ export default function ProgramDetailAdminPage() {
                         onClick={() => handleProgramUpdate("brochureUrl", null)}
                         className="ml-auto p-1 hover:bg-indigo-100 rounded text-indigo-400 border-none bg-transparent cursor-pointer"
                       >
-                        <X className="w-3 h-3" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   ) : (
@@ -489,7 +615,17 @@ export default function ProgramDetailAdminPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
               <h2 className="text-xl font-bold text-slate-800">Cronograma</h2>
               <button
-                onClick={() => setShowTabModal(true)}
+                onClick={() => {
+                  setEditingTabId(null);
+                  setTabFormData({
+                    title: "",
+                    order: 0,
+                    dateTitle: "",
+                    dateNumber: "",
+                    color: "",
+                  });
+                  setShowTabModal(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all border-none cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
@@ -521,10 +657,16 @@ export default function ProgramDetailAdminPage() {
                     {tab.title}
                   </button>
                   <button
-                    onClick={() => deleteTab(tab.id)}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer"
+                    onClick={() => openEditTab(tab)}
+                    className="absolute -top-1 right-4 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer z-10"
                   >
-                    <X className="w-3 h-3" />
+                    <Pencil className="w-2.5 h-2.5" />
+                  </button>
+                  <button
+                    onClick={() => setTabToDelete(tab.id)}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer shadow-lg"
+                  >
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               ))}
@@ -539,7 +681,18 @@ export default function ProgramDetailAdminPage() {
                       Sesiones de {activeTab.title}
                     </span>
                     <button
-                      onClick={() => setShowSessionModal(true)}
+                      onClick={() => {
+                        setEditingSessionId(null);
+                        setSessionFormData({
+                          title: "",
+                          description: "",
+                          timeRange: "",
+                          color: "",
+                          image: "",
+                          order: 0,
+                        });
+                        setShowSessionModal(true);
+                      }}
                       className="text-xs font-bold text-primary flex items-center gap-1 hover:underline bg-transparent border-none cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
@@ -548,8 +701,25 @@ export default function ProgramDetailAdminPage() {
                   </div>
 
                   <div className="space-y-3">
+                    {/* Header for current tab sessions */}
+                    {(activeTab.dateTitle || activeTab.dateNumber) && (
+                      <div className="flex items-center gap-3 mb-6 px-1">
+                        <span className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                          {activeTab.dateTitle}
+                        </span>
+                        <span className="text-2xl font-black text-primary">
+                          {activeTab.dateNumber}
+                        </span>
+                        {activeTab.title && (
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-auto">
+                            {activeTab.title}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     {activeTab.sessions.length === 0 ? (
-                      <div className="py-20 text-center text-slate-400 border-2 border-dashed border-slate-50 rounded-3xl">
+                      <div className="flex-1 flex flex-col items-center justify-center text-slate-300 py-20 border-2 border-dashed border-slate-50 rounded-3xl">
                         <Clock className="w-10 h-10 mx-auto mb-4 opacity-20" />
                         <p className="text-sm">
                           No hay sesiones en esta pestaña.
@@ -592,7 +762,13 @@ export default function ProgramDetailAdminPage() {
                             </div>
                             <div className="flex gap-2">
                               <button
-                                onClick={() => deleteSession(session.id)}
+                                onClick={() => openEditSession(session)}
+                                className="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setSessionToDelete(session.id)}
                                 className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border-none bg-transparent cursor-pointer"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -617,250 +793,454 @@ export default function ProgramDetailAdminPage() {
         </main>
       </div>
 
-      {/* Modals */}
-      {showTabModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in slide-in-from-bottom-4">
-            <h2 className="text-lg font-bold text-slate-800 mb-6">
-              Nueva Pestaña
-            </h2>
-            <form onSubmit={handleAddTab} className="space-y-6">
+      {/* Tab Modal */}
+      <Dialog open={showTabModal} onOpenChange={setShowTabModal}>
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl z-[60]">
+          <DialogTitle className="text-lg font-bold text-slate-800 mb-6">
+            {editingTabId ? "Editar Pestaña" : "Nueva Pestaña"}
+          </DialogTitle>
+
+          <form onSubmit={handleAddOrUpdateTab} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Título (Día, Sala, etc)
+              </label>
+              <input
+                type="text"
+                value={tabFormData.title}
+                onChange={(e) =>
+                  setTabFormData({ ...tabFormData, title: e.target.value })
+                }
+                required
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Título (Día, Sala, etc)
+                  Título Superior (Ej. LUNES)
                 </label>
                 <input
                   type="text"
-                  value={tabFormData.title}
+                  value={tabFormData.dateTitle}
                   onChange={(e) =>
-                    setTabFormData({ ...tabFormData, title: e.target.value })
+                    setTabFormData({
+                      ...tabFormData,
+                      dateTitle: e.target.value,
+                    })
                   }
-                  required
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Título Superior (Ej. LUNES)
-                  </label>
-                  <input
-                    type="text"
-                    value={tabFormData.dateTitle}
-                    onChange={(e) =>
-                      setTabFormData({
-                        ...tabFormData,
-                        dateTitle: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Número (Ej. 04)
-                  </label>
-                  <input
-                    type="text"
-                    value={tabFormData.dateNumber}
-                    onChange={(e) =>
-                      setTabFormData({
-                        ...tabFormData,
-                        dateNumber: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Color de Pestaña (Opcional)
+                  Número (Ej. 04)
+                </label>
+                <input
+                  type="text"
+                  value={tabFormData.dateNumber}
+                  onChange={(e) =>
+                    setTabFormData({
+                      ...tabFormData,
+                      dateNumber: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Color de Pestaña (Opcional)
+              </label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-12 h-12 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                  style={{ backgroundColor: tabFormData.color || "#F1F5F9" }}
+                >
+                  <input
+                    type="color"
+                    value={tabFormData.color || "#F1F5F9"}
+                    onChange={(e) =>
+                      setTabFormData({
+                        ...tabFormData,
+                        color: e.target.value,
+                      })
+                    }
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
+                <span className="text-xs font-bold text-slate-500">
+                  Preview:{" "}
+                  {`${(tabFormData.dateTitle || "").trim()}${(tabFormData.dateNumber || "").trim()}` ||
+                    "(vacío)"}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setShowTabModal(false)}
+                className="flex-1 py-3 font-bold text-slate-500 border-none bg-transparent cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 py-3 bg-primary text-white font-bold rounded-xl border-none cursor-pointer"
+              >
+                {editingTabId ? "Actualizar" : "Crear"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Session Modal */}
+      <Dialog open={showSessionModal} onOpenChange={setShowSessionModal}>
+        <DialogContent className="max-w-lg rounded-[2.5rem] p-8 border-none shadow-2xl z-[60] overflow-y-auto max-h-[90vh]">
+          <DialogTitle className="text-lg font-bold text-slate-800 mb-6">
+            {editingSessionId ? "Editar Sesión" : "Nueva Sesión"}
+          </DialogTitle>
+
+          <form onSubmit={handleAddOrUpdateSession} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Horario (Ej. 09:00 - 10:00)
+              </label>
+              <input
+                type="text"
+                value={sessionFormData.timeRange}
+                onChange={(e) =>
+                  setSessionFormData({
+                    ...sessionFormData,
+                    timeRange: e.target.value,
+                  })
+                }
+                required
+                placeholder="09:00 - 10:00"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Título (Opcional)
+              </label>
+              <input
+                type="text"
+                value={sessionFormData.title || ""}
+                onChange={(e) =>
+                  setSessionFormData({
+                    ...sessionFormData,
+                    title: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Descripción
+              </label>
+              <TiptapEditor
+                content={sessionFormData.description}
+                onChange={(html) =>
+                  setSessionFormData({
+                    ...sessionFormData,
+                    description: html,
+                  })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <div className="space-y-2 !hidden">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Imagen (Opcional)
+                </label>
+                <div className="flex items-center gap-3">
+                  {sessionFormData.image ? (
+                    <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl overflow-hidden">
+                      <ImageIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="text-[10px] font-bold text-slate-600 truncate">
+                        Imagen subida
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSessionFormData({
+                            ...sessionFormData,
+                            image: "",
+                          })
+                        }
+                        className="ml-auto text-red-500 hover:text-red-700 border-none bg-transparent cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-slate-100 rounded-xl text-slate-400 hover:border-primary/20 hover:text-primary transition-all cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      <span className="text-[10px] font-bold">Subir</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) =>
+                          handleFileUpload(e, {
+                            kind: "session",
+                            folder: "programas",
+                            field: "image",
+                          })
+                        }
+                        disabled={uploading}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Color Especial
                 </label>
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-12 h-12 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
-                    style={{ backgroundColor: tabFormData.color || "#F1F5F9" }}
+                    className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                    style={{
+                      backgroundColor: sessionFormData.color || "#F1F5F9",
+                    }}
                   >
                     <input
                       type="color"
-                      value={tabFormData.color || "#F1F5F9"}
+                      value={sessionFormData.color || "#F1F5F9"}
                       onChange={(e) =>
-                        setTabFormData({
-                          ...tabFormData,
+                        setSessionFormData({
+                          ...sessionFormData,
                           color: e.target.value,
                         })
                       }
                       className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                     />
                   </div>
-                  <span className="text-xs font-bold text-slate-500">
-                    Preview:{" "}
-                    {`${(tabFormData.dateTitle || "").trim()}${(tabFormData.dateNumber || "").trim()}` ||
-                      "(vacío)"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowTabModal(false)}
-                  className="flex-1 py-3 font-bold text-slate-500 border-none bg-transparent cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl border-none cursor-pointer"
-                >
-                  Crear
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showSessionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 animate-in slide-in-from-bottom-4">
-            <h2 className="text-lg font-bold text-slate-800 mb-6">
-              Nueva Sesión
-            </h2>
-            <form onSubmit={handleAddSession} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Horario (Ej. 09:00 - 10:00)
-                </label>
-                <input
-                  type="text"
-                  value={sessionFormData.timeRange}
-                  onChange={(e) =>
-                    setSessionFormData({
-                      ...sessionFormData,
-                      timeRange: e.target.value,
-                    })
-                  }
-                  required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Descripción (Editor enriquecido)
-                </label>
-                <TiptapEditor
-                  content={sessionFormData.description}
-                  onChange={(html) =>
-                    setSessionFormData({
-                      ...sessionFormData,
-                      description: html,
-                    })
-                  }
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="!hidden space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Imagen (Opcional)
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {sessionFormData.image ? (
-                      <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl">
-                        <ImageIcon className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-bold text-slate-600 truncate">
-                          Imagen subida
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSessionFormData({
-                              ...sessionFormData,
-                              image: "",
-                            })
-                          }
-                          className="ml-auto text-red-500 hover:text-red-700 border-none bg-transparent cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-100 rounded-xl text-slate-400 hover:border-primary/20 hover:text-primary transition-all cursor-pointer">
-                        <Upload className="w-4 h-4" />
-                        <span className="text-xs font-bold">Subir Imagen</span>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={(e) =>
-                            handleFileUpload(e, {
-                              kind: "session",
-                              folder: "programas",
-                              field: "image",
-                            })
-                          }
-                          disabled={uploading}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Color Especial (Break, Almuerzo, etc)
-                  </label>
-                  <div className="flex items-center gap-3 mt-1">
-                    <div
-                      className="w-12 h-12 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
-                      style={{
-                        backgroundColor: sessionFormData.color || "#F1F5F9",
-                      }}
-                    >
-                      <input
-                        type="color"
-                        value={sessionFormData.color || "#F1F5F9"}
-                        onChange={(e) =>
-                          setSessionFormData({
-                            ...sessionFormData,
-                            color: e.target.value,
-                          })
-                        }
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                    </div>
+                  {sessionFormData.color && (
                     <button
                       type="button"
                       onClick={() =>
                         setSessionFormData({ ...sessionFormData, color: "" })
                       }
-                      className="text-[10px] font-bold text-slate-400 hover:text-red-500 bg-transparent border-none cursor-pointer"
+                      className="text-[10px] font-bold text-red-500 hover:underline border-none bg-transparent cursor-pointer"
                     >
-                      Limpiar Color
+                      Remover
                     </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowSessionModal(false)}
+                className="flex-1 py-3 font-bold text-slate-500 border-none bg-transparent cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 py-3 bg-primary text-white font-bold rounded-xl border-none cursor-pointer"
+              >
+                {editingSessionId ? "Actualizar" : "Crear"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Program Detail Modal */}
+      <Dialog open={showProgramModal} onOpenChange={setShowProgramModal}>
+        <DialogContent className="max-w-lg rounded-[2.5rem] p-0 border-none shadow-2xl z-[60] overflow-hidden">
+          <div className="p-6 border-b border-slate-100">
+            <DialogTitle className="text-lg font-bold text-slate-800">
+              Editar Programa
+            </DialogTitle>
+          </div>
+
+          <form onSubmit={handleUpdateProgramModal} className="p-8 space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Título del Programa
+              </label>
+              <input
+                type="text"
+                value={programFormData.title}
+                onChange={(e) =>
+                  setProgramFormData({ ...programFormData, title: e.target.value })
+                }
+                required
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Descripción
+              </label>
+              <textarea
+                value={programFormData.description}
+                onChange={(e) =>
+                  setProgramFormData({
+                    ...programFormData,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-800 font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all min-h-[100px] resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Principal
+                </label>
+                <div className="relative group">
+                  <div
+                    className="w-full h-14 rounded-2xl shadow-inner border border-slate-100 relative overflow-hidden"
+                    style={{ backgroundColor: programFormData.primaryColor }}
+                  >
+                    <input
+                      type="color"
+                      value={programFormData.primaryColor}
+                      onChange={(e) =>
+                        setProgramFormData({
+                          ...programFormData,
+                          primaryColor: e.target.value,
+                        })
+                      }
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
                   </div>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowSessionModal(false)}
-                  className="flex-1 py-3 font-bold text-slate-500 border-none bg-transparent cursor-pointer"
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Secundario
+                </label>
+                <div
+                  className="w-full h-14 rounded-2xl shadow-inner border border-slate-100 relative overflow-hidden"
+                  style={{ backgroundColor: programFormData.secondaryColor }}
                 >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl border-none cursor-pointer"
-                >
-                  Crear Sesión
-                </button>
+                  <input
+                    type="color"
+                    value={programFormData.secondaryColor}
+                    onChange={(e) =>
+                      setProgramFormData({
+                        ...programFormData,
+                        secondaryColor: e.target.value,
+                      })
+                    }
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
               </div>
-            </form>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Resalte
+                </label>
+                <div
+                  className="w-full h-14 rounded-2xl shadow-inner border border-slate-100 relative overflow-hidden"
+                  style={{ backgroundColor: programFormData.tertiaryColor }}
+                >
+                  <input
+                    type="color"
+                    value={programFormData.tertiaryColor}
+                    onChange={(e) =>
+                      setProgramFormData({
+                        ...programFormData,
+                        tertiaryColor: e.target.value,
+                      })
+                    }
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowProgramModal(false)}
+                className="flex-1 py-4 font-bold text-slate-400 border-none bg-transparent cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl border-none cursor-pointer shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+              >
+                {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!sessionToDelete} onOpenChange={() => setSessionToDelete(null)}>
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl z-[70]">
+          <DialogTitle className="text-xl font-bold text-slate-800 mb-2">
+            ¿Eliminar sesión?
+          </DialogTitle>
+          <p className="text-slate-500 text-sm mb-8">
+            Esta acción no se puede deshacer. Se eliminará permanentemente la sesión del cronograma.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setSessionToDelete(null)}
+              className="flex-1 py-3 font-bold text-slate-500 border-none bg-slate-100 rounded-xl cursor-pointer hover:bg-slate-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={deleteSession}
+              className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl border-none cursor-pointer hover:bg-red-600 transition-colors"
+            >
+              Eliminar
+            </button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Tab Delete Confirmation Modal */}
+      <Dialog open={!!tabToDelete} onOpenChange={() => setTabToDelete(null)}>
+        <DialogContent className="max-w-md rounded-[2.5rem] p-8 border-none shadow-2xl z-[70]">
+          <DialogTitle className="text-xl font-bold text-slate-800 mb-2">
+            ¿Eliminar pestaña?
+          </DialogTitle>
+          <p className="text-slate-500 text-sm mb-8">
+            Esta acción eliminará la pestaña y <b>todas las sesiones</b> vinculadas a ella. Esta acción no se puede deshacer.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setTabToDelete(null)}
+              className="flex-1 py-3 font-bold text-slate-500 border-none bg-slate-100 rounded-xl cursor-pointer hover:bg-slate-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={deleteTab}
+              className="flex-1 py-3 bg-red-500 text-white font-bold rounded-xl border-none cursor-pointer hover:bg-red-600 transition-colors"
+            >
+              Eliminar Todo
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

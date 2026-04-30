@@ -1,22 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Calendar as CalendarIcon,
-  Clock,
   MapPin,
-  ChevronRight,
-  Layout,
   Search,
-  Info,
   Download,
+  Info,
+  ChevronRight,
   ArrowLeft,
+  Radio,
+  CalendarIcon,
+  Layout,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVertical } from "@nrivera-iimp/ui-kit-iimp";
 import { getDynamicEventCode } from "@/lib/utils/event";
+import { useAuthStore } from "@/store/useAuthStore";
+import { VimeoPlayer } from "./VimeoPlayer";
 import { getFullImageUrl } from "@/lib/s3-utils";
-import { toast } from "sonner";
 import clsx from "clsx";
 
 type Session = {
@@ -52,36 +54,71 @@ type Program = {
   tabs: Tab[];
 };
 
-export default function ConferencesView() {
+export default function ConferencesView({ initialId }: { initialId?: string }) {
   const { vertical } = useVertical();
+  const { hasStreamingAccess } = useAuthStore();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [activeStream, setActiveStream] = useState<{
+    vimeoId: string;
+    title: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "detail">("grid");
-
-  const fetchPrograms = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const eventCode = getDynamicEventCode(vertical);
-      const res = await fetch(`/api/portal/programas?event=${eventCode}`);
-      const data = await res.json();
-      if (data.success) {
-        setPrograms(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching programs:", error);
-      toast.error("No se pudo cargar la agenda de conferencias.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [vertical]);
+  const [viewMode, setViewMode] = useState<"grid" | "detail">(
+    initialId ? "detail" : "grid",
+  );
+  const router = useRouter();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const fetchPrograms = async () => {
+      try {
+        const eventCode = getDynamicEventCode(vertical);
+        const res = await fetch(`/api/portal/programas?event=${eventCode}`);
+        const data = await res.json();
+        if (data.success) {
+          setPrograms(data.data);
+          if (data.data.length > 0 && !selectedProgram) {
+            const firstProgram = data.data[0];
+            setSelectedProgram(firstProgram);
+            if (firstProgram.tabs.length > 0) {
+              setActiveTabId(firstProgram.tabs[0].id);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching programs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchActiveStream = async () => {
+      try {
+        const eventCode = getDynamicEventCode(vertical);
+        const res = await fetch(`/api/portal/streaming?event=${eventCode}`);
+        const data = await res.json();
+        if (data.success && data.data.length > 0) {
+          const stream = data.data[0];
+          if (stream.vimeoId) {
+            setActiveStream({
+              vimeoId: stream.vimeoId,
+              title: stream.title,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching streaming:", error);
+      }
+    };
+
     fetchPrograms();
-  }, [fetchPrograms]);
+    fetchActiveStream();
+    // selectedProgram is intentionally omitted:
+    // initial selection should happen once after fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vertical]);
 
   const activeTab = selectedProgram?.tabs.find((t) => t.id === activeTabId);
 
@@ -96,6 +133,7 @@ export default function ConferencesView() {
   const themeStyles = {
     "--theme-primary":
       activeTab?.color || selectedProgram?.primaryColor || "#3b82f6",
+    "--theme-secondary": selectedProgram?.secondaryColor || "#1e293b",
     "--theme-accent":
       activeTab?.color || selectedProgram?.tertiaryColor || "#64748b",
     "--theme-bg-10": activeTab?.color
@@ -118,7 +156,40 @@ export default function ConferencesView() {
     if (program.tabs.length > 0) {
       setActiveTabId(program.tabs[0].id);
     }
+    router.push(`/dashboard/conferences/${program.id}`);
   };
+
+  const handleBackToGrid = () => {
+    setSelectedProgram(null);
+    setViewMode("grid");
+    router.push("/dashboard/conferences");
+  };
+
+  // Sync with initialId or fetch
+  useEffect(() => {
+    if (initialId && programs.length > 0) {
+      const program = programs.find((p) => p.id === initialId);
+      if (program) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedProgram(program);
+        setViewMode("detail");
+        // Only set active tab if not already set or if switching programs
+        if (
+          program.tabs.length > 0 &&
+          (!activeTabId || !program.tabs.find((t) => t.id === activeTabId))
+        ) {
+          setActiveTabId(program.tabs[0].id);
+        }
+      }
+    } else if (!initialId) {
+      setSelectedProgram(null);
+      setViewMode("grid");
+      setActiveTabId(null);
+    }
+    // activeTabId is intentionally omitted: this effect only reacts
+    // to URL/program list changes and may set activeTabId.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialId, programs]);
 
   if (isLoading) {
     return (
@@ -242,7 +313,7 @@ export default function ConferencesView() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-4 text-left">
               <button
-                onClick={() => setViewMode("grid")}
+                onClick={handleBackToGrid}
                 className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-black text-white uppercase tracking-[0.2em] hover:bg-white/20 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-3 h-3" />
@@ -326,6 +397,40 @@ export default function ConferencesView() {
 
         {/* Sessions List */}
         <main className="xl:col-span-9 space-y-6">
+          {/* Streaming Section */}
+          {activeStream && hasStreamingAccess && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden"
+            >
+              <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-inner">
+                    <Radio className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                        En Vivo Ahora
+                      </span>
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                      {activeStream.title}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+              <div className="p-2">
+                <VimeoPlayer
+                  vimeoId={activeStream.vimeoId}
+                  title={activeStream.title}
+                />
+              </div>
+            </motion.div>
+          )}
+
           {/* Search Bar */}
           <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-4 flex flex-col md:flex-row items-center gap-4">
             <div className="relative flex-1 w-full text-left">
@@ -363,65 +468,87 @@ export default function ConferencesView() {
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-6"
                 >
-                  {/* Timeline Title style LUNES 04 */}
-                  {activeTab &&
-                    (activeTab.dateTitle || activeTab.dateNumber) && (
-                      <div className="flex items-center gap-4 px-4 py-2">
-                        <div className="h-px flex-1 bg-slate-100" />
-                        <div className="flex items-center gap-2 text-slate-900 font-black uppercase">
-                          <span className="text-lg tracking-tight">
-                            {activeTab.dateTitle}
-                          </span>
-                          <span
-                            className="text-3xl"
-                            style={{ color: "var(--theme-primary)" }}
-                          >
-                            {activeTab.dateNumber}
-                          </span>
+                  {/* Timeline Title style LUNES 04 - SALA MAGNA */}
+                  {activeTab && (
+                    <div className="flex items-center gap-4 px-4 py-2">
+                      <div className="h-px flex-1 bg-slate-100" />
+                      <div className="flex flex-col items-center text-center">
+                        <div
+                          className="flex items-center gap-2 font-black uppercase"
+                          style={{
+                            color:
+                              selectedProgram?.secondaryColor ||
+                              "var(--theme-header)",
+                          }}
+                        >
+                          {activeTab.dateTitle && (
+                            <span className="text-lg tracking-tight">
+                              {activeTab.dateTitle}
+                            </span>
+                          )}
+                          {activeTab.dateNumber && (
+                            <span className="text-3xl">
+                              {activeTab.dateNumber}
+                            </span>
+                          )}
                         </div>
-                        <div className="h-px flex-1 bg-slate-100" />
+                        {activeTab.title && (
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                            {activeTab.title}
+                          </span>
+                        )}
                       </div>
-                    )}
+                      <div className="h-px flex-1 bg-slate-100" />
+                    </div>
+                  )}
 
                   {filteredSessions.map((session) => (
                     <div
                       key={session.id}
                       className={clsx(
-                        "group bg-white rounded-[2.5rem] p-8 md:p-10 border-none shadow-sm hover:shadow-2xl transition-all duration-700 text-left relative overflow-hidden",
+                        "group bg-white rounded-[2.5rem] p-8 border-none shadow-sm hover:shadow-2xl transition-all duration-700 text-left relative overflow-hidden",
                         session.color && "border-l-[12px]",
                       )}
                       style={
-                        session.color ? { borderLeftColor: session.color } : {}
+                        session.color
+                          ? {
+                              borderLeftColor: session.color,
+                              backgroundColor: session.color + "0D", // 5% opacity
+                            }
+                          : {}
                       }
                     >
                       {session.color && (
                         <div
-                          className="absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-[0.03] pointer-events-none"
+                          className="absolute top-0 right-0 w-48 h-48 -mr-24 -mt-24 rounded-full opacity-[0.05] pointer-events-none"
                           style={{ backgroundColor: session.color }}
                         />
                       )}
 
                       <div className="flex flex-col md:flex-row gap-8 md:items-start">
                         {/* Time Column */}
-                        <div className="md:w-32 flex flex-col items-center md:items-center gap-2 shrink-0">
-                          <div
-                            className="flex items-center gap-2"
-                            style={{ color: "var(--theme-primary)" }}
-                          >
-                            <Clock className="w-4 h-4 !hidden" />
-                            <span className="text-lg font-black tracking-tight">
+                        <div
+                          className="md:w-28 flex flex-col items-center justify-center gap-1 shrink-0 rounded-2xl py-5 px-4 shadow-lg h-fit mt-1 border border-black/5"
+                          style={{
+                            backgroundColor:
+                              selectedProgram?.tertiaryColor ||
+                              "var(--theme-accent)",
+                          }}
+                        >
+                          <div className="flex flex-col items-center">
+                            <span className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1">
+                              comienza
+                            </span>
+                            <span className="text-xl font-black text-black tracking-tight leading-none">
                               {session.timeRange?.split("-")[0].trim()}
                             </span>
                           </div>
-                          <div className="mx-2 relative ml-2 border-r h-5 border-gray-300">
-                            {""}
-                          </div>
-                          <div
-                            className="flex items-center gap-2"
-                            style={{ color: "var(--theme-primary)" }}
-                          >
-                            <Clock className="w-4 h-4 invisible !hidden" />
-                            <span className="text-lg font-black tracking-tight">
+                          <div className="w-8 h-px bg-black/10 my-3" />
+                          <div className="flex flex-col items-center">
+                            <span className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1">
+                              hasta
+                            </span>
+                            <span className="text-xl font-black text-black tracking-tight leading-none">
                               {session.timeRange?.split("-")[1]?.trim() ||
                                 "Termina"}
                             </span>

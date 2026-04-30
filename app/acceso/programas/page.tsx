@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Trash2,
   FileText,
-  X,
+  Pencil,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@nrivera-iimp/ui-kit-iimp";
 import { useAdminAuthStore } from "@/store/acceso/useAdminAuthStore";
@@ -38,6 +38,7 @@ export default function ProgramasAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [programToDelete, setProgramToDelete] =
     useState<ProgramListItem | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -78,8 +79,9 @@ export default function ProgramasAdminPage() {
 
     setIsSubmitting(true);
     try {
+      const method = editingId ? "PATCH" : "POST";
       const res = await fetch("/api/admin/portal/programas", {
-        method: "POST",
+        method,
         headers: {
           "Content-Type": "application/json",
           "x-admin-id": admin?.id || "",
@@ -87,6 +89,7 @@ export default function ProgramasAdminPage() {
           "x-admin-name": admin?.name || "",
         },
         body: JSON.stringify({
+          ...(editingId ? { id: editingId } : {}),
           ...formData,
           event: selectedEvent,
         }),
@@ -94,19 +97,43 @@ export default function ProgramasAdminPage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success("Programa creado correctamente.");
+        toast.success(editingId ? "Programa actualizado." : "Programa creado.");
         setShowModal(false);
+        setEditingId(null);
+        setFormData({
+          title: "",
+          description: "",
+          primaryColor: "#1e293b",
+          secondaryColor: "#ffffff",
+          tertiaryColor: "#fbbf24",
+          order: 0,
+        });
         fetchPrograms();
-        // Redirigir al detalle para configurar pestañas
-        router.push(`/acceso/programas/${data.data.id}`);
+        if (!editingId) {
+          // Redirigir al detalle para configurar pestañas solo si es nuevo
+          router.push(`/acceso/programas/${data.data.id}`);
+        }
       } else {
-        toast.error(data.message || "Error al crear.");
+        toast.error(data.message || "Error al procesar.");
       }
     } catch {
       toast.error("Error de red.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditModal = (program: ProgramListItem) => {
+    setEditingId(program.id);
+    setFormData({
+      title: program.title,
+      description: program.description || "",
+      primaryColor: program.primaryColor,
+      secondaryColor: program.secondaryColor,
+      tertiaryColor: program.tertiaryColor,
+      order: program.order,
+    });
+    setShowModal(true);
   };
 
   const confirmDelete = async () => {
@@ -145,7 +172,18 @@ export default function ProgramasAdminPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setEditingId(null);
+            setFormData({
+              title: "",
+              description: "",
+              primaryColor: "#1e293b",
+              secondaryColor: "#ffffff",
+              tertiaryColor: "#fbbf24",
+              order: 0,
+            });
+            setShowModal(true);
+          }}
           className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border-none cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -189,6 +227,15 @@ export default function ProgramasAdminPage() {
                   </div>
                 )}
                 <div className="absolute top-4 right-4 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditModal(program);
+                    }}
+                    className="p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white hover:text-slate-800 transition-colors border-none cursor-pointer"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -252,16 +299,10 @@ export default function ProgramasAdminPage() {
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
           <div className="bg-white">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="p-6 border-b border-slate-100">
               <DialogTitle className="text-lg font-bold text-slate-800">
-                Crear Nuevo Programa
+                {editingId ? "Editar Programa" : "Crear Nuevo Programa"}
               </DialogTitle>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors border-none bg-transparent cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -348,7 +389,18 @@ export default function ProgramasAdminPage() {
               <div className="flex gap-4 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingId(null);
+                    setFormData({
+                      title: "",
+                      description: "",
+                      primaryColor: "#1e293b",
+                      secondaryColor: "#ffffff",
+                      tertiaryColor: "#fbbf24",
+                      order: 0,
+                    });
+                  }}
                   className="flex-1 py-4 bg-slate-50 text-slate-500 font-bold rounded-2xl border-none cursor-pointer"
                 >
                   Descartar
@@ -358,7 +410,13 @@ export default function ProgramasAdminPage() {
                   disabled={isSubmitting}
                   className="flex-[2] py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/20 hover:bg-primary/90 disabled:opacity-50 border-none cursor-pointer transition-all"
                 >
-                  {isSubmitting ? "Creando..." : "Crear Programa"}
+                  {isSubmitting
+                    ? editingId
+                      ? "Actualizando..."
+                      : "Creando..."
+                    : editingId
+                      ? "Actualizar Programa"
+                      : "Crear Programa"}
                 </button>
               </div>
             </form>

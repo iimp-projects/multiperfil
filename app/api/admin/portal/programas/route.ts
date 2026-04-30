@@ -17,10 +17,7 @@ export async function GET(req: NextRequest) {
 
     const programs = await prisma.portalProgram.findMany({
       where: { 
-        event: {
-          equals: event,
-          mode: 'insensitive'
-        }
+        event: event,
       },
       include: {
         _count: {

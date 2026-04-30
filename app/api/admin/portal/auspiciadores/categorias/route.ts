@@ -17,10 +17,7 @@ export async function GET(req: NextRequest) {
 
     const categories = await prisma.sponsorCategory.findMany({
       where: { 
-        event: {
-          equals: event,
-          mode: 'insensitive'
-        }
+        event: event,
       },
       orderBy: { order: "asc" }
     });

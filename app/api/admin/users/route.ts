@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import { logActivity } from "@/lib/audit";
 import { getClientInfo, getAdminInfo } from "@/lib/utils/request";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const createSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
 
     // 2. Envío de Correo vía Resend
     try {
-      await resend.emails.send({
+      if (resend) {
+        await resend.emails.send({
         from: "IIMP <no-reply@sistemasiimp.org.pe>",
         to: email,
         subject: "Credenciales de ingreso - Multiperfil App - IIMP",
@@ -108,7 +109,10 @@ export async function POST(req: NextRequest) {
             <p style="font-size: 12px; color: #999;">Este es un mensaje automático, por favor no respondas a este correo.</p>
           </div>
         `,
-      });
+        });
+      } else {
+        console.warn("[RESEND] API Key missing, email not sent.");
+      }
     } catch (emailError) {
       console.error("[EMAIL_SEND_ERROR]", emailError);
       // No bloqueamos la respuesta si el correo falla, pero lo logeamos
