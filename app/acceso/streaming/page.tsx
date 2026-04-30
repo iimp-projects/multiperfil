@@ -12,7 +12,6 @@ import {
   Save,
   MoreVertical,
   Activity,
-  Code,
   Terminal,
   Info as InfoIcon,
   Trash2,
@@ -421,13 +420,13 @@ export default function StreamingAdminPage() {
                   <li className="flex gap-3">
                     <div className="flex-shrink-0 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold">2</div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Haz clic en <span className="font-bold">"Insertar" (Embed)</span> y copia el código o simplemente el ID numérico del link.
+                      Haz clic en <span className="font-bold">&quot;Insertar&quot; (Embed)</span> y copia el código o simplemente el ID numérico del link.
                     </p>
                   </li>
                   <li className="flex gap-3">
                     <div className="flex-shrink-0 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center text-[10px] font-bold">3</div>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
-                      Pega la información en el campo <span className="font-bold">"Vimeo Video ID"</span> de esta pantalla. El sistema lo detectará automáticamente.
+                      Pega la información en el campo <span className="font-bold">&quot;Vimeo Video ID&quot;</span> de esta pantalla. El sistema lo detectará automáticamente.
                     </p>
                   </li>
                 </ul>
