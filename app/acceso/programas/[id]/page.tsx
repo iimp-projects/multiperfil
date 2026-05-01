@@ -49,6 +49,7 @@ type Session = {
   isSpecial: boolean;
   backgroundColor?: string | null;
   textColor?: string | null;
+  timeColor?: string | null;
   order: number;
 };
 
@@ -214,6 +215,7 @@ export default function ProgramDetailAdminPage() {
     isSpecial: false,
     backgroundColor: "",
     textColor: "",
+    timeColor: "",
   });
   const [programFormData, setProgramFormData] = useState({
     title: "",
@@ -453,6 +455,7 @@ export default function ProgramDetailAdminPage() {
           isSpecial: false,
           backgroundColor: "",
           textColor: "",
+          timeColor: "",
         });
         fetchDetail();
       }
@@ -526,6 +529,7 @@ export default function ProgramDetailAdminPage() {
       isSpecial: !!session.isSpecial,
       backgroundColor: session.backgroundColor || "",
       textColor: session.textColor || "",
+      timeColor: session.timeColor || "",
     });
     setEditingSessionId(session.id);
     setShowSessionModal(true);
@@ -869,6 +873,7 @@ export default function ProgramDetailAdminPage() {
                           isSpecial: false,
                           backgroundColor: "",
                           textColor: "",
+                          timeColor: "",
                         });
                         setShowSessionModal(true);
                       }}
@@ -1197,7 +1202,7 @@ export default function ProgramDetailAdminPage() {
                 </label>
 
                 {sessionFormData.isSpecial && (
-                  <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="grid grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Color de Fondo
@@ -1228,23 +1233,22 @@ export default function ProgramDetailAdminPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                         </div>
-                        {sessionFormData.isSpecial && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSessionFormData({
-                                ...sessionFormData,
-                                backgroundColor: "",
-                              })
-                            }
-                            className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
-                            title="Restablecer al color del sistema"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSessionFormData({
+                              ...sessionFormData,
+                              backgroundColor: "",
+                            })
+                          }
+                          className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Restablecer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
+
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Color de Texto
@@ -1269,21 +1273,59 @@ export default function ProgramDetailAdminPage() {
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                         </div>
-                        {sessionFormData.isSpecial && (
-                          <button
-                            type="button"
-                            onClick={() =>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSessionFormData({
+                              ...sessionFormData,
+                              textColor: "",
+                            })
+                          }
+                          className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Restablecer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Color de Horas
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl shadow-inner border border-slate-100 relative overflow-hidden"
+                          style={{
+                            backgroundColor:
+                              sessionFormData.timeColor || "#000000",
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={sessionFormData.timeColor || "#000000"}
+                            onChange={(e) =>
                               setSessionFormData({
                                 ...sessionFormData,
-                                textColor: "",
+                                timeColor: e.target.value,
                               })
                             }
-                            className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
-                            title="Restablecer al color del sistema"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSessionFormData({
+                              ...sessionFormData,
+                              timeColor: "",
+                            })
+                          }
+                          className="p-2 bg-slate-50 text-red-500 rounded-xl border border-slate-100 hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Restablecer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   </div>

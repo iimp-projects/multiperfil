@@ -45,7 +45,8 @@ export type AuditModule =
   | "RECIPIENTS"
   | "SPONSORS"
   | "PROGRAMS"
-  | "SYSTEM";
+  | "SYSTEM"
+  | "ROLES";
 
 interface AuditParams {
   userId?: string;

@@ -49,6 +49,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 3. Buscar los permisos del rol (insensible a mayúsculas/minúsculas)
+    const roleData = await prisma.adminRole.findFirst({
+      where: { 
+        name: { equals: admin.role, mode: 'insensitive' }
+      }
+    });
+
     // Registro en Auditoría
     await logActivity({
       userId: admin.id,
@@ -68,6 +75,7 @@ export async function POST(req: NextRequest) {
         email: admin.email,
         name: admin.name,
         role: admin.role,
+        permissions: roleData?.permissions || [],
       },
     });
   } catch (error) {

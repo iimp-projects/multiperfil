@@ -40,6 +40,14 @@ model AdminUser {
   updatedAt      DateTime @updatedAt
 }
 
+model AdminRole {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  permissions String[] // Array de keys: ["dashboard", "streaming", etc.]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model PortalMessage {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   event        String
@@ -160,6 +168,7 @@ model PortalProgramSession {
   isSpecial   Boolean  @default(false)
   backgroundColor String?
   textColor   String?
+  timeColor   String?
   color       String?  // Hex color for special sessions
   order       Int      @default(0)
 }

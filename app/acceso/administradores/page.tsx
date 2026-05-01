@@ -44,11 +44,18 @@ const EMPTY_FORM: NewAdminForm = {
   role: "admin",
 };
 
+interface AdminRoleItem {
+  id: string;
+  name: string;
+  permissions: string[];
+}
+
 // ── component ─────────────────────────────────────────────────────────────────
 export default function AdministradoresPage() {
   const router = useRouter();
   const { admin: currentAdmin } = useAdminAuthStore();
   const [admins, setAdmins] = useState<AdminUserItem[]>([]);
+  const [roles, setRoles] = useState<AdminRoleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<NewAdminForm>(EMPTY_FORM);
@@ -77,39 +84,34 @@ export default function AdministradoresPage() {
     }
   }, []);
 
-  const confirmDelete = async () => {
-    if (!adminToDelete) return;
-    setDeleting(true);
+  const fetchRoles = useCallback(async () => {
     try {
-      const res = await fetch(`/api/admin/users?id=${adminToDelete.id}`, {
-        method: "DELETE",
-        headers: {
-          "x-admin-id": currentAdmin?.id || "",
-          "x-admin-email": currentAdmin?.email || "",
-          "x-admin-name": currentAdmin?.name || "",
-        },
-      });
+      const res = await fetch("/api/admin/roles");
       const json = await res.json();
-      if (json.success) {
-        toast.success(`Administrador "${adminToDelete.name}" eliminado correctamente.`);
-        setAdminToDelete(null);
-        fetchAdmins();
-      } else {
-        toast.error(json.message || "Error al eliminar administrador.");
+
+      if (!Array.isArray(json)) {
+        setRoles([]);
+        return;
       }
-    } catch {
-      toast.error("Error de red al eliminar.");
-    } finally {
-      setDeleting(false);
+
+      setRoles(json);
+
+      // Only set a default role if the form doesn't have one yet.
+      const firstRoleName = json[0]?.name;
+      if (firstRoleName) {
+        setForm((prev) => (prev.role ? prev : { ...prev, role: firstRoleName }));
+      }
+    } catch (err) {
+      console.error("Error loading roles", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // This effect is the integration point with the external system (the network).
-    // We intentionally update React state based on the fetch result.
+    // Data fetching updates state; this is the intended integration point.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAdmins();
-  }, [fetchAdmins]);
+    fetchRoles();
+  }, [fetchAdmins, fetchRoles]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +142,33 @@ export default function AdministradoresPage() {
       toast.error("Error de red. Inténtalo de nuevo.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!adminToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/users?id=${adminToDelete.id}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-id": currentAdmin?.id || "",
+          "x-admin-email": currentAdmin?.email || "",
+          "x-admin-name": currentAdmin?.name || "",
+        },
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Administrador "${adminToDelete.name}" eliminado.`);
+        setAdminToDelete(null);
+        fetchAdmins();
+      } else {
+        toast.error(json.message || "Error al eliminar.");
+      }
+    } catch {
+      toast.error("Error de red.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -257,8 +286,10 @@ export default function AdministradoresPage() {
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
                   className="w-full h-12 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none cursor-pointer"
                 >
-                  <option value="admin">Admin</option>
-                  <option value="moderador">Moderador</option>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.name}>{r.name}</option>
+                  ))}
+                  {roles.length === 0 && <option value="admin">Admin</option>}
                 </select>
               </div>
             </div>

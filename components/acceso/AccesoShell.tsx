@@ -28,12 +28,12 @@ import { useVertical, Vertical } from "@nrivera-iimp/ui-kit-iimp";
 import { EventSelectorOverlay, type EventOption } from "./EventSelectorOverlay";
 
 const NAV_ITEMS = [
-  { href: "/acceso/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/acceso/usuarios", label: "Usuarios", icon: Users },
-  { href: "/acceso/grupos", label: "Grupos", icon: UsersRound },
-  { href: "/acceso/mensajes", label: "Mensajes", icon: MessageSquare },
-  { href: "/acceso/alertas", label: "Alertas", icon: Bell },
-  { href: "/acceso/streaming", label: "Streaming", icon: Video },
+  { href: "/acceso/dashboard", label: "Dashboard", icon: LayoutDashboard, permissionKey: "dashboard" },
+  { href: "/acceso/usuarios", label: "Usuarios", icon: Users, permissionKey: "usuarios" },
+  { href: "/acceso/grupos", label: "Grupos", icon: UsersRound, permissionKey: "grupos" },
+  { href: "/acceso/mensajes", label: "Mensajes", icon: MessageSquare, permissionKey: "mensajes" },
+  { href: "/acceso/alertas", label: "Alertas", icon: Bell, permissionKey: "alertas" },
+  { href: "/acceso/streaming", label: "Streaming", icon: Video, permissionKey: "streaming" },
 
   // Programas
   {
@@ -42,6 +42,7 @@ const NAV_ITEMS = [
     icon: Calendar,
     isNewSection: true,
     sectionLabel: "Programas",
+    permissionKey: "programas",
   },
 
   // Confian en nosotros
@@ -51,13 +52,14 @@ const NAV_ITEMS = [
     icon: LayoutGrid,
     isNewSection: true,
     sectionLabel: "Confian en nosotros",
+    permissionKey: "auspiciadores",
   },
 
   {
     href: "/acceso/administradores",
     label: "Administradores",
     icon: Shield,
-    roles: ["admin", "superadmin"],
+    permissionKey: "sistema_admins",
     isNewSection: true,
     sectionLabel: "Sistema",
   },
@@ -65,7 +67,13 @@ const NAV_ITEMS = [
     href: "/acceso/logs",
     label: "Logs",
     icon: ScrollText,
-    roles: ["admin", "superadmin"],
+    permissionKey: "sistema_logs",
+  },
+  {
+    href: "/acceso/roles",
+    label: "Roles y Permisos",
+    icon: Shield,
+    permissionKey: "sistema_admins", // Same as admins for now
   },
 ];
 
@@ -82,12 +90,35 @@ export default function AccesoShell({
   const [events, setEvents] = useState<EventOption[]>([]);
   const {
     admin,
-    selectedEvent,
     isAuthenticated,
     _hasHydrated,
     logoutAdmin,
     setSelectedEvent,
+    selectedEvent,
+    selectedVertical,
+    setAdminAuth,
   } = useAdminAuthStore();
+
+  // Sync permissions on mount
+  useEffect(() => {
+    if (_hasHydrated && isAuthenticated && admin?.id) {
+      const refreshData = async () => {
+        try {
+          const res = await fetch("/api/admin/auth/me", {
+            headers: { "x-admin-id": admin.id }
+          });
+          const json = await res.json();
+          if (json.success) {
+            // Update store with fresh data (including permissions)
+            setAdminAuth(json.data, selectedEvent!, selectedVertical!);
+          }
+        } catch (err) {
+          console.error("Error refreshing permissions", err);
+        }
+      };
+      refreshData();
+    }
+  }, [_hasHydrated, isAuthenticated, admin?.id, setAdminAuth, selectedEvent, selectedVertical]);
 
   useLayoutEffect(() => {
     // Open sidebar by default on large screens
@@ -233,8 +264,8 @@ export default function AccesoShell({
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
           {NAV_ITEMS.filter((item) => {
-            if (!item.roles) return true;
-            return item.roles.includes(admin?.role?.toLowerCase() || "");
+            if (!item.permissionKey) return true;
+            return admin?.permissions?.includes(item.permissionKey);
           }).map((item) => {
             const Icon = item.icon;
             const isActive =

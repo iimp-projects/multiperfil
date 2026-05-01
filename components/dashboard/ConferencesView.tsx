@@ -32,6 +32,7 @@ type Session = {
   isSpecial?: boolean;
   backgroundColor?: string | null;
   textColor?: string | null;
+  timeColor?: string | null;
   order: number;
 };
 
@@ -544,21 +545,35 @@ export default function ConferencesView({ initialId }: { initialId?: string }) {
                           }}
                         >
                           <div className="flex flex-col items-center">
-                            <span className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1">
+                            <span 
+                              className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1"
+                              style={session.timeColor ? { color: session.timeColor, opacity: 0.7 } : {}}
+                            >
                               comienza
                             </span>
-                            <span className="text-xl font-black text-black tracking-tight leading-none">
+                            <span 
+                              className="text-xl font-black text-black tracking-tight leading-none"
+                              style={session.timeColor ? { color: session.timeColor } : {}}
+                            >
                               {session.timeRange?.split("-")[0].trim()}
                             </span>
                           </div>
-                          <div className="w-8 h-px bg-black/10 my-3" />
+                          <div 
+                            className="w-8 h-px bg-black/10 my-3"
+                            style={session.timeColor ? { backgroundColor: session.timeColor, opacity: 0.2 } : {}}
+                          />
                           <div className="flex flex-col items-center">
-                            <span className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1">
+                            <span 
+                              className="font-black text-black/40 tracking-widest uppercase text-[9px] mb-1"
+                              style={session.timeColor ? { color: session.timeColor, opacity: 0.7 } : {}}
+                            >
                               hasta
                             </span>
-                            <span className="text-xl font-black text-black tracking-tight leading-none">
-                              {session.timeRange?.split("-")[1]?.trim() ||
-                                "Termina"}
+                            <span 
+                              className="text-xl font-black text-black tracking-tight leading-none"
+                              style={session.timeColor ? { color: session.timeColor } : {}}
+                            >
+                              {session.timeRange?.split("-")[1]?.trim() || "Termina"}
                             </span>
                           </div>
                         </div>

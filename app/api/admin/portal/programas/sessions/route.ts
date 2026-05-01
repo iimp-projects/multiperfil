@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
       isSpecial,
       backgroundColor,
       textColor,
+      timeColor,
     } = body;
 
     if (!tabId || !timeRange) {
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
         isSpecial: !!isSpecial,
         backgroundColor,
         textColor,
+        timeColor,
         order: order || 0
       }
     });
@@ -100,7 +102,7 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { id, title, description, timeRange, location, order, color, image, isSpecial, backgroundColor, textColor } = body;
+    const { id, title, description, timeRange, location, order, color, image, isSpecial, backgroundColor, textColor, timeColor } = body;
 
     if (!id) return NextResponse.json({ success: false, message: "ID requerido." }, { status: 400 });
 
@@ -116,6 +118,7 @@ export async function PATCH(req: NextRequest) {
         isSpecial: isSpecial !== undefined ? !!isSpecial : undefined,
         backgroundColor,
         textColor,
+        timeColor,
         order: order !== undefined ? Number(order) : undefined
       }
     });

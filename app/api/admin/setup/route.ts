@@ -18,37 +18,84 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const allPermissions = [
+      "dashboard", "usuarios", "grupos", "mensajes", "alertas", 
+      "streaming", "programas", "auspiciadores", "sistema_admins", "sistema_logs"
+    ];
+
+    const roles = [
+      {
+        name: "Admin",
+        permissions: allPermissions,
+      },
+      {
+        name: "Eventos",
+        permissions: ["dashboard", "usuarios", "grupos", "mensajes", "alertas", "streaming", "programas", "auspiciadores"],
+      },
+      {
+        name: "Comunicaciones",
+        permissions: ["streaming"],
+      }
+    ];
+
+    // 1. Upsert Roles
+    for (const r of roles) {
+      await prisma.adminRole.upsert({
+        where: { name: r.name },
+        update: { permissions: r.permissions },
+        create: { name: r.name, permissions: r.permissions }
+      });
+    }
+
     const admins = [
+      {
+        email: "neill.rivera@iimp.org.pe",
+        password: "Admin@IIMP2026!",
+        name: "Neill Bryan Rivera Livia",
+        role: "Admin",
+      },
+      {
+        email: "john.moron@iimp.org.pe",
+        password: "Admin@IIMP2026!",
+        name: "John TI",
+        role: "Admin",
+      },
+      {
+        email: "ext_analistaprogramador1@iimp.org.pe",
+        password: "Admin@IIMP2026!",
+        name: "Lourdes TI",
+        role: "Admin",
+      },
+      {
+        email: "ext_analistaprogramador2@iimp.org.pe",
+        password: "Admin@IIMP2026!",
+        name: "Max TI",
+        role: "Admin",
+      },
       {
         email: "admin@multieventos.com",
         password: "admin123",
         name: "Admin Principal",
-        role: "admin",
-      },
-      {
-        email: "superadmin@iimp.org.pe",
-        password: "Admin@IIMP2026!",
-        name: "Super Admin",
-        role: "superadmin",
-      },
-      {
-        email: "admin@iimp.org.pe",
-        password: "Admin@2026!",
-        name: "Admin General",
-        role: "admin",
+        role: "Admin",
       },
       {
         email: "eventos@iimp.org.pe",
         password: "Eventos@2026!",
-        name: "Analista de Eventos",
-        role: "analyst",
+        name: "Eventos",
+        role: "Eventos",
+      },
+      {
+        email: "comunicaciones@iimp.org.pe",
+        password: "Admin@IIMP2026!",
+        name: "Comunicaciones User",
+        role: "Comunicaciones",
       },
     ];
 
     for (const a of admins) {
       await prisma.adminUser.upsert({
         where: { email: a.email },
-        update: {},
+        update: { role: a.role },
         create: {
           email: a.email,
           passwordHash: bcrypt.hashSync(a.password, 10),
@@ -63,15 +110,16 @@ export async function GET(req: NextRequest) {
     await logActivity({
       action: "GENERIC_ACTION",
       module: "SYSTEM",
-      details: "Inicialización de administradores del sistema vía setup API",
+      details: "Inicialización de administradores y roles dinámicos vía setup API",
       ip,
       userAgent
     });
 
     return NextResponse.json({
       success: true,
-      message: "Administradores configurados correctamente",
-      seeded: admins.map(a => a.email),
+      message: "Roles y Administradores configurados correctamente",
+      seededRoles: roles.map(r => r.name),
+      seededUsers: admins.map(a => a.email),
     });
   } catch (error) {
     console.error("[ADMIN_SETUP_ERROR]", error);
